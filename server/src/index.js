@@ -18,6 +18,9 @@ import { startScheduler } from './services/scheduler.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
+
+// Railway y la mayoría de plataformas cloud usan un proxy inverso
+app.set('trust proxy', 1)
 const httpServer = createServer(app)
 
 // Socket.io
