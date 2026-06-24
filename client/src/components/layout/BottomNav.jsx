@@ -7,11 +7,12 @@ export default function BottomNav() {
 
   const cls = ({ isActive }) =>
     `flex flex-col items-center gap-1 flex-1 py-3 text-xs font-medium transition-colors min-h-[56px] justify-center ${
-      isActive ? 'text-[#00C2FF]' : 'text-[#4B5563] hover:text-[#8B949E]'
+      isActive ? 'text-[#00C2FF]' : 'text-[#3D5A80] hover:text-[#8BA4C4]'
     }`
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-40 bg-[#0D1117]/95 backdrop-blur border-t border-[#30363D]/60 flex safe-bottom sm:hidden">
+    <nav className="fixed bottom-0 inset-x-0 z-40 flex safe-bottom sm:hidden border-t border-[#1E3A6E]"
+         style={{ background: 'rgba(10,22,40,0.97)', backdropFilter: 'blur(12px)' }}>
       <NavLink to="/" end className={cls}>
         <Home size={20} />
         <span>Inicio</span>
