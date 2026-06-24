@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import ws from 'ws'
 
 // Inicialización lazy — el cliente se crea la primera vez que se usa,
 // no al importar el módulo. Esto permite que el servidor arranque
@@ -16,7 +17,8 @@ export const supabaseAdmin = new Proxy({}, {
         )
       }
       _client = createClient(url, key, {
-        auth: { autoRefreshToken: false, persistSession: false }
+        auth: { autoRefreshToken: false, persistSession: false },
+        realtime: { transport: ws },
       })
     }
     const val = _client[prop]
