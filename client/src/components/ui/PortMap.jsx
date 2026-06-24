@@ -1,96 +1,112 @@
 import { useEffect } from 'react'
-import { MapContainer, TileLayer, Polygon, Tooltip, useMap } from 'react-leaflet'
+import { MapContainer, TileLayer, Polygon, Tooltip, ZoomControl, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 import { STATUS_CONFIG } from '../../lib/constants.js'
 
-// Coordenadas aproximadas de las zonas del Puerto de Manzanillo, Colima
+// Coordenadas reales de las zonas del Puerto de Manzanillo, Colima
+// Extraídas del mapa satelital de referencia
 const ZONE_POLYGONS = {
-  'acceso-principal': {
+  'patio-tep': {
     coords: [
-      [19.0752, -104.3285],
-      [19.0758, -104.3268],
-      [19.0743, -104.3261],
-      [19.0737, -104.3278],
+      [19.0958, -104.3175],
+      [19.0965, -104.3158],
+      [19.0948, -104.3145],
+      [19.0938, -104.3162],
+      [19.0945, -104.3178],
     ],
-    label: 'Acceso Principal',
+    label: 'Patio TEP',
+    color: '#A855F7', // morado como en la imagen
   },
-  'segundo-acceso': {
+  'impala-terminals': {
     coords: [
-      [19.0765, -104.3310],
-      [19.0772, -104.3292],
-      [19.0755, -104.3285],
-      [19.0748, -104.3303],
+      [19.0960, -104.3152],
+      [19.0968, -104.3135],
+      [19.0950, -104.3125],
+      [19.0940, -104.3142],
+      [19.0950, -104.3155],
     ],
-    label: 'Segundo Acceso',
+    label: 'Impala Terminals',
+    color: '#06B6D4', // cyan
   },
-  'terminal-ictsi': {
+  'patio-alcam': {
     coords: [
-      [19.0720, -104.3340],
-      [19.0735, -104.3310],
-      [19.0715, -104.3298],
-      [19.0700, -104.3328],
+      [19.0972, -104.3128],
+      [19.0980, -104.3112],
+      [19.0962, -104.3105],
+      [19.0952, -104.3120],
+      [19.0962, -104.3130],
     ],
-    label: 'Terminal ICTSI',
+    label: 'Patio ALCAM',
+    color: '#06B6D4', // cyan
   },
-  'terminal-tmm': {
+  'patios-vacios-ssa': {
     coords: [
-      [19.0700, -104.3370],
-      [19.0715, -104.3342],
-      [19.0695, -104.3330],
-      [19.0680, -104.3358],
+      [19.0945, -104.3155],
+      [19.0952, -104.3138],
+      [19.0935, -104.3128],
+      [19.0925, -104.3145],
+      [19.0935, -104.3158],
     ],
-    label: 'Terminal TMM',
+    label: 'Patio Vacíos SSA',
+    color: '#EAB308', // amarillo/dorado
   },
-  'patio-fiscal': {
+  'patios-llenos-ssa': {
     coords: [
-      [19.0740, -104.3255],
-      [19.0748, -104.3238],
-      [19.0728, -104.3230],
-      [19.0720, -104.3247],
+      [19.0930, -104.3150],
+      [19.0938, -104.3133],
+      [19.0920, -104.3125],
+      [19.0910, -104.3142],
+      [19.0920, -104.3152],
     ],
-    label: 'Patio Fiscal',
+    label: 'Patio Llenos SSA',
+    color: '#E2E8F0', // blanco/claro
   },
-  'confinada': {
+  'patio-acoman': {
     coords: [
-      [19.0730, -104.3295],
-      [19.0738, -104.3278],
-      [19.0720, -104.3268],
-      [19.0712, -104.3285],
+      [19.0928, -104.3163],
+      [19.0935, -104.3150],
+      [19.0918, -104.3142],
+      [19.0908, -104.3155],
+      [19.0918, -104.3165],
     ],
-    label: 'Zona Confinada',
+    label: 'Patio Acoman',
+    color: '#E2E8F0', // blanco/claro
+  },
+  'impala': {
+    coords: [
+      [19.0900, -104.3148],
+      [19.0910, -104.3130],
+      [19.0892, -104.3122],
+      [19.0880, -104.3138],
+      [19.0888, -104.3150],
+    ],
+    label: 'Impala',
+    color: '#06B6D4', // cyan
   },
   'libramiento': {
     coords: [
-      [19.0810, -104.3350],
-      [19.0820, -104.3290],
-      [19.0800, -104.3285],
-      [19.0790, -104.3345],
+      [19.1020, -104.3210],
+      [19.1030, -104.3180],
+      [19.1010, -104.3170],
+      [19.1000, -104.3200],
     ],
     label: 'Libramiento',
-  },
-  'vialidad-interna': {
-    coords: [
-      [19.0745, -104.3330],
-      [19.0755, -104.3308],
-      [19.0738, -104.3298],
-      [19.0728, -104.3320],
-    ],
-    label: 'Vialidad Interna',
+    color: '#F97316', // naranja
   },
 }
 
 const STATUS_COLORS = {
-  free:      { color: '#22C55E', fill: '#22C55E', opacity: 0.25 },
-  moderate:  { color: '#F59E0B', fill: '#F59E0B', opacity: 0.30 },
-  congested: { color: '#EF4444', fill: '#EF4444', opacity: 0.35 },
-  closed:    { color: '#6B7280', fill: '#6B7280', opacity: 0.40 },
-  unknown:   { color: '#3D5A80', fill: '#3D5A80', opacity: 0.20 },
+  free:      '#22C55E',
+  moderate:  '#F59E0B',
+  congested: '#EF4444',
+  closed:    '#6B7280',
+  unknown:   null, // usa color de zona
 }
 
-function FitBounds() {
+function SetView() {
   const map = useMap()
   useEffect(() => {
-    map.setView([19.0730, -104.3305], 15)
+    map.setView([19.0935, -104.3148], 15)
   }, [map])
   return null
 }
@@ -100,15 +116,15 @@ export default function PortMap({ sections = [], onZoneClick }) {
   sections.forEach(s => { sectionsBySlug[s.slug] = s })
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: '400px', border: '1px solid #1E3A6E' }}>
-      {/* Header del mapa */}
+    <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: '420px', border: '1px solid #1E3A6E' }}>
+      {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-[1000] flex items-center justify-between px-4 py-2.5"
            style={{ background: 'rgba(10,22,40,0.92)', borderBottom: '1px solid #1E3A6E' }}>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-white">🗺️ Mapa del Puerto</span>
-          <span className="text-xs" style={{ color: '#3D5A80' }}>· estado en tiempo real</span>
+          <span className="text-sm font-bold text-white">🗺️ Mapa Terminales</span>
+          <span className="text-xs font-mono" style={{ color: '#0099E6' }}>· estado en tiempo real</span>
         </div>
-        <div className="flex items-center gap-3 text-xs" style={{ color: '#8BA4C4' }}>
+        <div className="hidden sm:flex items-center gap-3 text-xs" style={{ color: '#8BA4C4' }}>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-500" /> Libre</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-500" /> Moderado</span>
           <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500" /> Saturado</span>
@@ -117,25 +133,34 @@ export default function PortMap({ sections = [], onZoneClick }) {
       </div>
 
       <MapContainer
-        center={[19.0730, -104.3305]}
+        center={[19.0935, -104.3148]}
         zoom={15}
-        style={{ height: '100%', width: '100%', background: '#0A1628' }}
+        style={{ height: '100%', width: '100%' }}
         zoomControl={false}
         attributionControl={false}
       >
-        <FitBounds />
+        <SetView />
+        <ZoomControl position="bottomright" />
 
-        {/* Tiles oscuros tipo noche */}
+        {/* Tiles satelitales oscuros */}
         <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+          attribution="Tiles &copy; Esri"
+          maxZoom={19}
+        />
+        {/* Labels encima del satélite */}
+        <TileLayer
+          url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
+          attribution=""
+          opacity={0.7}
         />
 
         {/* Zonas del puerto */}
         {Object.entries(ZONE_POLYGONS).map(([slug, zone]) => {
           const section = sectionsBySlug[slug]
           const status = section?.status || 'unknown'
-          const colors = STATUS_COLORS[status] || STATUS_COLORS.unknown
+          const statusColor = STATUS_COLORS[status]
+          const fillColor = statusColor || zone.color
           const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.unknown
 
           return (
@@ -143,40 +168,45 @@ export default function PortMap({ sections = [], onZoneClick }) {
               key={slug}
               positions={zone.coords}
               pathOptions={{
-                color: colors.color,
-                fillColor: colors.fill,
-                fillOpacity: colors.opacity,
-                weight: 2,
-                opacity: 0.9,
+                color: fillColor,
+                fillColor: fillColor,
+                fillOpacity: 0.35,
+                weight: 2.5,
+                opacity: 1,
               }}
               eventHandlers={{
                 click: () => onZoneClick && onZoneClick(slug),
-                mouseover: (e) => { e.target.setStyle({ fillOpacity: colors.opacity + 0.2, weight: 3 }) },
-                mouseout: (e) => { e.target.setStyle({ fillOpacity: colors.opacity, weight: 2 }) },
+                mouseover: (e) => { e.target.setStyle({ fillOpacity: 0.55, weight: 3.5 }) },
+                mouseout: (e) => { e.target.setStyle({ fillOpacity: 0.35, weight: 2.5 }) },
               }}
             >
-              <Tooltip
-                permanent={false}
-                direction="top"
-                className="map-tooltip"
-              >
-                <div style={{ background: '#0F1F3D', border: '1px solid #1E3A6E', borderRadius: '8px', padding: '6px 10px', color: 'white', fontSize: '12px', whiteSpace: 'nowrap' }}>
-                  <div className="font-bold">{zone.label}</div>
-                  <div style={{ color: colors.color }}>{cfg.emoji} {cfg.label}</div>
+              <Tooltip direction="top" opacity={1}>
+                <div style={{
+                  background: '#0F1F3D',
+                  border: `1px solid ${fillColor}`,
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  color: 'white',
+                  fontSize: '12px',
+                  whiteSpace: 'nowrap',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+                }}>
+                  <div className="font-bold text-sm mb-1">{zone.label}</div>
+                  <div style={{ color: fillColor, fontSize: '11px' }}>{cfg.emoji} {cfg.label}</div>
                   {section?.active_reports > 0 && (
-                    <div style={{ color: '#8BA4C4', fontSize: '11px' }}>{section.active_reports} reporte{section.active_reports !== 1 ? 's' : ''}</div>
+                    <div style={{ color: '#8BA4C4', fontSize: '10px', marginTop: '2px' }}>
+                      {section.active_reports} reporte{section.active_reports !== 1 ? 's' : ''}
+                    </div>
                   )}
+                  <div style={{ color: '#3D5A80', fontSize: '10px', marginTop: '2px' }}>
+                    Click para ver detalle →
+                  </div>
                 </div>
               </Tooltip>
             </Polygon>
           )
         })}
       </MapContainer>
-
-      {/* Atribución */}
-      <div className="absolute bottom-2 right-2 z-[1000] text-xs" style={{ color: '#3D5A80' }}>
-        © OpenStreetMap · © CARTO
-      </div>
     </div>
   )
 }
