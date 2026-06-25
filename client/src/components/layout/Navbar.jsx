@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { LogIn, LogOut, User, Shield } from 'lucide-react'
+import { LogIn, LogOut, User, Shield, Map, Newspaper, BookOpen } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore.js'
 import Logo from '../ui/Logo.jsx'
 import toast from 'react-hot-toast'
@@ -21,6 +21,25 @@ export default function Navbar() {
         <Link to="/">
           <Logo size="sm" />
         </Link>
+
+        {/* Nav links desktop */}
+        <nav className="hidden sm:flex items-center gap-1 mr-2">
+          <Link to="/"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs text-[#8BA4C4] hover:text-white rounded-lg hover:bg-[#162B52] transition-colors">
+            <Map size={13} />
+            Puerto
+          </Link>
+          <Link to="/noticias"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs text-[#8BA4C4] hover:text-white rounded-lg hover:bg-[#162B52] transition-colors">
+            <Newspaper size={13} />
+            Noticias
+          </Link>
+          <Link to="/directorio"
+            className="flex items-center gap-1.5 px-3 py-2 text-xs text-[#8BA4C4] hover:text-white rounded-lg hover:bg-[#162B52] transition-colors">
+            <BookOpen size={13} />
+            Directorio
+          </Link>
+        </nav>
 
         <nav className="flex items-center gap-1">
           {user ? (

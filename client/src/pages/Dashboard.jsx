@@ -1,18 +1,33 @@
 import { useState, lazy, Suspense } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+import { useQuery } from '@tanstack/react-query'
 import { useSections } from '../hooks/useSections.js'
+import { supabase } from '../lib/supabase.js'
 import SectionCard from '../components/ui/SectionCard.jsx'
 import ActivityFeed from '../components/ui/ActivityFeed.jsx'
 import Logo from '../components/ui/Logo.jsx'
-import { Anchor, Map, LayoutGrid } from 'lucide-react'
+import NewsCard from '../components/ui/NewsCard.jsx'
+import WeatherWidget from '../components/ui/WeatherWidget.jsx'
+import AdBanner from '../components/ui/AdBanner.jsx'
+import { Anchor, Map, LayoutGrid, Newspaper } from 'lucide-react'
 
-// Lazy load del mapa para no bloquear el render inicial
 const PortMap = lazy(() => import('../components/ui/PortMap.jsx'))
 
 export default function Dashboard() {
   const { data: sections = [], isLoading } = useSections()
-  const [view, setView] = useState('grid') // 'grid' | 'map'
+  const [view, setView] = useState('grid')
   const navigate = useNavigate()
+
+  const { data: news = [] } = useQuery({
+    queryKey: ['news-preview'],
+    queryFn: async () => {
+      const { data } = await supabase.from('news_items').select('*')
+        .eq('is_active', true).gt('expires_at', new Date().toISOString())
+        .order('priority', { ascending: false }).limit(3)
+      return data || []
+    },
+    staleTime: 60_000,
+  })
 
   return (
     <div className="min-h-screen" style={{ background: '#0A1628' }}>
@@ -92,7 +107,6 @@ export default function Dashboard() {
         </div>
 
         {view === 'map' ? (
-          /* Vista mapa */
           <div className="flex flex-col lg:flex-row gap-6">
             <div className="flex-1">
               <Suspense fallback={
@@ -106,7 +120,6 @@ export default function Dashboard() {
                 />
               </Suspense>
 
-              {/* Leyenda de zonas */}
               <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {sections.map(s => {
                   const colors = { free: '#22C55E', moderate: '#F59E0B', congested: '#EF4444', closed: '#6B7280', unknown: '#3D5A80' }
@@ -125,15 +138,18 @@ export default function Dashboard() {
               </div>
             </div>
 
-            <div className="lg:w-72">
-              <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: '#3D5A80' }}>
-                Actividad reciente
-              </p>
-              <ActivityFeed />
+            <div className="lg:w-72 space-y-4">
+              <WeatherWidget />
+              <div>
+                <p className="text-xs font-mono uppercase tracking-widest mb-3" style={{ color: '#3D5A80' }}>
+                  Actividad reciente
+                </p>
+                <ActivityFeed />
+              </div>
+              <AdBanner position="dashboard" />
             </div>
           </div>
         ) : (
-          /* Vista grid */
           <div className="flex flex-col lg:flex-row gap-8">
             <div className="flex-1">
               {isLoading ? (
@@ -148,13 +164,37 @@ export default function Dashboard() {
                   {sections.map(s => <SectionCard key={s.id} section={s} />)}
                 </div>
               )}
+
+              {/* Widget noticias */}
+              {news.length > 0 && (
+                <div className="mt-8">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <Newspaper size={14} style={{ color: '#0099E6' }} />
+                      <h2 className="text-xs font-mono text-[#8B949E] uppercase tracking-widest">
+                        Noticias del día
+                      </h2>
+                    </div>
+                    <Link to="/noticias" className="text-xs text-[#00C2FF] hover:underline">
+                      Ver todas →
+                    </Link>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {news.map(item => <NewsCard key={item.id} item={item} />)}
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div className="lg:w-80 xl:w-96">
-              <p className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: '#3D5A80' }}>
-                Actividad reciente
-              </p>
-              <ActivityFeed />
+            <div className="lg:w-80 xl:w-96 space-y-4">
+              <WeatherWidget />
+              <div>
+                <p className="text-xs font-mono uppercase tracking-widest mb-4" style={{ color: '#3D5A80' }}>
+                  Actividad reciente
+                </p>
+                <ActivityFeed />
+              </div>
+              <AdBanner position="dashboard" />
             </div>
           </div>
         )}

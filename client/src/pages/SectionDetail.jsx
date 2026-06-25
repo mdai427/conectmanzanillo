@@ -7,6 +7,7 @@ import { useReports } from '../hooks/useReports.js'
 import StatusBadge from '../components/ui/StatusBadge.jsx'
 import ReportButton from '../components/ui/ReportButton.jsx'
 import ConfirmReaction from '../components/ui/ConfirmReaction.jsx'
+import SectionChat from '../components/ui/SectionChat.jsx'
 
 export default function SectionDetail() {
   const { slug } = useParams()
@@ -49,7 +50,6 @@ export default function SectionDetail() {
             <StatusBadge status={section.status} size="lg" />
           </div>
 
-          {/* Stats */}
           <div className="flex gap-4 mt-4 text-sm text-[#4B5563]">
             <span>{section.active_reports} reportes activos</span>
             {section.confidence > 0 && (
@@ -57,7 +57,6 @@ export default function SectionDetail() {
             )}
           </div>
 
-          {/* Barra de confianza */}
           <div className="h-1.5 bg-[#30363D] rounded-full overflow-hidden mt-3">
             <div
               className="h-full rounded-full transition-all"
@@ -71,49 +70,54 @@ export default function SectionDetail() {
         </div>
       </div>
 
-      {/* Reportes */}
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        <p className="text-xs font-mono text-[#4B5563] uppercase tracking-widest mb-4">
-          reportes activos
-        </p>
+      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+        {/* Reportes */}
+        <div>
+          <p className="text-xs font-mono text-[#4B5563] uppercase tracking-widest mb-4">
+            reportes activos
+          </p>
 
-        {loadingReports ? (
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="bg-[#161B22] border border-[#30363D] rounded-xl h-24 animate-pulse" />
-            ))}
-          </div>
-        ) : reports.length === 0 ? (
-          <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-8 text-center">
-            <p className="text-2xl mb-2">📡</p>
-            <p className="text-sm text-[#8B949E]">Sin reportes activos en esta zona</p>
-            <p className="text-xs text-[#4B5563] mt-1">¡Sé el primero en reportar!</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {reports.map(report => (
-              <div key={report.id} className="bg-[#161B22] border border-[#30363D] rounded-xl p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <StatusBadge status={report.status} size="sm" />
-                      <span className="text-xs text-[#4B5563]">
-                        por {report.profiles?.username || 'Operador anónimo'}
-                      </span>
+          {loadingReports ? (
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="bg-[#161B22] border border-[#30363D] rounded-xl h-24 animate-pulse" />
+              ))}
+            </div>
+          ) : reports.length === 0 ? (
+            <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-8 text-center">
+              <p className="text-2xl mb-2">📡</p>
+              <p className="text-sm text-[#8B949E]">Sin reportes activos en esta zona</p>
+              <p className="text-xs text-[#4B5563] mt-1">¡Sé el primero en reportar!</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {reports.map(report => (
+                <div key={report.id} className="bg-[#161B22] border border-[#30363D] rounded-xl p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <StatusBadge status={report.status} size="sm" />
+                        <span className="text-xs text-[#4B5563]">
+                          por {report.profiles?.username || 'Operador anónimo'}
+                        </span>
+                      </div>
+                      {report.comment && (
+                        <p className="text-sm text-[#8B949E] mt-2">{report.comment}</p>
+                      )}
+                      <ConfirmReaction report={report} />
                     </div>
-                    {report.comment && (
-                      <p className="text-sm text-[#8B949E] mt-2">{report.comment}</p>
-                    )}
-                    <ConfirmReaction report={report} />
+                    <span className="text-xs text-[#4B5563] whitespace-nowrap shrink-0">
+                      {formatDistanceToNow(new Date(report.created_at), { addSuffix: true, locale: es })}
+                    </span>
                   </div>
-                  <span className="text-xs text-[#4B5563] whitespace-nowrap shrink-0">
-                    {formatDistanceToNow(new Date(report.created_at), { addSuffix: true, locale: es })}
-                  </span>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Chat de la zona */}
+        {section?.id && <SectionChat sectionId={section.id} />}
       </div>
     </div>
   )

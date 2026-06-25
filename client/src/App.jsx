@@ -10,6 +10,8 @@ import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
 import Profile from './pages/Profile.jsx'
 import Admin from './pages/Admin.jsx'
+import Noticias from './pages/Noticias.jsx'
+import Directorio from './pages/Directorio.jsx'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -41,6 +43,8 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="seccion/:slug" element={<SectionDetail />} />
+            <Route path="noticias" element={<Noticias />} />
+            <Route path="directorio" element={<Directorio />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
