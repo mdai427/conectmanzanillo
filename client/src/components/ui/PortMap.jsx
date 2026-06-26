@@ -77,20 +77,10 @@ const STATUS_COLORS = {
   closed: '#6B7280', unknown: null,
 }
 
-const MAP_STYLES_DARK = [
-  { elementType: 'geometry', stylers: [{ color: '#1a2744' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#0a1628' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d2040' }] },
-  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#3d9bdb' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#253d6e' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a2744' }] },
-  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#2d5299' }] },
+const MAP_STYLES_CLEAN = [
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#253d6e' }] },
-  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#1a2744' }] },
-  { featureType: 'landscape.man_made', elementType: 'geometry', stylers: [{ color: '#16213e' }] },
+  { featureType: 'road', elementType: 'labels.icon', stylers: [{ visibility: 'off' }] },
 ]
 
 const LEGEND = [
@@ -127,10 +117,10 @@ export default function PortMap({ sections = [], onZoneClick }) {
 
   if (!isLoaded) {
     return (
-      <div className="w-full rounded-2xl flex flex-col items-center justify-center gap-3"
-           style={{ height: 480, background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', border: '1px solid #334155' }}>
-        <div className="w-10 h-10 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
-        <p className="text-sm text-slate-400">Cargando mapa…</p>
+      <div className="w-full rounded-2xl flex flex-col items-center justify-center gap-3 bg-slate-100"
+           style={{ height: 480, border: '1px solid #e2e8f0' }}>
+        <div className="w-10 h-10 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-slate-500">Cargando mapa…</p>
       </div>
     )
   }
@@ -141,37 +131,36 @@ export default function PortMap({ sections = [], onZoneClick }) {
 
       {/* ── Top bar ── */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3"
-           style={{ background: 'rgba(10,16,32,0.88)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(51,65,85,0.6)' }}>
+           style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(226,232,240,0.8)' }}>
         <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
-          <span className="text-sm font-semibold text-white">Puerto de Manzanillo</span>
-          <span className="text-xs text-slate-500 hidden sm:inline">· tiempo real</span>
+          <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+          <span className="text-sm font-semibold text-slate-800">Puerto de Manzanillo</span>
+          <span className="text-xs text-slate-400 hidden sm:inline">· tiempo real</span>
         </div>
         <div className="flex items-center gap-2">
           {/* Satellite toggle */}
           <button onClick={() => setMapType(t => t === 'roadmap' ? 'satellite' : 'roadmap')}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
             style={{
-              background: mapType === 'satellite' ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.06)',
-              color: mapType === 'satellite' ? '#60a5fa' : '#94a3b8',
-              border: `1px solid ${mapType === 'satellite' ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.08)'}`,
+              background: mapType === 'satellite' ? '#eff6ff' : '#f1f5f9',
+              color: mapType === 'satellite' ? '#1d4ed8' : '#475569',
+              border: `1px solid ${mapType === 'satellite' ? '#bfdbfe' : '#e2e8f0'}`,
             }}>
             {mapType === 'satellite' ? '🗺' : '🛰'} {mapType === 'satellite' ? 'Mapa' : 'Satélite'}
           </button>
           {/* Draw mode */}
-          <button onClick={() => setDrawMode(d => !d)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
+          <button onClick={() => { const next = !drawMode; setDrawMode(next); if (next) setMapType('satellite') }}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
             style={{
-              background: drawMode ? 'rgba(249,115,22,0.25)' : 'rgba(255,255,255,0.06)',
-              color: drawMode ? '#fb923c' : '#94a3b8',
-              border: `1px solid ${drawMode ? 'rgba(249,115,22,0.5)' : 'rgba(255,255,255,0.08)'}`,
+              background: drawMode ? '#fff7ed' : '#f1f5f9',
+              color: drawMode ? '#c2410c' : '#475569',
+              border: `1px solid ${drawMode ? '#fed7aa' : '#e2e8f0'}`,
             }}>
             ✏️ {drawMode ? 'Cancelar' : 'Mi patio'}
           </button>
           {drawnPolygons.length > 0 && (
             <button onClick={() => setDrawnPolygons([])}
-              className="px-2 py-1.5 rounded-lg text-xs text-slate-500 transition-all hover:text-slate-300"
-              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              className="px-2 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-red-500 transition-all bg-slate-100 border border-slate-200">
               ✕ Limpiar
             </button>
           )}
@@ -188,9 +177,9 @@ export default function PortMap({ sections = [], onZoneClick }) {
 
       {/* ── Legend ── */}
       <div className="absolute bottom-10 left-3 z-10 px-3 py-2.5 rounded-xl hidden sm:flex flex-col gap-1.5"
-           style={{ background: 'rgba(10,16,32,0.82)', backdropFilter: 'blur(8px)', border: '1px solid rgba(51,65,85,0.5)' }}>
+           style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(8px)', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}>
         {LEGEND.map(({ color, label }) => (
-          <div key={label} className="flex items-center gap-2 text-xs text-slate-400">
+          <div key={label} className="flex items-center gap-2 text-xs text-slate-600">
             <span className="w-2.5 h-2.5 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}88` }} />
             {label}
           </div>
@@ -204,7 +193,7 @@ export default function PortMap({ sections = [], onZoneClick }) {
         mapTypeId={mapType}
         onLoad={onLoad}
         options={{
-          styles: mapType === 'roadmap' ? MAP_STYLES_DARK : [],
+          styles: mapType === 'roadmap' ? MAP_STYLES_CLEAN : [],
           disableDefaultUI: true,
           zoomControl: true,
           gestureHandling: 'greedy',
