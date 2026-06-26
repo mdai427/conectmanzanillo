@@ -13,6 +13,7 @@ import reportsRouter   from './routes/reports.js'
 import reactionsRouter from './routes/reactions.js'
 import usersRouter     from './routes/users.js'
 import adminRouter     from './routes/admin.js'
+import chatRouter      from './routes/chat.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
 
@@ -46,6 +47,7 @@ app.use('/api/reports',   reportsRouter)
 app.use('/api/reactions', reactionsRouter)
 app.use('/api/users',     usersRouter)
 app.use('/api/admin',     adminRouter)
+app.use('/api/chat',      chatRouter)
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }))
 

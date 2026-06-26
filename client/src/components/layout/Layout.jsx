@@ -3,6 +3,7 @@ import Navbar from './Navbar.jsx'
 import BottomNav from './BottomNav.jsx'
 import EmergencyBanner from '../ui/EmergencyBanner.jsx'
 import NewsTicker from '../ui/NewsTicker.jsx'
+import ChatIA from '../ui/ChatIA.jsx'
 
 export default function Layout() {
   return (
@@ -14,6 +15,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <BottomNav />
+      <ChatIA />
     </div>
   )
 }
