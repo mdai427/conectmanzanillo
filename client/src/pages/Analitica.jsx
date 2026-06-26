@@ -258,7 +258,7 @@ function ScheduleHeatmap({ sections, predictions }) {
           <tbody>
             {(sections || []).slice(0, 8).map((section, idx) => (
               <tr key={section.id} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/40'}>
-                <td className="px-4 py-2.5 font-semibold text-slate-700 truncate max-w-[140px]">
+                <td className="px-4 py-2.5 font-semibold text-slate-700 text-xs leading-tight min-w-[140px]">
                   {section.name}
                 </td>
                 {SCHEDULE_HOURS.map(h => {
@@ -339,7 +339,7 @@ function RankingRow({ user, position }) {
         {nivelCfg.emoji}
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-bold text-slate-800 truncate">{user.username || 'Operador'}</p>
+        <p className="text-sm font-bold text-slate-800 break-all">{user.username || 'Operador'}</p>
         <div className="flex items-center gap-2 mt-0.5">
           <span className="text-[10px] text-slate-400">{user.total_reportes} reportes</span>
           <span className="text-[10px] font-bold" style={{ color: reliability >= 70 ? '#16a34a' : reliability >= 40 ? '#f59e0b' : '#94a3b8' }}>
