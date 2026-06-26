@@ -42,9 +42,9 @@ export default function Dashboard() {
         {/* Foto de fondo del Puerto de Manzanillo */}
         <div className="absolute inset-0"
           style={{
-            backgroundImage: `url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Puerto_de_Manzanillo%2C_Colima.jpg/1280px-Puerto_de_Manzanillo%2C_Colima.jpg')`,
+            backgroundImage: `url('/puerto-manzanillo.jpg')`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center 60%',
+            backgroundPosition: 'center center',
             filter: 'blur(3px) brightness(0.45)',
             transform: 'scale(1.05)',
           }} />
@@ -382,9 +382,9 @@ export default function Dashboard() {
         {/* Fondo foto difuminada */}
         <div className="absolute inset-0"
           style={{
-            backgroundImage: `url('https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Puerto_de_Manzanillo%2C_Colima.jpg/1280px-Puerto_de_Manzanillo%2C_Colima.jpg')`,
+            backgroundImage: `url('/puerto-manzanillo.jpg')`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center 40%',
+            backgroundPosition: 'center center',
             filter: 'blur(4px) brightness(0.3)',
             transform: 'scale(1.05)',
           }} />
