@@ -11,6 +11,7 @@ const LICENCIAS = [
   { value: 'federal-b',   label: 'Federal tipo B – Carga general' },
   { value: 'federal-c',   label: 'Federal tipo C – Autobús' },
   { value: 'federal-d',   label: 'Federal tipo D – Carga especial' },
+  { value: 'federal-e',   label: 'Federal tipo E – Doble articulado / MATPEL' },
   { value: 'chofer',      label: 'Chofer particular' },
   { value: 'otro',        label: 'Otro' },
 ]
