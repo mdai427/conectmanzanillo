@@ -4,7 +4,7 @@ import { STATUS_CONFIG } from '../../lib/constants.js'
 
 const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY
 const LIBRARIES = ['drawing']
-const CENTER = { lat: 19.0935, lng: -104.3148 }
+const CENTER = { lat: 19.0955, lng: -104.3162 }
 
 const ZONE_POLYGONS = {
   'patio-tep': {
@@ -98,7 +98,7 @@ export default function PortMap({ sections = [], onZoneClick }) {
 
   const mapRef = useRef(null)
   const [selected, setSelected] = useState(null)
-  const [mapType, setMapType] = useState('roadmap')
+  const [mapType, setMapType] = useState('satellite')
   const [drawMode, setDrawMode] = useState(false)
   const [drawnPolygons, setDrawnPolygons] = useState([])
   const [hoveredSlug, setHoveredSlug] = useState(null)
@@ -189,7 +189,7 @@ export default function PortMap({ sections = [], onZoneClick }) {
       <GoogleMap
         mapContainerStyle={{ width: '100%', height: '100%' }}
         center={CENTER}
-        zoom={15}
+        zoom={16}
         mapTypeId={mapType}
         onLoad={onLoad}
         options={{
