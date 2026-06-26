@@ -1,31 +1,39 @@
 import { NavLink } from 'react-router-dom'
-import { Home, User, Newspaper, Briefcase } from 'lucide-react'
+import { Home, User, Newspaper, Briefcase, Building2, BookOpen } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore.js'
 
 export default function BottomNav() {
   const { user } = useAuthStore()
 
   const cls = ({ isActive }) =>
-    `flex flex-col items-center gap-0.5 flex-1 py-2.5 text-xs font-semibold transition-colors min-h-[56px] justify-center ${
+    `flex flex-col items-center gap-0.5 flex-1 py-2 text-[10px] font-semibold transition-colors min-h-[52px] justify-center ${
       isActive ? 'text-blue-500' : 'text-slate-400 hover:text-slate-600'
     }`
 
   return (
     <nav className="fixed bottom-0 inset-x-0 z-40 flex safe-bottom sm:hidden border-t border-slate-200 bg-white shadow-lg">
       <NavLink to="/" end className={cls}>
-        <Home size={20} strokeWidth={isActive => isActive ? 2.5 : 1.8} />
+        <Home size={18} />
         <span>Puerto</span>
       </NavLink>
       <NavLink to="/noticias" className={cls}>
-        <Newspaper size={20} />
+        <Newspaper size={18} />
         <span>Noticias</span>
       </NavLink>
+      <NavLink to="/directorio" className={cls}>
+        <BookOpen size={18} />
+        <span>Directorio</span>
+      </NavLink>
       <NavLink to="/posturas" className={cls}>
-        <Briefcase size={20} />
+        <Briefcase size={18} />
         <span>Posturas</span>
       </NavLink>
+      <NavLink to="/vacantes" className={cls}>
+        <Building2 size={18} />
+        <span>Vacantes</span>
+      </NavLink>
       <NavLink to={user ? '/perfil' : '/login'} className={cls}>
-        <User size={20} />
+        <User size={18} />
         <span>{user ? 'Perfil' : 'Entrar'}</span>
       </NavLink>
     </nav>
