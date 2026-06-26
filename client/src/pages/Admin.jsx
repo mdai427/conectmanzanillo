@@ -5,18 +5,19 @@ import { api } from '../lib/api.js'
 import { supabase } from '../lib/supabase.js'
 import {
   AlertTriangle, Newspaper, Megaphone, List, Users, Map,
-  Plus, Trash2, X, Shield
+  Plus, Trash2, X, Shield, CreditCard, CheckCircle2, XCircle, Clock, ExternalLink
 } from 'lucide-react'
 
 const ROLES = ['operator_free', 'operator_premium', 'company', 'admin']
 
 const TABS = [
-  { id: 'alerts',    label: 'Alertas',    icon: AlertTriangle },
-  { id: 'news',      label: 'Noticias',   icon: Newspaper     },
-  { id: 'ads',       label: 'Anuncios',   icon: Megaphone     },
-  { id: 'directory', label: 'Directorio', icon: List          },
-  { id: 'users',     label: 'Usuarios',   icon: Users         },
-  { id: 'sections',  label: 'Zonas',      icon: Map           },
+  { id: 'alerts',        label: 'Alertas',        icon: AlertTriangle },
+  { id: 'news',          label: 'Noticias',        icon: Newspaper     },
+  { id: 'ads',           label: 'Anuncios',        icon: Megaphone     },
+  { id: 'directory',     label: 'Directorio',      icon: List          },
+  { id: 'users',         label: 'Usuarios',        icon: Users         },
+  { id: 'sections',      label: 'Zonas',           icon: Map           },
+  { id: 'suscripciones', label: 'Suscripciones',   icon: CreditCard    },
 ]
 
 // ── Alertas ──────────────────────────────────────────────────────────────────
@@ -447,17 +448,194 @@ function SectionsTab() {
 }
 
 // ── Admin root ────────────────────────────────────────────────────────────────
+// ── Suscripciones ─────────────────────────────────────────────────────────────
+function SuscripcionesTab() {
+  const qc = useQueryClient()
+  const [filtro, setFiltro] = useState('pendiente')
+
+  const { data: subs = [], isLoading } = useQuery({
+    queryKey: ['admin-suscripciones', filtro],
+    queryFn: async () => {
+      const q = supabase
+        .from('subscriptions')
+        .select('*, profiles:user_id(username, email)')
+        .order('created_at', { ascending: false })
+      if (filtro !== 'todos') q.eq('estatus', filtro)
+      const { data, error } = await q.limit(50)
+      if (error) throw error
+      return data || []
+    },
+    refetchInterval: 30_000,
+  })
+
+  const activar = useMutation({
+    mutationFn: async ({ id }) => {
+      const now = new Date()
+      const expires = new Date(now)
+      expires.setDate(expires.getDate() + 30)
+      const { error } = await supabase.from('subscriptions').update({
+        estatus: 'activa',
+        starts_at: now.toISOString(),
+        expires_at: expires.toISOString(),
+        activado_at: now.toISOString(),
+      }).eq('id', id)
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => { toast.success('Suscripción activada ✅'); qc.invalidateQueries({ queryKey: ['admin-suscripciones'] }) },
+    onError: (e) => toast.error(e.message),
+  })
+
+  const rechazar = useMutation({
+    mutationFn: async ({ id }) => {
+      const { error } = await supabase.from('subscriptions').update({ estatus: 'cancelada' }).eq('id', id)
+      if (error) throw new Error(error.message)
+    },
+    onSuccess: () => { toast.success('Suscripción rechazada'); qc.invalidateQueries({ queryKey: ['admin-suscripciones'] }) },
+    onError: (e) => toast.error(e.message),
+  })
+
+  const ESTATUS_CFG = {
+    pendiente: { color: '#f59e0b', bg: '#fffbeb', border: '#fde68a', label: 'Pendiente', icon: Clock },
+    activa:    { color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', label: 'Activa',    icon: CheckCircle2 },
+    vencida:   { color: '#64748b', bg: '#f8fafc', border: '#e2e8f0', label: 'Vencida',   icon: XCircle },
+    cancelada: { color: '#dc2626', bg: '#fef2f2', border: '#fecaca', label: 'Rechazada', icon: XCircle },
+  }
+
+  const pendientesCount = subs.filter(s => s.estatus === 'pendiente').length
+
+  return (
+    <div className="space-y-4">
+      {/* Alerta de pendientes */}
+      {filtro === 'pendiente' && pendientesCount > 0 && (
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-900/20 border border-amber-500/40">
+          <Clock size={16} className="text-amber-400 shrink-0" />
+          <p className="text-sm text-amber-300 font-bold">{pendientesCount} pago{pendientesCount !== 1 ? 's' : ''} esperando verificación</p>
+        </div>
+      )}
+
+      {/* Filtros */}
+      <div className="flex gap-2 flex-wrap">
+        {['pendiente', 'activa', 'vencida', 'cancelada', 'todos'].map(f => (
+          <button key={f} onClick={() => setFiltro(f)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              filtro === f ? 'bg-[#00C2FF] text-black' : 'bg-[#161B22] border border-[#30363D] text-[#8B949E] hover:text-white'
+            }`}>
+            {f.charAt(0).toUpperCase() + f.slice(1)}
+            {f === 'pendiente' && pendientesCount > 0 && (
+              <span className="ml-1.5 bg-amber-500 text-black rounded-full px-1.5 py-0.5 text-[9px] font-black">
+                {pendientesCount}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Lista */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1,2,3].map(i => <div key={i} className="bg-[#161B22] border border-[#30363D] rounded-xl h-28 animate-pulse" />)}
+        </div>
+      ) : subs.length === 0 ? (
+        <div className="bg-[#161B22] border border-[#30363D] rounded-xl p-8 text-center">
+          <p className="text-[#8B949E] text-sm">No hay suscripciones {filtro !== 'todos' ? `"${filtro}"` : ''}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {subs.map(sub => {
+            const cfg = ESTATUS_CFG[sub.estatus] || ESTATUS_CFG.pendiente
+            const EstatusIcon = cfg.icon
+            return (
+              <div key={sub.id} className="bg-[#161B22] border border-[#30363D] rounded-xl p-4 space-y-3">
+                {/* Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-white font-bold text-sm">
+                        {sub.profiles?.username || sub.profiles?.email || 'Usuario desconocido'}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1"
+                            style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
+                        <EstatusIcon size={9} />
+                        {cfg.label}
+                      </span>
+                    </div>
+                    <p className="text-[#8B949E] text-xs">{sub.profiles?.email}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-green-400 font-black text-base">${Number(sub.monto).toLocaleString()} {sub.moneda}</p>
+                    <p className="text-[#8B949E] text-[10px]">{sub.metodo_pago || '—'}</p>
+                  </div>
+                </div>
+
+                {/* Referencia / comprobante */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="bg-[#0D1117] rounded-lg p-2">
+                    <p className="text-[#8B949E] mb-0.5">Referencia de pago</p>
+                    <p className="text-white font-mono truncate">{sub.referencia_pago || '—'}</p>
+                  </div>
+                  <div className="bg-[#0D1117] rounded-lg p-2">
+                    <p className="text-[#8B949E] mb-0.5">Solicitado</p>
+                    <p className="text-white">{new Date(sub.created_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' })}</p>
+                  </div>
+                </div>
+
+                {/* Comprobante link */}
+                {sub.comprobante_url && (
+                  <a href={sub.comprobante_url} target="_blank" rel="noopener noreferrer"
+                     className="flex items-center gap-1.5 text-[#00C2FF] text-xs font-semibold hover:underline">
+                    <ExternalLink size={11} />
+                    Ver comprobante de pago
+                  </a>
+                )}
+
+                {/* Vencimiento */}
+                {sub.estatus === 'activa' && sub.expires_at && (
+                  <div className="flex items-center gap-1.5 text-[10px] text-[#8B949E]">
+                    <Clock size={10} />
+                    Vence: {new Date(sub.expires_at).toLocaleDateString('es-MX', { day: '2-digit', month: 'long', year: 'numeric' })}
+                  </div>
+                )}
+
+                {/* Acciones */}
+                {sub.estatus === 'pendiente' && (
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={() => activar.mutate({ id: sub.id })}
+                      disabled={activar.isPending}
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-black text-black bg-green-400 hover:bg-green-300 transition-all disabled:opacity-40">
+                      <CheckCircle2 size={13} />
+                      Activar suscripción
+                    </button>
+                    <button
+                      onClick={() => rechazar.mutate({ id: sub.id })}
+                      disabled={rechazar.isPending}
+                      className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-red-400 bg-red-900/20 border border-red-800/40 hover:bg-red-900/40 transition-all disabled:opacity-40">
+                      <XCircle size={13} />
+                      Rechazar
+                    </button>
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function Admin() {
   const [tab, setTab] = useState('alerts')
   const { data: stats } = useQuery({ queryKey: ['admin-stats'], queryFn: api.getAdminStats })
 
   const TAB_CONTENT = {
-    alerts:    <AlertsTab />,
-    news:      <NewsTab />,
-    ads:       <AdsTab />,
-    directory: <DirectoryTab />,
-    users:     <UsersTab />,
-    sections:  <SectionsTab />,
+    alerts:        <AlertsTab />,
+    news:          <NewsTab />,
+    ads:           <AdsTab />,
+    directory:     <DirectoryTab />,
+    users:         <UsersTab />,
+    sections:      <SectionsTab />,
+    suscripciones: <SuscripcionesTab />,
   }
 
   return (
