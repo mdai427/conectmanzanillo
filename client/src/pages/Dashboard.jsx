@@ -218,6 +218,73 @@ export default function Dashboard() {
       </div>
 
       {/* ══════════════════════════════════════════════
+          ¿CÓMO FUNCIONA?
+      ══════════════════════════════════════════════ */}
+      <div id="como-funciona" className="bg-white border-t border-slate-100 py-14 px-4">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-10">
+            <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-2">¿Cómo funciona?</h2>
+            <p className="text-slate-500 text-sm">3 pasos simples para estar informado</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                step: '01',
+                emoji: '👀',
+                title: 'Consulta el estado',
+                desc: 'Abre la app y ve en tiempo real el estado de cada patio y terminal del puerto: libre, moderado, saturado o cerrado.',
+                color: '#3b82f6',
+                bg: '#eff6ff',
+              },
+              {
+                step: '02',
+                emoji: '📡',
+                title: 'Reporta lo que ves',
+                desc: 'Si estás en el puerto, reporta el estado real de la zona. Tu reporte ayuda a todos los operadores que vienen detrás de ti.',
+                color: '#10b981',
+                bg: '#f0fdf4',
+              },
+              {
+                step: '03',
+                emoji: '✅',
+                title: 'Confirma o corrige',
+                desc: 'Otros operadores confirman si el reporte es correcto. Más confirmaciones = más confianza en el dato.',
+                color: '#f59e0b',
+                bg: '#fffbeb',
+              },
+            ].map(({ step, emoji, title, desc, color, bg }) => (
+              <div key={step} className="relative rounded-2xl p-6 text-center border"
+                style={{ background: bg, borderColor: `${color}33` }}>
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-black shadow-md"
+                  style={{ background: color }}>
+                  {step}
+                </div>
+                <div className="text-4xl mb-3 mt-2">{emoji}</div>
+                <h3 className="font-black text-slate-800 text-base mb-2">{title}</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* FAQ rápido */}
+          <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {[
+              { q: '¿Es gratis?', a: 'Sí, 100% gratis para consultar y reportar.' },
+              { q: '¿Necesito registrarme para ver el estado?', a: 'No. Solo para reportar necesitas una cuenta.' },
+              { q: '¿Quién hace los reportes?', a: 'Los mismos operadores y transportistas del puerto.' },
+              { q: '¿Cada cuánto se actualiza?', a: 'Los reportes son en tiempo real, al momento de enviarse.' },
+            ].map(({ q, a }) => (
+              <div key={q} className="bg-slate-50 rounded-xl p-4 border border-slate-200">
+                <p className="font-bold text-slate-700 text-sm mb-1">❓ {q}</p>
+                <p className="text-slate-500 text-xs">{a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════
           BANNER ANÚNCIATE AQUÍ
       ══════════════════════════════════════════════ */}
       <div className="relative overflow-hidden mt-12">
@@ -251,7 +318,7 @@ export default function Dashboard() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <a href="https://wa.me/523141234567?text=Hola%2C%20quiero%20anunciarme%20en%20ConectManzanillo"
+            <a href="https://wa.me/525566834948?text=Hola%2C%20quiero%20anunciarme%20en%20ConectManzanillo"
               target="_blank" rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-black text-white shadow-xl transition-all hover:scale-105 active:scale-95"
               style={{ background: '#25D366' }}>
@@ -343,7 +410,7 @@ export default function Dashboard() {
               </div>
               <h3 className="font-bold text-slate-800 mb-1">OXXO Pay</h3>
               <p className="text-xs text-slate-500 mb-4">Paga en efectivo en cualquier OXXO</p>
-              <a href="https://wa.me/523141234567?text=Hola%2C%20quiero%20hacer%20un%20donativo%20por%20OXXO"
+              <a href="https://wa.me/525566834948?text=Hola%2C%20quiero%20hacer%20un%20donativo%20por%20OXXO"
                 target="_blank" rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-all active:scale-95">
                 Solicitar referencia
