@@ -1,12 +1,13 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogIn, LogOut, User, Shield, Map, Newspaper, BookOpen } from 'lucide-react'
+import { LogIn, LogOut, User, Shield, Map, Newspaper, BookOpen, Heart } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore.js'
 import toast from 'react-hot-toast'
 
 const NAV_LINKS = [
-  { to: '/',           label: 'Puerto',     icon: Map       },
-  { to: '/noticias',   label: 'Noticias',   icon: Newspaper },
-  { to: '/directorio', label: 'Directorio', icon: BookOpen  },
+  { to: '/',           label: 'Puerto',     icon: Map,       hash: null         },
+  { to: '/noticias',   label: 'Noticias',   icon: Newspaper, hash: null         },
+  { to: '/directorio', label: 'Directorio', icon: BookOpen,  hash: null         },
+  { to: '/#donativos', label: 'Donativos',  icon: Heart,     hash: 'donativos'  },
 ]
 
 export default function Navbar() {
@@ -37,17 +38,26 @@ export default function Navbar() {
 
         {/* Nav */}
         <nav className="hidden sm:flex items-center gap-0.5">
-          {NAV_LINKS.map(({ to, label, icon: Icon }) => (
-            <Link key={to} to={to}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-              style={{
-                color:      isActive(to) ? '#1d4ed8' : '#64748b',
-                background: isActive(to) ? '#eff6ff'  : 'transparent',
-              }}>
-              <Icon size={12} />
-              {label}
-            </Link>
-          ))}
+          {NAV_LINKS.map(({ to, label, icon: Icon, hash }) => {
+            const active = isActive(to) && !hash
+            return hash ? (
+              <a key={to} href={`/#donativos`}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-pink-500 hover:bg-pink-50">
+                <Icon size={12} />
+                {label}
+              </a>
+            ) : (
+              <Link key={to} to={to}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                style={{
+                  color:      active ? '#1d4ed8' : '#64748b',
+                  background: active ? '#eff6ff'  : 'transparent',
+                }}>
+                <Icon size={12} />
+                {label}
+              </Link>
+            )
+          })}
         </nav>
 
         {/* Auth */}

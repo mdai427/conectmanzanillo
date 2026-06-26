@@ -275,7 +275,93 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Footer minimal */}
+      {/* ══════════════════════════════════════════════
+          SECCIÓN DONATIVOS
+      ══════════════════════════════════════════════ */}
+      <div id="donativos" className="bg-white border-t border-slate-100 py-16 px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200 mb-4">
+              <span className="text-blue-600 text-sm">❤️</span>
+              <span className="text-xs font-bold text-blue-600 uppercase tracking-widest">Apoya el proyecto</span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-black text-slate-800 mb-3">
+              Donativos
+            </h2>
+            <p className="text-slate-500 max-w-xl mx-auto text-sm leading-relaxed">
+              ConectManzanillo es un servicio <strong>gratuito</strong> para todos los operadores del puerto.
+              Si te ha sido útil, considera apoyarnos para mantener los servidores y seguir mejorando la plataforma.
+            </p>
+          </div>
+
+          {/* Métodos de pago */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            {/* PayPal */}
+            <div className="rounded-2xl border border-slate-200 p-5 text-center hover:shadow-md transition-shadow bg-slate-50">
+              <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center"
+                style={{ background: '#003087' }}>
+                <svg viewBox="0 0 24 24" className="w-7 h-7 fill-white">
+                  <path d="M20.067 8.478c.492.88.556 2.014.3 3.327-.74 3.806-3.276 5.12-6.514 5.12h-.5a.805.805 0 0 0-.794.68l-.04.22-.63 3.993-.032.17a.804.804 0 0 1-.794.679H7.72a.483.483 0 0 1-.477-.558L7.418 21h1.518l.95-6.02h1.385c4.678 0 7.75-2.203 8.796-6.502zm-2.96-5.09c.762.868.983 1.81.752 3.285C17.081 10.55 14.65 12 11.5 12H9.97l-1.43 9H5.55L7.96 4.5h5.115c2.109 0 3.498.344 4.032 1.388z"/>
+                </svg>
+              </div>
+              <h3 className="font-bold text-slate-800 mb-1">PayPal</h3>
+              <p className="text-xs text-slate-500 mb-4">Pago seguro con tarjeta o cuenta PayPal</p>
+              <a href="https://paypal.me/conectmanzanillo" target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold text-white transition-all hover:opacity-90 active:scale-95"
+                style={{ background: '#003087' }}>
+                Donar con PayPal
+              </a>
+            </div>
+
+            {/* Transferencia CLABE */}
+            <div className="rounded-2xl border border-slate-200 p-5 text-center hover:shadow-md transition-shadow bg-slate-50">
+              <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center bg-green-600">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+                  <path d="M4 10h3v7H4zm6.5-7h3v14h-3zm6.5 4h3v10h-3zM2 19h20v2H2z"/>
+                </svg>
+              </div>
+              <h3 className="font-bold text-slate-800 mb-1">Transferencia bancaria</h3>
+              <p className="text-xs text-slate-500 mb-3">CLABE interbancaria</p>
+              <div className="bg-white rounded-xl border border-slate-200 px-3 py-2 mb-3">
+                <p className="text-xs text-slate-400 mb-0.5">CLABE</p>
+                <p className="font-mono font-bold text-slate-700 text-sm tracking-wider">000 000 0000 0000 00</p>
+                <p className="text-xs text-slate-400 mt-1">Banco · A nombre de: ConectManzanillo</p>
+              </div>
+              <button onClick={() => { navigator.clipboard.writeText('00000000000000000'); }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 transition-all">
+                📋 Copiar CLABE
+              </button>
+            </div>
+
+            {/* OXXO / Efectivo */}
+            <div className="rounded-2xl border border-slate-200 p-5 text-center hover:shadow-md transition-shadow bg-slate-50">
+              <div className="w-12 h-12 rounded-xl mx-auto mb-3 flex items-center justify-center bg-red-600">
+                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white">
+                  <path d="M20 4H4c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/>
+                </svg>
+              </div>
+              <h3 className="font-bold text-slate-800 mb-1">OXXO Pay</h3>
+              <p className="text-xs text-slate-500 mb-4">Paga en efectivo en cualquier OXXO</p>
+              <a href="https://wa.me/523141234567?text=Hola%2C%20quiero%20hacer%20un%20donativo%20por%20OXXO"
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl text-sm font-bold text-white bg-red-600 hover:bg-red-700 transition-all active:scale-95">
+                Solicitar referencia
+              </a>
+            </div>
+          </div>
+
+          {/* Nota motivacional */}
+          <div className="text-center py-6 px-6 rounded-2xl bg-blue-50 border border-blue-100">
+            <p className="text-sm text-blue-700 font-medium">
+              🚛 Cada donativo, por pequeño que sea, ayuda a mantener el servicio activo para todos los transportistas del puerto.
+            </p>
+            <p className="text-xs text-blue-500 mt-1">¡Gracias por tu apoyo!</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer */}
       <div className="bg-slate-900 text-center py-6 px-4">
         <p className="text-xs text-slate-500">
           © 2025 ConectManzanillo · Puerto de Manzanillo, Colima ·{' '}
