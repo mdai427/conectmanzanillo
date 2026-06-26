@@ -36,28 +36,52 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-50">
 
       {/* ══════════════════════════════════════════════
-          HERO  — foto difuminada del puerto
+          HERO  — grúas del puerto + logo con resplandor
       ══════════════════════════════════════════════ */}
-      <div className="relative overflow-hidden" style={{ minHeight: 340 }}>
-        {/* Foto de fondo del Puerto de Manzanillo */}
+      <div className="relative overflow-hidden" style={{ minHeight: 380 }}>
+        {/* Foto satelital del puerto con grúas */}
         <div className="absolute inset-0"
           style={{
-            backgroundImage: `url('/puerto-manzanillo.jpg')`,
+            backgroundImage: `url('/puerto-hero.jpg')`,
             backgroundSize: 'cover',
-            backgroundPosition: 'center center',
-            filter: 'blur(3px) brightness(0.45)',
-            transform: 'scale(1.05)',
+            backgroundPosition: 'center 40%',
+            filter: 'brightness(0.38) saturate(1.2)',
+            transform: 'scale(1.04)',
           }} />
 
-        {/* Gradiente sobre la foto */}
+        {/* Gradiente oscuro — solo abajo para que fundir con la página */}
         <div className="absolute inset-0"
-          style={{ background: 'linear-gradient(180deg, rgba(14,70,150,0.55) 0%, rgba(10,30,80,0.75) 60%, rgba(248,250,252,1) 100%)' }} />
+          style={{ background: 'linear-gradient(180deg, rgba(5,15,40,0.3) 0%, rgba(5,15,40,0.5) 50%, rgba(248,250,252,1) 100%)' }} />
+
+        {/* Resplandor central detrás del logo */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ paddingBottom: 80 }}>
+          <div style={{
+            width: 340, height: 340,
+            background: 'radial-gradient(ellipse at center, rgba(56,140,255,0.45) 0%, rgba(30,80,200,0.18) 45%, transparent 75%)',
+            filter: 'blur(18px)',
+            borderRadius: '50%',
+          }} />
+        </div>
+        {/* Segundo resplandor más brillante y pequeño */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none" style={{ paddingBottom: 80 }}>
+          <div style={{
+            width: 180, height: 180,
+            background: 'radial-gradient(ellipse at center, rgba(120,200,255,0.35) 0%, transparent 70%)',
+            filter: 'blur(8px)',
+            borderRadius: '50%',
+          }} />
+        </div>
 
         <div className="relative max-w-7xl mx-auto px-4 py-10 md:py-14">
-          {/* Logo grande */}
-          <div className="flex justify-center mb-6">
-            <img src="/logo.png" alt="ConectManzanillo" className="h-28 md:h-36 drop-shadow-2xl"
-              onError={e => { e.target.style.display = 'none' }} />
+          {/* Logo grande centrado */}
+          <div className="flex justify-center mb-5">
+            <img
+              src="/logo.png"
+              alt="ConectManzanillo"
+              className="h-36 md:h-44 w-auto object-contain relative z-10"
+              style={{ filter: 'drop-shadow(0 0 24px rgba(80,160,255,0.7)) drop-shadow(0 4px 16px rgba(0,0,0,0.6))' }}
+              onError={e => { e.target.style.display = 'none' }}
+            />
           </div>
 
           {/* Live badge */}
@@ -382,7 +406,7 @@ export default function Dashboard() {
         {/* Fondo foto difuminada */}
         <div className="absolute inset-0"
           style={{
-            backgroundImage: `url('/puerto-manzanillo.jpg')`,
+            backgroundImage: `url('/puerto-hero.jpg')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center center',
             filter: 'blur(4px) brightness(0.3)',
