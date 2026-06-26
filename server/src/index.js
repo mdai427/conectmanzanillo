@@ -18,6 +18,7 @@ import predictionsRouter  from './routes/predictions.js'
 import rankingsRouter     from './routes/rankings.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
+import { cacheFor, noCache } from './middleware/cache.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -43,22 +44,38 @@ app.use(morgan('combined'))
 app.use('/api/reports', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Demasiadas solicitudes' }))
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }))
 
-// API routes
-app.use('/api/sections',  sectionsRouter)
-app.use('/api/reports',   reportsRouter)
-app.use('/api/reactions', reactionsRouter)
-app.use('/api/users',     usersRouter)
-app.use('/api/admin',       adminRouter)
-app.use('/api/chat',        chatRouter)
-app.use('/api/predictions', predictionsRouter)
-app.use('/api/rankings',    rankingsRouter)
+// API routes — con cache por tipo de dato
+// Tiempo real: sin cache
+app.use('/api/reports',   noCache,        reportsRouter)
+app.use('/api/reactions', noCache,        reactionsRouter)
+app.use('/api/chat',      noCache,        chatRouter)
+app.use('/api/users',     noCache,        usersRouter)
+app.use('/api/admin',     noCache,        adminRouter)
+
+// Semi-estático: cache corto + stale-while-revalidate
+app.use('/api/sections',  cacheFor(30),   sectionsRouter)   // 30s  — zonas cambian seguido
+app.use('/api/rankings',  cacheFor(300),  rankingsRouter)   // 5min — rankings no son urgentes
+
+// Estático: cache largo — el servidor ya tiene cache interno de 15min
+app.use('/api/predictions', cacheFor(900), predictionsRouter) // 15min
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }))
 
 // Servir cliente React (build estático)
 const clientBuild = path.join(__dirname, '../../client/dist')
-app.use(express.static(clientBuild))
+// Assets con hash en el nombre (JS/CSS de Vite) → cache permanente
+app.use(express.static(clientBuild, {
+  maxAge: '7d',
+  immutable: true,
+  setHeaders: (res, filePath) => {
+    // index.html y robots.txt nunca se cachean — siempre frescos
+    if (filePath.endsWith('index.html') || filePath.endsWith('robots.txt') || filePath.endsWith('sitemap.xml')) {
+      res.set('Cache-Control', 'no-cache')
+    }
+  },
+}))
 app.get('*', (_req, res) => {
+  res.set('Cache-Control', 'no-cache')
   res.sendFile(path.join(clientBuild, 'index.html'))
 })
 
