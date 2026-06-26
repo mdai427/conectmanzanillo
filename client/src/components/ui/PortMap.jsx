@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from 'react'
-import { GoogleMap, useJsApiLoader, Polygon, InfoWindow, DrawingManager } from '@react-google-maps/api'
+import { GoogleMap, useJsApiLoader, Polygon, InfoWindow } from '@react-google-maps/api'
 import { STATUS_CONFIG } from '../../lib/constants.js'
 
 const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY
-const LIBRARIES = ['drawing']
+const LIBRARIES = []
 const CENTER = { lat: 19.0955, lng: -104.3162 }
 
 const ZONE_POLYGONS = {
@@ -99,8 +99,6 @@ export default function PortMap({ sections = [], onZoneClick }) {
   const mapRef = useRef(null)
   const [selected, setSelected] = useState(null)
   const [mapType, setMapType] = useState('satellite')
-  const [drawMode, setDrawMode] = useState(false)
-  const [drawnPolygons, setDrawnPolygons] = useState([])
   const [hoveredSlug, setHoveredSlug] = useState(null)
 
   const sectionsBySlug = {}
@@ -108,12 +106,6 @@ export default function PortMap({ sections = [], onZoneClick }) {
 
   const onLoad = useCallback((map) => { mapRef.current = map }, [])
 
-  const onPolygonComplete = useCallback((polygon) => {
-    const coords = polygon.getPath().getArray().map(ll => ({ lat: ll.lat(), lng: ll.lng() }))
-    setDrawnPolygons(prev => [...prev, { coords, id: Date.now() }])
-    polygon.setMap(null)
-    setDrawMode(false)
-  }, [])
 
   if (!isLoaded) {
     return (
@@ -148,32 +140,9 @@ export default function PortMap({ sections = [], onZoneClick }) {
             }}>
             {mapType === 'satellite' ? '🗺' : '🛰'} {mapType === 'satellite' ? 'Mapa' : 'Satélite'}
           </button>
-          {/* Draw mode */}
-          <button onClick={() => { const next = !drawMode; setDrawMode(next); if (next) setMapType('satellite') }}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={{
-              background: drawMode ? '#fff7ed' : '#f1f5f9',
-              color: drawMode ? '#c2410c' : '#475569',
-              border: `1px solid ${drawMode ? '#fed7aa' : '#e2e8f0'}`,
-            }}>
-            ✏️ {drawMode ? 'Cancelar' : 'Mi patio'}
-          </button>
-          {drawnPolygons.length > 0 && (
-            <button onClick={() => setDrawnPolygons([])}
-              className="px-2 py-1.5 rounded-lg text-xs font-semibold text-slate-500 hover:text-red-500 transition-all bg-slate-100 border border-slate-200">
-              ✕ Limpiar
-            </button>
-          )}
         </div>
       </div>
 
-      {/* ── Draw instructions banner ── */}
-      {drawMode && (
-        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-10 px-5 py-2.5 rounded-xl text-xs font-medium text-white shadow-xl text-center"
-             style={{ background: 'rgba(249,115,22,0.92)', backdropFilter: 'blur(8px)', maxWidth: '90%' }}>
-          ✏️ Haz clic para marcar los vértices de tu patio — doble clic para terminar
-        </div>
-      )}
 
       {/* ── Legend ── */}
       <div className="absolute bottom-10 left-3 z-10 px-3 py-2.5 rounded-xl hidden sm:flex flex-col gap-1.5"
@@ -223,27 +192,6 @@ export default function PortMap({ sections = [], onZoneClick }) {
             />
           )
         })}
-
-        {/* Patios dibujados */}
-        {drawnPolygons.map(p => (
-          <Polygon key={p.id} paths={p.coords}
-            options={{ fillColor: '#f97316', fillOpacity: 0.25, strokeColor: '#f97316', strokeWeight: 2 }} />
-        ))}
-
-        {/* Herramienta de dibujo */}
-        {drawMode && (
-          <DrawingManager
-            drawingMode="polygon"
-            options={{
-              drawingControl: false,
-              polygonOptions: {
-                fillColor: '#f97316', fillOpacity: 0.25,
-                strokeColor: '#f97316', strokeWeight: 2, editable: false,
-              },
-            }}
-            onPolygonComplete={onPolygonComplete}
-          />
-        )}
 
         {/* InfoWindow */}
         {selected && (
