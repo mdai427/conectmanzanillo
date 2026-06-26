@@ -1,97 +1,100 @@
-import { useEffect } from 'react'
-import { MapContainer, TileLayer, Polygon, Tooltip, ZoomControl, useMap } from 'react-leaflet'
-import 'leaflet/dist/leaflet.css'
+import { useCallback, useRef, useState } from 'react'
+import { GoogleMap, useJsApiLoader, Polygon, InfoWindow, DrawingManager } from '@react-google-maps/api'
 import { STATUS_CONFIG } from '../../lib/constants.js'
 
-// Coordenadas reales de las zonas del Puerto de Manzanillo, Colima
-// Extraídas del mapa satelital de referencia
+const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY
+const LIBRARIES = ['drawing']
+
+const CENTER = { lat: 19.0935, lng: -104.3148 }
+
+// Coordenadas reales del Puerto de Manzanillo
 const ZONE_POLYGONS = {
   'patio-tep': {
     coords: [
-      [19.0958, -104.3175],
-      [19.0965, -104.3158],
-      [19.0948, -104.3145],
-      [19.0938, -104.3162],
-      [19.0945, -104.3178],
+      { lat: 19.0958, lng: -104.3175 },
+      { lat: 19.0965, lng: -104.3158 },
+      { lat: 19.0948, lng: -104.3145 },
+      { lat: 19.0938, lng: -104.3162 },
+      { lat: 19.0945, lng: -104.3178 },
     ],
     label: 'Patio TEP',
-    color: '#A855F7', // morado como en la imagen
+    zoneColor: '#A855F7',
   },
   'impala-terminals': {
     coords: [
-      [19.0960, -104.3152],
-      [19.0968, -104.3135],
-      [19.0950, -104.3125],
-      [19.0940, -104.3142],
-      [19.0950, -104.3155],
+      { lat: 19.0960, lng: -104.3152 },
+      { lat: 19.0968, lng: -104.3135 },
+      { lat: 19.0950, lng: -104.3125 },
+      { lat: 19.0940, lng: -104.3142 },
+      { lat: 19.0950, lng: -104.3155 },
     ],
     label: 'Impala Terminals',
-    color: '#06B6D4', // cyan
+    zoneColor: '#06B6D4',
   },
   'patio-alcam': {
     coords: [
-      [19.0972, -104.3128],
-      [19.0980, -104.3112],
-      [19.0962, -104.3105],
-      [19.0952, -104.3120],
-      [19.0962, -104.3130],
+      { lat: 19.0972, lng: -104.3128 },
+      { lat: 19.0980, lng: -104.3112 },
+      { lat: 19.0962, lng: -104.3105 },
+      { lat: 19.0952, lng: -104.3120 },
+      { lat: 19.0962, lng: -104.3130 },
     ],
     label: 'Patio ALCAM',
-    color: '#06B6D4', // cyan
+    zoneColor: '#06B6D4',
   },
   'patios-vacios-ssa': {
     coords: [
-      [19.0945, -104.3155],
-      [19.0952, -104.3138],
-      [19.0935, -104.3128],
-      [19.0925, -104.3145],
-      [19.0935, -104.3158],
+      { lat: 19.0945, lng: -104.3155 },
+      { lat: 19.0952, lng: -104.3138 },
+      { lat: 19.0935, lng: -104.3128 },
+      { lat: 19.0925, lng: -104.3145 },
+      { lat: 19.0935, lng: -104.3158 },
     ],
     label: 'Patio Vacíos SSA',
-    color: '#EAB308', // amarillo/dorado
+    zoneColor: '#EAB308',
   },
   'patios-llenos-ssa': {
     coords: [
-      [19.0930, -104.3150],
-      [19.0938, -104.3133],
-      [19.0920, -104.3125],
-      [19.0910, -104.3142],
-      [19.0920, -104.3152],
+      { lat: 19.0930, lng: -104.3150 },
+      { lat: 19.0938, lng: -104.3133 },
+      { lat: 19.0920, lng: -104.3125 },
+      { lat: 19.0910, lng: -104.3142 },
+      { lat: 19.0920, lng: -104.3152 },
     ],
     label: 'Patio Llenos SSA',
-    color: '#E2E8F0', // blanco/claro
+    zoneColor: '#E2E8F0',
   },
   'patio-acoman': {
     coords: [
-      [19.0928, -104.3163],
-      [19.0935, -104.3150],
-      [19.0918, -104.3142],
-      [19.0908, -104.3155],
-      [19.0918, -104.3165],
+      { lat: 19.0928, lng: -104.3163 },
+      { lat: 19.0935, lng: -104.3150 },
+      { lat: 19.0918, lng: -104.3142 },
+      { lat: 19.0908, lng: -104.3155 },
+      { lat: 19.0918, lng: -104.3165 },
     ],
     label: 'Patio Acoman',
-    color: '#E2E8F0', // blanco/claro
+    zoneColor: '#E2E8F0',
   },
   'impala': {
     coords: [
-      [19.0900, -104.3148],
-      [19.0910, -104.3130],
-      [19.0892, -104.3122],
-      [19.0880, -104.3138],
-      [19.0888, -104.3150],
+      { lat: 19.0900, lng: -104.3148 },
+      { lat: 19.0910, lng: -104.3130 },
+      { lat: 19.0892, lng: -104.3122 },
+      { lat: 19.0880, lng: -104.3138 },
+      { lat: 19.0888, lng: -104.3150 },
     ],
     label: 'Impala',
-    color: '#06B6D4', // cyan
+    zoneColor: '#06B6D4',
   },
   'libramiento': {
     coords: [
-      [19.1020, -104.3210],
-      [19.1030, -104.3180],
-      [19.1010, -104.3170],
-      [19.1000, -104.3200],
+      { lat: 19.1020, lng: -104.3210 },
+      { lat: 19.1030, lng: -104.3180 },
+      { lat: 19.1010, lng: -104.3170 },
+      { lat: 19.1000, lng: -104.3200 },
     ],
     label: 'Libramiento',
-    color: '#F97316', // naranja
+    zoneColor: '#F97316',
   },
 }
 
@@ -100,113 +103,255 @@ const STATUS_COLORS = {
   moderate:  '#F59E0B',
   congested: '#EF4444',
   closed:    '#6B7280',
-  unknown:   null, // usa color de zona
+  unknown:   null,
 }
 
-function SetView() {
-  const map = useMap()
-  useEffect(() => {
-    map.setView([19.0935, -104.3148], 15)
-  }, [map])
-  return null
-}
+const MAP_STYLES = [
+  { elementType: 'geometry', stylers: [{ color: '#0a1628' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0a1628' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8BA4C4' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#061020' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1E3A6E' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#0a1628' }] },
+  { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+  { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#1E3A6E' }] },
+  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#0F1F3D' }] },
+]
 
 export default function PortMap({ sections = [], onZoneClick }) {
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: GOOGLE_MAPS_KEY,
+    libraries: LIBRARIES,
+  })
+
+  const mapRef = useRef(null)
+  const [selected, setSelected] = useState(null) // { slug, position }
+  const [mapType, setMapType] = useState('roadmap') // roadmap | satellite
+  const [drawMode, setDrawMode] = useState(false)
+  const [drawnPolygons, setDrawnPolygons] = useState([])
+
   const sectionsBySlug = {}
   sections.forEach(s => { sectionsBySlug[s.slug] = s })
 
+  const onLoad = useCallback((map) => {
+    mapRef.current = map
+  }, [])
+
+  const onPolygonComplete = useCallback((polygon) => {
+    const coords = polygon.getPath().getArray().map(latlng => ({
+      lat: latlng.lat(),
+      lng: latlng.lng(),
+    }))
+    setDrawnPolygons(prev => [...prev, { coords, id: Date.now() }])
+    polygon.setMap(null) // removemos el temporal, lo controlamos nosotros
+    setDrawMode(false)
+  }, [])
+
+  if (!isLoaded) {
+    return (
+      <div className="w-full rounded-2xl flex items-center justify-center"
+           style={{ height: 420, background: '#0F1F3D', border: '1px solid #1E3A6E' }}>
+        <div className="w-8 h-8 border-2 border-[#0099E6] border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: '420px', border: '1px solid #1E3A6E' }}>
+    <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: '460px', border: '1px solid #1E3A6E' }}>
       {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-[1000] flex items-center justify-between px-4 py-2.5"
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2.5"
            style={{ background: 'rgba(10,22,40,0.92)', borderBottom: '1px solid #1E3A6E' }}>
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-white">🗺️ Mapa Terminales</span>
           <span className="text-xs font-mono" style={{ color: '#0099E6' }}>· estado en tiempo real</span>
         </div>
-        <div className="hidden sm:flex items-center gap-3 text-xs" style={{ color: '#8BA4C4' }}>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-green-500" /> Libre</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-amber-500" /> Moderado</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-red-500" /> Saturado</span>
-          <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-sm bg-gray-500" /> Cerrado</span>
+        <div className="flex items-center gap-2">
+          {/* Toggle satélite */}
+          <button
+            onClick={() => setMapType(t => t === 'roadmap' ? 'satellite' : 'roadmap')}
+            className="px-2 py-1 rounded-lg text-xs font-medium transition-all"
+            style={{
+              background: mapType === 'satellite' ? '#0099E6' : '#0F1F3D',
+              color: 'white',
+              border: '1px solid #1E3A6E',
+            }}
+          >
+            {mapType === 'satellite' ? '🗺 Mapa' : '🛰 Satélite'}
+          </button>
+          {/* Dibujar patio */}
+          <button
+            onClick={() => setDrawMode(d => !d)}
+            className="px-2 py-1 rounded-lg text-xs font-medium transition-all"
+            style={{
+              background: drawMode ? '#22C55E' : '#0F1F3D',
+              color: 'white',
+              border: `1px solid ${drawMode ? '#22C55E' : '#1E3A6E'}`,
+            }}
+          >
+            ✏️ {drawMode ? 'Dibujando...' : 'Trazar patio'}
+          </button>
+          {drawnPolygons.length > 0 && (
+            <button
+              onClick={() => setDrawnPolygons([])}
+              className="px-2 py-1 rounded-lg text-xs font-medium"
+              style={{ background: '#1E3A6E', color: '#8BA4C4', border: '1px solid #1E3A6E' }}
+            >
+              Limpiar
+            </button>
+          )}
         </div>
       </div>
 
-      <MapContainer
-        center={[19.0935, -104.3148]}
+      {drawMode && (
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 px-4 py-2 rounded-xl text-xs text-white"
+             style={{ background: 'rgba(34,197,94,0.9)', backdropFilter: 'blur(4px)' }}>
+          Haz clic en el mapa para trazar los vértices de tu patio. Doble clic para cerrar el polígono.
+        </div>
+      )}
+
+      {/* Leyenda */}
+      <div className="absolute bottom-4 left-4 z-10 hidden sm:flex flex-col gap-1 px-3 py-2 rounded-xl text-xs"
+           style={{ background: 'rgba(10,22,40,0.85)', border: '1px solid #1E3A6E' }}>
+        {[['#22C55E','Libre'],['#F59E0B','Moderado'],['#EF4444','Saturado'],['#6B7280','Cerrado']].map(([c,l]) => (
+          <span key={l} className="flex items-center gap-1.5" style={{ color: '#8BA4C4' }}>
+            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: c }} />
+            {l}
+          </span>
+        ))}
+      </div>
+
+      <GoogleMap
+        mapContainerStyle={{ width: '100%', height: '100%' }}
+        center={CENTER}
         zoom={15}
-        style={{ height: '100%', width: '100%' }}
-        zoomControl={false}
-        attributionControl={false}
+        mapTypeId={mapType}
+        onLoad={onLoad}
+        options={{
+          styles: mapType === 'roadmap' ? MAP_STYLES : [],
+          disableDefaultUI: true,
+          zoomControl: true,
+          zoomControlOptions: { position: 9 }, // BOTTOM_RIGHT
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: false,
+        }}
       >
-        <SetView />
-        <ZoomControl position="bottomright" />
-
-        {/* Tiles satelitales oscuros */}
-        <TileLayer
-          url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-          attribution="Tiles &copy; Esri"
-          maxZoom={19}
-        />
-        {/* Labels encima del satélite */}
-        <TileLayer
-          url="https://{s}.basemaps.cartocdn.com/dark_only_labels/{z}/{x}/{y}{r}.png"
-          attribution=""
-          opacity={0.7}
-        />
-
         {/* Zonas del puerto */}
         {Object.entries(ZONE_POLYGONS).map(([slug, zone]) => {
           const section = sectionsBySlug[slug]
           const status = section?.status || 'unknown'
           const statusColor = STATUS_COLORS[status]
-          const fillColor = statusColor || zone.color
-          const cfg = STATUS_CONFIG[status] || STATUS_CONFIG.unknown
+          const color = statusColor || zone.zoneColor
 
           return (
             <Polygon
               key={slug}
-              positions={zone.coords}
-              pathOptions={{
-                color: fillColor,
-                fillColor: fillColor,
+              paths={zone.coords}
+              options={{
+                fillColor: color,
                 fillOpacity: 0.35,
-                weight: 2.5,
-                opacity: 1,
+                strokeColor: color,
+                strokeOpacity: 1,
+                strokeWeight: 2.5,
               }}
-              eventHandlers={{
-                click: () => onZoneClick && onZoneClick(slug),
-                mouseover: (e) => { e.target.setStyle({ fillOpacity: 0.55, weight: 3.5 }) },
-                mouseout: (e) => { e.target.setStyle({ fillOpacity: 0.35, weight: 2.5 }) },
+              onClick={(e) => {
+                setSelected({
+                  slug,
+                  position: { lat: e.latLng.lat(), lng: e.latLng.lng() },
+                  zone,
+                  section,
+                  color,
+                  status,
+                })
               }}
-            >
-              <Tooltip direction="top" opacity={1}>
-                <div style={{
-                  background: '#0F1F3D',
-                  border: `1px solid ${fillColor}`,
-                  borderRadius: '8px',
-                  padding: '8px 12px',
-                  color: 'white',
-                  fontSize: '12px',
-                  whiteSpace: 'nowrap',
-                  boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-                }}>
-                  <div className="font-bold text-sm mb-1">{zone.label}</div>
-                  <div style={{ color: fillColor, fontSize: '11px' }}>{cfg.emoji} {cfg.label}</div>
-                  {section?.active_reports > 0 && (
-                    <div style={{ color: '#8BA4C4', fontSize: '10px', marginTop: '2px' }}>
-                      {section.active_reports} reporte{section.active_reports !== 1 ? 's' : ''}
-                    </div>
-                  )}
-                  <div style={{ color: '#3D5A80', fontSize: '10px', marginTop: '2px' }}>
-                    Click para ver detalle →
-                  </div>
-                </div>
-              </Tooltip>
-            </Polygon>
+            />
           )
         })}
-      </MapContainer>
+
+        {/* Polígonos dibujados por usuarios */}
+        {drawnPolygons.map(p => (
+          <Polygon
+            key={p.id}
+            paths={p.coords}
+            options={{
+              fillColor: '#F97316',
+              fillOpacity: 0.3,
+              strokeColor: '#F97316',
+              strokeWeight: 2,
+              strokeDashArray: '5,5',
+            }}
+          />
+        ))}
+
+        {/* Herramienta de dibujo */}
+        {drawMode && (
+          <DrawingManager
+            drawingMode="polygon"
+            options={{
+              drawingControl: false,
+              polygonOptions: {
+                fillColor: '#F97316',
+                fillOpacity: 0.3,
+                strokeColor: '#F97316',
+                strokeWeight: 2,
+                editable: true,
+              },
+            }}
+            onPolygonComplete={onPolygonComplete}
+          />
+        )}
+
+        {/* InfoWindow al hacer click en zona */}
+        {selected && (
+          <InfoWindow
+            position={selected.position}
+            onCloseClick={() => setSelected(null)}
+          >
+            <div style={{
+              background: '#0F1F3D',
+              color: 'white',
+              borderRadius: '10px',
+              padding: '10px 14px',
+              minWidth: '160px',
+              fontFamily: 'system-ui, sans-serif',
+            }}>
+              <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
+                {selected.zone.label}
+              </div>
+              {(() => {
+                const cfg = STATUS_CONFIG[selected.status] || STATUS_CONFIG.unknown
+                return (
+                  <div style={{ color: selected.color, fontSize: '12px' }}>
+                    {cfg.emoji} {cfg.label}
+                  </div>
+                )
+              })()}
+              {selected.section?.active_reports > 0 && (
+                <div style={{ color: '#8BA4C4', fontSize: '11px', marginTop: '4px' }}>
+                  {selected.section.active_reports} reportes activos
+                </div>
+              )}
+              <button
+                onClick={() => { onZoneClick && onZoneClick(selected.slug); setSelected(null) }}
+                style={{
+                  marginTop: '8px',
+                  background: '#0099E6',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  padding: '5px 10px',
+                  fontSize: '11px',
+                  cursor: 'pointer',
+                  width: '100%',
+                }}
+              >
+                Ver detalle →
+              </button>
+            </div>
+          </InfoWindow>
+        )}
+      </GoogleMap>
     </div>
   )
 }
