@@ -2,9 +2,9 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import {
-  Building2, TrendingDown, Clock, DollarSign, Bell, Users, BarChart2,
-  CheckCircle2, ArrowRight, AlertTriangle, Zap, Star, Shield,
-  Smartphone, ChevronRight, PhoneCall, Download, FileText,
+  Building2, DollarSign, BarChart2,
+  CheckCircle2, ArrowRight, Zap, Star,
+  Smartphone, PhoneCall,
 } from 'lucide-react'
 import { api } from '../lib/api.js'
 
@@ -284,30 +284,6 @@ const PAQUETES_PUBLICIDAD = [
   },
 ]
 
-/* ─── KPI Card ────────────────────────────────────────────── */
-function KpiCard({ icon: Icon, color, val, label, sub, trend }) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center"
-             style={{ background: `${color}18` }}>
-          <Icon size={16} style={{ color }} />
-        </div>
-        {trend && (
-          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            trend > 0 ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-600'
-          }`}>
-            {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
-          </span>
-        )}
-      </div>
-      <p className="text-2xl font-black text-slate-800">{val}</p>
-      <p className="text-xs font-bold text-slate-600 mt-0.5">{label}</p>
-      {sub && <p className="text-[10px] text-slate-400 mt-0.5">{sub}</p>}
-    </div>
-  )
-}
-
 /* ─── Página ──────────────────────────────────────────────── */
 export default function Empresa() {
   const [tab, setTab] = useState('dashboard')
@@ -317,10 +293,6 @@ export default function Empresa() {
     queryFn: api.getSections,
     staleTime: 60_000,
   })
-
-  const freePct = sections.length > 0
-    ? Math.round((sections.filter(s => s.status === 'free').length / sections.length) * 100)
-    : 0
 
   const TABS = [
     { id: 'dashboard', label: 'Dashboard', icon: BarChart2 },
@@ -392,30 +364,6 @@ export default function Empresa() {
         {/* ── DASHBOARD ───────────────────────────────────── */}
         {tab === 'dashboard' && (
           <>
-            {/* Disclaimer demo */}
-            <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 flex items-start gap-2">
-              <Zap size={13} className="text-blue-500 mt-0.5 shrink-0" />
-              <p className="text-xs text-blue-700">
-                <strong>Vista demo empresarial.</strong> Los KPIs se calcularán con datos reales de tu empresa
-                al activar el plan. Los valores actuales son estimaciones ilustrativas.
-              </p>
-            </div>
-
-            {/* KPIs */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <KpiCard icon={Users}        color="#3b82f6" val="12"      label="Operadores activos"       sub="en tu flota"           trend={null}  />
-              <KpiCard icon={Clock}        color="#f59e0b" val="4.5 hrs" label="Horas perdidas hoy"       sub="promedio/unidad"       trend={18}    />
-              <KpiCard icon={DollarSign}   color="#dc2626" val="$22,500" label="Costo est. hoy"           sub="por tiempos muertos"   trend={null}  />
-              <KpiCard icon={Bell}         color="#10b981" val="3"       label="Alertas activas"          sub="zonas con saturación"  trend={null}  />
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <KpiCard icon={TrendingDown} color="#16a34a" val="$18,500" label="Ahorro estimado mes"      sub="vs sin plataforma"     trend={null}  />
-              <KpiCard icon={BarChart2}    color="#8b5cf6" val="87%"     label="Zonas sin saturación"     sub={`${freePct}% libre ahora`} trend={null} />
-              <KpiCard icon={Zap}          color="#06b6d4" val="06:00h"  label="Mejor horario ingreso"    sub="menor congestión"      trend={null}  />
-              <KpiCard icon={AlertTriangle}color="#dc2626" val="07-10h"  label="Hora pico a evitar"       sub="máxima congestión"     trend={null}  />
-            </div>
-
             {/* Estado actual del puerto */}
             <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
               <div className="flex items-center justify-between mb-4">
