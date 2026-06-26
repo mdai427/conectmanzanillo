@@ -177,7 +177,7 @@ export default function Anunciate() {
           <div className="grid gap-4 sm:grid-cols-2">
             {PAQUETES.map(paq => (
               <div key={paq.nombre}
-                   className={`rounded-2xl p-5 border-2 ${paq.destacado ? 'ring-2 ring-purple-300 shadow-lg' : ''}`}
+                   className={`rounded-2xl p-5 border-2 flex flex-col ${paq.destacado ? 'ring-2 ring-purple-300 shadow-lg' : ''}`}
                    style={{ background: paq.bg, borderColor: paq.border }}>
                 {paq.destacado && (
                   <div className="flex items-center gap-1 mb-2">
@@ -195,7 +195,7 @@ export default function Anunciate() {
                     <p className="text-[10px] text-slate-400">{paq.periodo}</p>
                   </div>
                 </div>
-                <ul className="space-y-1.5 mb-4">
+                <ul className="space-y-1.5 mb-4 flex-1">
                   {paq.features.map(f => (
                     <li key={f} className="flex items-start gap-2 text-[11px] text-slate-600">
                       <CheckCircle2 size={11} className="shrink-0 mt-0.5" style={{ color: paq.color }} />
@@ -205,7 +205,7 @@ export default function Anunciate() {
                 </ul>
                 <a href={`https://wa.me/525566834948?text=${encodeURIComponent(`Hola, quiero cotizar el paquete "${paq.nombre}" de publicidad en ConectManzanillo`)}`}
                    target="_blank" rel="noopener noreferrer"
-                   className="flex items-center justify-center gap-1.5 w-full py-3 rounded-2xl font-bold text-xs text-white transition-all hover:opacity-90"
+                   className="flex items-center justify-center gap-1.5 w-full py-3 rounded-2xl font-bold text-xs text-white transition-all hover:opacity-90 mt-auto"
                    style={{ background: paq.color }}>
                   {WA_ICON} {paq.cta}
                 </a>
