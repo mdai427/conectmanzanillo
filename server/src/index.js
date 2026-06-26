@@ -18,7 +18,9 @@ import predictionsRouter  from './routes/predictions.js'
 import rankingsRouter     from './routes/rankings.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
+import { initWorkers } from './services/workers.js'
 import { cacheFor, noCache } from './middleware/cache.js'
+import { reportQueue, predQueue, maintenanceQueue } from './services/queue.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
@@ -59,7 +61,17 @@ app.use('/api/rankings',  cacheFor(300),  rankingsRouter)   // 5min — rankings
 // Estático: cache largo — el servidor ya tiene cache interno de 15min
 app.use('/api/predictions', cacheFor(900), predictionsRouter) // 15min
 
-app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }))
+app.get('/api/health', (_req, res) => {
+  res.json({
+    status: 'ok',
+    ts: new Date().toISOString(),
+    queues: {
+      reports: reportQueue.stats(),
+      predictions: predQueue.stats(),
+      maintenance: maintenanceQueue.stats(),
+    },
+  })
+})
 
 // Servir cliente React (build estático)
 const clientBuild = path.join(__dirname, '../../client/dist')
@@ -79,7 +91,8 @@ app.get('*', (_req, res) => {
   res.sendFile(path.join(clientBuild, 'index.html'))
 })
 
-// Scheduler (expirar reportes viejos cada 15 min)
+// Workers y scheduler
+initWorkers()
 startScheduler()
 
 const PORT = process.env.PORT || 3000

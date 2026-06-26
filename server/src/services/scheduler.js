@@ -1,17 +1,19 @@
 import cron from 'node-cron'
-import { supabaseAdmin } from '../config/supabase.js'
+import { maintenanceQueue, predQueue } from './queue.js'
 
 export function startScheduler() {
-  // Cada 15 minutos: marcar reportes expirados como inactivos
-  cron.schedule('*/15 * * * *', async () => {
-    const { error } = await supabaseAdmin
-      .from('reports')
-      .update({ is_active: false })
-      .lt('expires_at', new Date().toISOString())
-      .eq('is_active', true)
-
-    if (!error) console.log(`[scheduler] Reportes expirados limpiados: ${new Date().toISOString()}`)
+  // Cada 15 min — expirar reportes viejos (via queue con retry)
+  cron.schedule('*/15 * * * *', () => {
+    maintenanceQueue.add('expire_reports', {}, { retries: 3 })
   })
 
-  console.log('[scheduler] Iniciado')
+  // Cada 15 min — pre-calentar cache de predicciones (off-peak)
+  cron.schedule('*/15 * * * *', () => {
+    predQueue.add('refresh_predictions', {}, { retries: 2 })
+  })
+
+  // Disparar predicciones al arrancar (para que el primer usuario no espere)
+  predQueue.add('refresh_predictions', {}, { retries: 2, delay: 3000 })
+
+  console.log('[scheduler] Iniciado — expiración cada 15min, predicciones pre-calentadas')
 }
