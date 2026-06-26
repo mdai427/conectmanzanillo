@@ -1,14 +1,15 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogIn, LogOut, User, Shield, Map, Newspaper, BookOpen, Heart, Share2 } from 'lucide-react'
+import { LogIn, LogOut, User, Shield, Map, Newspaper, BookOpen, Heart, Share2, MessageCircle } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore.js'
 import toast from 'react-hot-toast'
 
 const NAV_LINKS = [
-  { to: '/',           label: 'Puerto',     icon: Map,       hash: null         },
-  { to: '/noticias',   label: 'Noticias',   icon: Newspaper, hash: null         },
-  { to: '/directorio', label: 'Directorio', icon: BookOpen,  hash: null         },
-  { to: '/#donativos', label: 'Donativos',  icon: Heart,     hash: 'donativos'  },
-  { to: '/#redes',     label: 'Redes',      icon: Share2,    hash: 'redes'      },
+  { to: '/',            label: 'Puerto',     icon: Map,           hash: null,         color: null           },
+  { to: '/noticias',    label: 'Noticias',   icon: Newspaper,     hash: null,         color: null           },
+  { to: '/directorio',  label: 'Directorio', icon: BookOpen,      hash: null,         color: null           },
+  { to: '/#whatsapp',   label: 'WhatsApp',   icon: MessageCircle, hash: 'whatsapp',   color: '#16a34a'      },
+  { to: '/#donativos',  label: 'Donativos',  icon: Heart,         hash: 'donativos',  color: '#db2777'      },
+  { to: '/#redes',      label: 'Redes',      icon: Share2,        hash: 'redes',      color: '#7c3aed'      },
 ]
 
 export default function Navbar() {
@@ -39,11 +40,12 @@ export default function Navbar() {
 
         {/* Nav */}
         <nav className="hidden sm:flex items-center gap-0.5">
-          {NAV_LINKS.map(({ to, label, icon: Icon, hash }) => {
+          {NAV_LINKS.map(({ to, label, icon: Icon, hash, color }) => {
             const active = isActive(to) && !hash
             return hash ? (
-              <a key={to} href={`/#donativos`}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all text-pink-500 hover:bg-pink-50">
+              <a key={to} href={to}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all hover:opacity-80"
+                style={{ color: color || '#64748b' }}>
                 <Icon size={12} />
                 {label}
               </a>
