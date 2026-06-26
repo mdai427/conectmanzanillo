@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# No indexar rutas de autenticación ni admin
+Disallow: /login
+Disallow: /register
+Disallow: /admin
+Disallow: /perfil
+
+Sitemap: https://conectmanzanillo.app/sitemap.xml

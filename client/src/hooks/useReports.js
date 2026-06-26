@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
-import { useEffect } from 'react'
 import { useSocketEvent } from './useRealtime.js'
 import { api } from '../lib/api.js'
+import toast from 'react-hot-toast'
 
 export function useReports(sectionSlug, sectionId) {
   const queryClient = useQueryClient()
@@ -22,6 +22,7 @@ export function useReports(sectionSlug, sectionId) {
     queryKey: ['reports', sectionSlug],
     queryFn: () => api.getReports(sectionSlug),
     enabled: !!sectionSlug,
+    staleTime: 30_000,
     refetchInterval: 30_000,
   })
 }
@@ -30,12 +31,21 @@ export function usePostReport() {
   const queryClient = useQueryClient()
   return useMutation({
     mutationFn: api.postReport,
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['sections'] })
+      queryClient.invalidateQueries({ queryKey: ['reports', variables?.sectionSlug] })
+    },
+    onError: () => {
+      toast.error('No se pudo enviar el reporte. Intenta de nuevo.')
     },
   })
 }
 
 export function usePostReaction() {
-  return useMutation({ mutationFn: api.postReaction })
+  return useMutation({
+    mutationFn: api.postReaction,
+    onError: () => {
+      toast.error('No se pudo registrar la reacción.')
+    },
+  })
 }
