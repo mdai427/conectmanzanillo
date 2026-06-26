@@ -13,6 +13,7 @@ import Admin from './pages/Admin.jsx'
 import Noticias from './pages/Noticias.jsx'
 import Directorio from './pages/Directorio.jsx'
 import Posturas from './pages/Posturas.jsx'
+import Vacantes from './pages/Vacantes.jsx'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="noticias" element={<Noticias />} />
             <Route path="directorio" element={<Directorio />} />
             <Route path="posturas" element={<Posturas />} />
+            <Route path="vacantes" element={<Vacantes />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
