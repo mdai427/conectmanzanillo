@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogIn, LogOut, User, Shield, Map, Newspaper, BookOpen, Heart } from 'lucide-react'
+import { LogIn, LogOut, User, Shield, Map, Newspaper, BookOpen, Heart, Share2 } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore.js'
 import toast from 'react-hot-toast'
 
@@ -8,6 +8,7 @@ const NAV_LINKS = [
   { to: '/noticias',   label: 'Noticias',   icon: Newspaper, hash: null         },
   { to: '/directorio', label: 'Directorio', icon: BookOpen,  hash: null         },
   { to: '/#donativos', label: 'Donativos',  icon: Heart,     hash: 'donativos'  },
+  { to: '/#redes',     label: 'Redes',      icon: Share2,    hash: 'redes'      },
 ]
 
 export default function Navbar() {

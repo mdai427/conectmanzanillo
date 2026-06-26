@@ -428,14 +428,116 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* ══════════════════════════════════════════════
+          REDES SOCIALES
+      ══════════════════════════════════════════════ */}
+      <div id="redes" className="py-14 px-4 border-t border-slate-100"
+           style={{ background: 'linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)' }}>
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl md:text-3xl font-black text-slate-800 mb-1">Únete a la comunidad</h2>
+            <p className="text-slate-500 text-sm">Síguenos para noticias, actualizaciones y avisos del puerto en tiempo real</p>
+          </div>
+
+          <div className="space-y-3">
+            {/* Grupo Facebook */}
+            <div className="rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+              <div className="px-4 py-2 flex items-center gap-2"
+                   style={{ background: '#1877F2' }}>
+                <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 fill-white"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                <span className="text-white text-xs font-bold uppercase tracking-widest">Grupo comunitario · Facebook</span>
+              </div>
+              <div className="bg-white px-4 py-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                     style={{ background: '#1877F2' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                </div>
+                <div>
+                  <p className="font-bold text-slate-800 text-sm">Grupo Conect Manzanillo</p>
+                  <p className="text-xs text-slate-500">Comunidad de transportistas, empresas y ciudadanos del puerto</p>
+                </div>
+              </div>
+              <a href="https://www.facebook.com/groups/conectmanzanillo"
+                 target="_blank" rel="noopener noreferrer"
+                 className="flex items-center justify-center gap-2 w-full py-3.5 text-sm font-black text-white transition-all hover:opacity-90 active:scale-[0.99]"
+                 style={{ background: '#1877F2' }}>
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                UNIRME AL GRUPO
+              </a>
+            </div>
+
+            {/* Página Facebook */}
+            <div className="rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+              <div className="px-4 py-2 flex items-center gap-2"
+                   style={{ background: '#0866FF' }}>
+                <span className="text-lg">🏴</span>
+                <span className="text-white text-xs font-bold uppercase tracking-widest">Página oficial · Facebook</span>
+              </div>
+              <div className="bg-white px-4 py-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                     style={{ background: '#0866FF' }}>
+                  <svg viewBox="0 0 24 24" className="w-6 h-6 fill-white"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                </div>
+                <div>
+                  <p className="font-bold text-slate-800 text-sm">Conect Manzanillo Oficial</p>
+                  <p className="text-xs text-slate-500">Síguenos para noticias, actualizaciones y avisos oficiales del puerto</p>
+                </div>
+              </div>
+              <a href="https://www.facebook.com/conectmanzanillo"
+                 target="_blank" rel="noopener noreferrer"
+                 className="flex items-center justify-center gap-2 w-full py-3.5 text-sm font-black text-white transition-all hover:opacity-90 active:scale-[0.99]"
+                 style={{ background: '#0866FF' }}>
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                SEGUIR PÁGINA
+              </a>
+            </div>
+
+            {/* Instagram */}
+            <div className="rounded-2xl overflow-hidden shadow-sm border border-slate-200">
+              <div className="px-4 py-2 flex items-center gap-2"
+                   style={{ background: 'linear-gradient(90deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}>
+                <span className="text-lg">📸</span>
+                <span className="text-white text-xs font-bold uppercase tracking-widest">Perfil oficial · Instagram</span>
+              </div>
+              <div className="bg-white px-4 py-3 flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                     style={{ background: 'linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}>
+                  <svg viewBox="0 0 24 24" className="w-5 h-5 fill-white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+                </div>
+                <div>
+                  <p className="font-bold text-slate-800 text-sm">@conectmanzanillo</p>
+                  <p className="text-xs text-slate-500">Fotos, videos y noticias del puerto en Instagram</p>
+                </div>
+              </div>
+              <a href="https://www.instagram.com/conectmanzanillo"
+                 target="_blank" rel="noopener noreferrer"
+                 className="flex items-center justify-center gap-2 w-full py-3.5 text-sm font-black text-white transition-all hover:opacity-90 active:scale-[0.99]"
+                 style={{ background: 'linear-gradient(90deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888)' }}>
+                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
+                SEGUIR EN INSTAGRAM
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Footer */}
-      <div className="bg-slate-900 text-center py-6 px-4">
-        <p className="text-xs text-slate-500">
-          © 2025 ConectManzanillo · Puerto de Manzanillo, Colima ·{' '}
-          <a href="mailto:contacto@conectmanzanillo.com" className="text-blue-400 hover:underline">
-            contacto@conectmanzanillo.com
-          </a>
-        </p>
+      <div className="bg-slate-900 py-8 px-4">
+        <div className="max-w-4xl mx-auto flex flex-col items-center gap-4">
+          <img src="/logo.png" alt="ConectManzanillo" className="h-12 opacity-80"
+            onError={e => { e.target.style.display = 'none' }} />
+          <div className="flex flex-wrap justify-center gap-4 text-xs">
+            <a href="https://wa.me/525566834948" target="_blank" rel="noopener noreferrer"
+               className="text-green-400 hover:text-green-300 font-semibold transition-colors">WhatsApp</a>
+            <a href="https://www.facebook.com/conectmanzanillo" target="_blank" rel="noopener noreferrer"
+               className="text-blue-400 hover:text-blue-300 font-semibold transition-colors">Facebook</a>
+            <a href="https://www.instagram.com/conectmanzanillo" target="_blank" rel="noopener noreferrer"
+               className="text-pink-400 hover:text-pink-300 font-semibold transition-colors">Instagram</a>
+            <a href="mailto:contacto@conectmanzanillo.com"
+               className="text-slate-400 hover:text-slate-300 transition-colors">contacto@conectmanzanillo.com</a>
+          </div>
+          <p className="text-xs text-slate-600">© 2025 ConectManzanillo · Puerto de Manzanillo, Colima</p>
+        </div>
       </div>
     </div>
   )
