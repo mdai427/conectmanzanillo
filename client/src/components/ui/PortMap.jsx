@@ -4,119 +4,100 @@ import { STATUS_CONFIG } from '../../lib/constants.js'
 
 const GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_KEY
 const LIBRARIES = ['drawing']
-
 const CENTER = { lat: 19.0935, lng: -104.3148 }
 
-// Coordenadas reales del Puerto de Manzanillo
 const ZONE_POLYGONS = {
   'patio-tep': {
     coords: [
-      { lat: 19.0958, lng: -104.3175 },
-      { lat: 19.0965, lng: -104.3158 },
-      { lat: 19.0948, lng: -104.3145 },
-      { lat: 19.0938, lng: -104.3162 },
+      { lat: 19.0958, lng: -104.3175 }, { lat: 19.0965, lng: -104.3158 },
+      { lat: 19.0948, lng: -104.3145 }, { lat: 19.0938, lng: -104.3162 },
       { lat: 19.0945, lng: -104.3178 },
     ],
-    label: 'Patio TEP',
-    zoneColor: '#A855F7',
+    label: 'Patio TEP', zoneColor: '#A855F7',
   },
   'impala-terminals': {
     coords: [
-      { lat: 19.0960, lng: -104.3152 },
-      { lat: 19.0968, lng: -104.3135 },
-      { lat: 19.0950, lng: -104.3125 },
-      { lat: 19.0940, lng: -104.3142 },
+      { lat: 19.0960, lng: -104.3152 }, { lat: 19.0968, lng: -104.3135 },
+      { lat: 19.0950, lng: -104.3125 }, { lat: 19.0940, lng: -104.3142 },
       { lat: 19.0950, lng: -104.3155 },
     ],
-    label: 'Impala Terminals',
-    zoneColor: '#06B6D4',
+    label: 'Impala Terminals', zoneColor: '#06B6D4',
   },
   'patio-alcam': {
     coords: [
-      { lat: 19.0972, lng: -104.3128 },
-      { lat: 19.0980, lng: -104.3112 },
-      { lat: 19.0962, lng: -104.3105 },
-      { lat: 19.0952, lng: -104.3120 },
+      { lat: 19.0972, lng: -104.3128 }, { lat: 19.0980, lng: -104.3112 },
+      { lat: 19.0962, lng: -104.3105 }, { lat: 19.0952, lng: -104.3120 },
       { lat: 19.0962, lng: -104.3130 },
     ],
-    label: 'Patio ALCAM',
-    zoneColor: '#06B6D4',
+    label: 'Patio ALCAM', zoneColor: '#06B6D4',
   },
   'patios-vacios-ssa': {
     coords: [
-      { lat: 19.0945, lng: -104.3155 },
-      { lat: 19.0952, lng: -104.3138 },
-      { lat: 19.0935, lng: -104.3128 },
-      { lat: 19.0925, lng: -104.3145 },
+      { lat: 19.0945, lng: -104.3155 }, { lat: 19.0952, lng: -104.3138 },
+      { lat: 19.0935, lng: -104.3128 }, { lat: 19.0925, lng: -104.3145 },
       { lat: 19.0935, lng: -104.3158 },
     ],
-    label: 'Patio Vacíos SSA',
-    zoneColor: '#EAB308',
+    label: 'Patio Vacíos SSA', zoneColor: '#EAB308',
   },
   'patios-llenos-ssa': {
     coords: [
-      { lat: 19.0930, lng: -104.3150 },
-      { lat: 19.0938, lng: -104.3133 },
-      { lat: 19.0920, lng: -104.3125 },
-      { lat: 19.0910, lng: -104.3142 },
+      { lat: 19.0930, lng: -104.3150 }, { lat: 19.0938, lng: -104.3133 },
+      { lat: 19.0920, lng: -104.3125 }, { lat: 19.0910, lng: -104.3142 },
       { lat: 19.0920, lng: -104.3152 },
     ],
-    label: 'Patio Llenos SSA',
-    zoneColor: '#E2E8F0',
+    label: 'Patio Llenos SSA', zoneColor: '#E2E8F0',
   },
   'patio-acoman': {
     coords: [
-      { lat: 19.0928, lng: -104.3163 },
-      { lat: 19.0935, lng: -104.3150 },
-      { lat: 19.0918, lng: -104.3142 },
-      { lat: 19.0908, lng: -104.3155 },
+      { lat: 19.0928, lng: -104.3163 }, { lat: 19.0935, lng: -104.3150 },
+      { lat: 19.0918, lng: -104.3142 }, { lat: 19.0908, lng: -104.3155 },
       { lat: 19.0918, lng: -104.3165 },
     ],
-    label: 'Patio Acoman',
-    zoneColor: '#E2E8F0',
+    label: 'Patio Acoman', zoneColor: '#E2E8F0',
   },
   'impala': {
     coords: [
-      { lat: 19.0900, lng: -104.3148 },
-      { lat: 19.0910, lng: -104.3130 },
-      { lat: 19.0892, lng: -104.3122 },
-      { lat: 19.0880, lng: -104.3138 },
+      { lat: 19.0900, lng: -104.3148 }, { lat: 19.0910, lng: -104.3130 },
+      { lat: 19.0892, lng: -104.3122 }, { lat: 19.0880, lng: -104.3138 },
       { lat: 19.0888, lng: -104.3150 },
     ],
-    label: 'Impala',
-    zoneColor: '#06B6D4',
+    label: 'Impala', zoneColor: '#06B6D4',
   },
   'libramiento': {
     coords: [
-      { lat: 19.1020, lng: -104.3210 },
-      { lat: 19.1030, lng: -104.3180 },
-      { lat: 19.1010, lng: -104.3170 },
-      { lat: 19.1000, lng: -104.3200 },
+      { lat: 19.1020, lng: -104.3210 }, { lat: 19.1030, lng: -104.3180 },
+      { lat: 19.1010, lng: -104.3170 }, { lat: 19.1000, lng: -104.3200 },
     ],
-    label: 'Libramiento',
-    zoneColor: '#F97316',
+    label: 'Libramiento', zoneColor: '#F97316',
   },
 }
 
 const STATUS_COLORS = {
-  free:      '#22C55E',
-  moderate:  '#F59E0B',
-  congested: '#EF4444',
-  closed:    '#6B7280',
-  unknown:   null,
+  free: '#22C55E', moderate: '#F59E0B', congested: '#EF4444',
+  closed: '#6B7280', unknown: null,
 }
 
-const MAP_STYLES = [
-  { elementType: 'geometry', stylers: [{ color: '#0a1628' }] },
+const MAP_STYLES_DARK = [
+  { elementType: 'geometry', stylers: [{ color: '#1a2744' }] },
   { elementType: 'labels.text.stroke', stylers: [{ color: '#0a1628' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#8BA4C4' }] },
-  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#061020' }] },
-  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1E3A6E' }] },
-  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#0a1628' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#94a3b8' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d2040' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#3d9bdb' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#253d6e' }] },
+  { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ color: '#1a2744' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#2d5299' }] },
   { featureType: 'poi', stylers: [{ visibility: 'off' }] },
   { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#1E3A6E' }] },
-  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#0F1F3D' }] },
+  { featureType: 'administrative', elementType: 'geometry', stylers: [{ color: '#253d6e' }] },
+  { featureType: 'landscape', elementType: 'geometry', stylers: [{ color: '#1a2744' }] },
+  { featureType: 'landscape.man_made', elementType: 'geometry', stylers: [{ color: '#16213e' }] },
+]
+
+const LEGEND = [
+  { color: '#22C55E', label: 'Libre' },
+  { color: '#F59E0B', label: 'Moderado' },
+  { color: '#EF4444', label: 'Saturado' },
+  { color: '#6B7280', label: 'Cerrado' },
 ]
 
 export default function PortMap({ sections = [], onZoneClick }) {
@@ -126,98 +107,93 @@ export default function PortMap({ sections = [], onZoneClick }) {
   })
 
   const mapRef = useRef(null)
-  const [selected, setSelected] = useState(null) // { slug, position }
-  const [mapType, setMapType] = useState('roadmap') // roadmap | satellite
+  const [selected, setSelected] = useState(null)
+  const [mapType, setMapType] = useState('roadmap')
   const [drawMode, setDrawMode] = useState(false)
   const [drawnPolygons, setDrawnPolygons] = useState([])
+  const [hoveredSlug, setHoveredSlug] = useState(null)
 
   const sectionsBySlug = {}
   sections.forEach(s => { sectionsBySlug[s.slug] = s })
 
-  const onLoad = useCallback((map) => {
-    mapRef.current = map
-  }, [])
+  const onLoad = useCallback((map) => { mapRef.current = map }, [])
 
   const onPolygonComplete = useCallback((polygon) => {
-    const coords = polygon.getPath().getArray().map(latlng => ({
-      lat: latlng.lat(),
-      lng: latlng.lng(),
-    }))
+    const coords = polygon.getPath().getArray().map(ll => ({ lat: ll.lat(), lng: ll.lng() }))
     setDrawnPolygons(prev => [...prev, { coords, id: Date.now() }])
-    polygon.setMap(null) // removemos el temporal, lo controlamos nosotros
+    polygon.setMap(null)
     setDrawMode(false)
   }, [])
 
   if (!isLoaded) {
     return (
-      <div className="w-full rounded-2xl flex items-center justify-center"
-           style={{ height: 420, background: '#0F1F3D', border: '1px solid #1E3A6E' }}>
-        <div className="w-8 h-8 border-2 border-[#0099E6] border-t-transparent rounded-full animate-spin" />
+      <div className="w-full rounded-2xl flex flex-col items-center justify-center gap-3"
+           style={{ height: 480, background: 'linear-gradient(135deg, #0f172a, #1e3a5f)', border: '1px solid #334155' }}>
+        <div className="w-10 h-10 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-slate-400">Cargando mapa…</p>
       </div>
     )
   }
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden" style={{ height: '460px', border: '1px solid #1E3A6E' }}>
-      {/* Header */}
-      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-2.5"
-           style={{ background: 'rgba(10,22,40,0.92)', borderBottom: '1px solid #1E3A6E' }}>
+    <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl"
+         style={{ height: 480, border: '1px solid #334155' }}>
+
+      {/* ── Top bar ── */}
+      <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between px-4 py-3"
+           style={{ background: 'rgba(10,16,32,0.88)', backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(51,65,85,0.6)' }}>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-white">🗺️ Mapa Terminales</span>
-          <span className="text-xs font-mono" style={{ color: '#0099E6' }}>· estado en tiempo real</span>
+          <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+          <span className="text-sm font-semibold text-white">Puerto de Manzanillo</span>
+          <span className="text-xs text-slate-500 hidden sm:inline">· tiempo real</span>
         </div>
         <div className="flex items-center gap-2">
-          {/* Toggle satélite */}
-          <button
-            onClick={() => setMapType(t => t === 'roadmap' ? 'satellite' : 'roadmap')}
-            className="px-2 py-1 rounded-lg text-xs font-medium transition-all"
+          {/* Satellite toggle */}
+          <button onClick={() => setMapType(t => t === 'roadmap' ? 'satellite' : 'roadmap')}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
             style={{
-              background: mapType === 'satellite' ? '#0099E6' : '#0F1F3D',
-              color: 'white',
-              border: '1px solid #1E3A6E',
-            }}
-          >
-            {mapType === 'satellite' ? '🗺 Mapa' : '🛰 Satélite'}
+              background: mapType === 'satellite' ? 'rgba(59,130,246,0.25)' : 'rgba(255,255,255,0.06)',
+              color: mapType === 'satellite' ? '#60a5fa' : '#94a3b8',
+              border: `1px solid ${mapType === 'satellite' ? 'rgba(59,130,246,0.5)' : 'rgba(255,255,255,0.08)'}`,
+            }}>
+            {mapType === 'satellite' ? '🗺' : '🛰'} {mapType === 'satellite' ? 'Mapa' : 'Satélite'}
           </button>
-          {/* Dibujar patio */}
-          <button
-            onClick={() => setDrawMode(d => !d)}
-            className="px-2 py-1 rounded-lg text-xs font-medium transition-all"
+          {/* Draw mode */}
+          <button onClick={() => setDrawMode(d => !d)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all"
             style={{
-              background: drawMode ? '#22C55E' : '#0F1F3D',
-              color: 'white',
-              border: `1px solid ${drawMode ? '#22C55E' : '#1E3A6E'}`,
-            }}
-          >
-            ✏️ {drawMode ? 'Dibujando...' : 'Trazar patio'}
+              background: drawMode ? 'rgba(249,115,22,0.25)' : 'rgba(255,255,255,0.06)',
+              color: drawMode ? '#fb923c' : '#94a3b8',
+              border: `1px solid ${drawMode ? 'rgba(249,115,22,0.5)' : 'rgba(255,255,255,0.08)'}`,
+            }}>
+            ✏️ {drawMode ? 'Cancelar' : 'Mi patio'}
           </button>
           {drawnPolygons.length > 0 && (
-            <button
-              onClick={() => setDrawnPolygons([])}
-              className="px-2 py-1 rounded-lg text-xs font-medium"
-              style={{ background: '#1E3A6E', color: '#8BA4C4', border: '1px solid #1E3A6E' }}
-            >
-              Limpiar
+            <button onClick={() => setDrawnPolygons([])}
+              className="px-2 py-1.5 rounded-lg text-xs text-slate-500 transition-all hover:text-slate-300"
+              style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)' }}>
+              ✕ Limpiar
             </button>
           )}
         </div>
       </div>
 
+      {/* ── Draw instructions banner ── */}
       {drawMode && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 px-4 py-2 rounded-xl text-xs text-white"
-             style={{ background: 'rgba(34,197,94,0.9)', backdropFilter: 'blur(4px)' }}>
-          Haz clic en el mapa para trazar los vértices de tu patio. Doble clic para cerrar el polígono.
+        <div className="absolute top-14 left-1/2 -translate-x-1/2 z-10 px-5 py-2.5 rounded-xl text-xs font-medium text-white shadow-xl text-center"
+             style={{ background: 'rgba(249,115,22,0.92)', backdropFilter: 'blur(8px)', maxWidth: '90%' }}>
+          ✏️ Haz clic para marcar los vértices de tu patio — doble clic para terminar
         </div>
       )}
 
-      {/* Leyenda */}
-      <div className="absolute bottom-4 left-4 z-10 hidden sm:flex flex-col gap-1 px-3 py-2 rounded-xl text-xs"
-           style={{ background: 'rgba(10,22,40,0.85)', border: '1px solid #1E3A6E' }}>
-        {[['#22C55E','Libre'],['#F59E0B','Moderado'],['#EF4444','Saturado'],['#6B7280','Cerrado']].map(([c,l]) => (
-          <span key={l} className="flex items-center gap-1.5" style={{ color: '#8BA4C4' }}>
-            <span className="w-2.5 h-2.5 rounded-sm" style={{ background: c }} />
-            {l}
-          </span>
+      {/* ── Legend ── */}
+      <div className="absolute bottom-10 left-3 z-10 px-3 py-2.5 rounded-xl hidden sm:flex flex-col gap-1.5"
+           style={{ background: 'rgba(10,16,32,0.82)', backdropFilter: 'blur(8px)', border: '1px solid rgba(51,65,85,0.5)' }}>
+        {LEGEND.map(({ color, label }) => (
+          <div key={label} className="flex items-center gap-2 text-xs text-slate-400">
+            <span className="w-2.5 h-2.5 rounded-full" style={{ background: color, boxShadow: `0 0 6px ${color}88` }} />
+            {label}
+          </div>
         ))}
       </div>
 
@@ -228,21 +204,18 @@ export default function PortMap({ sections = [], onZoneClick }) {
         mapTypeId={mapType}
         onLoad={onLoad}
         options={{
-          styles: mapType === 'roadmap' ? MAP_STYLES : [],
+          styles: mapType === 'roadmap' ? MAP_STYLES_DARK : [],
           disableDefaultUI: true,
           zoomControl: true,
-          zoomControlOptions: { position: 9 }, // BOTTOM_RIGHT
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
+          gestureHandling: 'greedy',
         }}
       >
         {/* Zonas del puerto */}
         {Object.entries(ZONE_POLYGONS).map(([slug, zone]) => {
           const section = sectionsBySlug[slug]
           const status = section?.status || 'unknown'
-          const statusColor = STATUS_COLORS[status]
-          const color = statusColor || zone.zoneColor
+          const color = STATUS_COLORS[status] || zone.zoneColor
+          const isHovered = hoveredSlug === slug
 
           return (
             <Polygon
@@ -250,38 +223,22 @@ export default function PortMap({ sections = [], onZoneClick }) {
               paths={zone.coords}
               options={{
                 fillColor: color,
-                fillOpacity: 0.35,
+                fillOpacity: isHovered ? 0.6 : 0.35,
                 strokeColor: color,
                 strokeOpacity: 1,
-                strokeWeight: 2.5,
+                strokeWeight: isHovered ? 3 : 2,
               }}
-              onClick={(e) => {
-                setSelected({
-                  slug,
-                  position: { lat: e.latLng.lat(), lng: e.latLng.lng() },
-                  zone,
-                  section,
-                  color,
-                  status,
-                })
-              }}
+              onClick={(e) => setSelected({ slug, position: { lat: e.latLng.lat(), lng: e.latLng.lng() }, zone, section, color, status })}
+              onMouseOver={() => setHoveredSlug(slug)}
+              onMouseOut={() => setHoveredSlug(null)}
             />
           )
         })}
 
-        {/* Polígonos dibujados por usuarios */}
+        {/* Patios dibujados */}
         {drawnPolygons.map(p => (
-          <Polygon
-            key={p.id}
-            paths={p.coords}
-            options={{
-              fillColor: '#F97316',
-              fillOpacity: 0.3,
-              strokeColor: '#F97316',
-              strokeWeight: 2,
-              strokeDashArray: '5,5',
-            }}
-          />
+          <Polygon key={p.id} paths={p.coords}
+            options={{ fillColor: '#f97316', fillOpacity: 0.25, strokeColor: '#f97316', strokeWeight: 2 }} />
         ))}
 
         {/* Herramienta de dibujo */}
@@ -291,61 +248,30 @@ export default function PortMap({ sections = [], onZoneClick }) {
             options={{
               drawingControl: false,
               polygonOptions: {
-                fillColor: '#F97316',
-                fillOpacity: 0.3,
-                strokeColor: '#F97316',
-                strokeWeight: 2,
-                editable: true,
+                fillColor: '#f97316', fillOpacity: 0.25,
+                strokeColor: '#f97316', strokeWeight: 2, editable: false,
               },
             }}
             onPolygonComplete={onPolygonComplete}
           />
         )}
 
-        {/* InfoWindow al hacer click en zona */}
+        {/* InfoWindow */}
         {selected && (
-          <InfoWindow
-            position={selected.position}
-            onCloseClick={() => setSelected(null)}
-          >
-            <div style={{
-              background: '#0F1F3D',
-              color: 'white',
-              borderRadius: '10px',
-              padding: '10px 14px',
-              minWidth: '160px',
-              fontFamily: 'system-ui, sans-serif',
-            }}>
-              <div style={{ fontWeight: 'bold', fontSize: '14px', marginBottom: '4px' }}>
-                {selected.zone.label}
-              </div>
+          <InfoWindow position={selected.position} onCloseClick={() => setSelected(null)}>
+            <div style={{ background: '#0f172a', color: 'white', borderRadius: 12, padding: '12px 16px', minWidth: 170, fontFamily: 'system-ui,sans-serif' }}>
+              <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 6, color: '#f8fafc' }}>{selected.zone.label}</div>
               {(() => {
                 const cfg = STATUS_CONFIG[selected.status] || STATUS_CONFIG.unknown
-                return (
-                  <div style={{ color: selected.color, fontSize: '12px' }}>
-                    {cfg.emoji} {cfg.label}
-                  </div>
-                )
+                return <div style={{ color: selected.color, fontSize: 12, marginBottom: 4 }}>{cfg.emoji} {cfg.label}</div>
               })()}
               {selected.section?.active_reports > 0 && (
-                <div style={{ color: '#8BA4C4', fontSize: '11px', marginTop: '4px' }}>
+                <div style={{ color: '#64748b', fontSize: 11, marginBottom: 8 }}>
                   {selected.section.active_reports} reportes activos
                 </div>
               )}
-              <button
-                onClick={() => { onZoneClick && onZoneClick(selected.slug); setSelected(null) }}
-                style={{
-                  marginTop: '8px',
-                  background: '#0099E6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '5px 10px',
-                  fontSize: '11px',
-                  cursor: 'pointer',
-                  width: '100%',
-                }}
-              >
+              <button onClick={() => { onZoneClick?.(selected.slug); setSelected(null) }}
+                style={{ background: 'linear-gradient(135deg,#2563eb,#3b82f6)', color: 'white', border: 'none', borderRadius: 8, padding: '6px 12px', fontSize: 11, cursor: 'pointer', width: '100%', fontWeight: 600 }}>
                 Ver detalle →
               </button>
             </div>
