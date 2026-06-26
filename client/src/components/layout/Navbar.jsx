@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LogIn, LogOut, User, Shield, Map, Newspaper, BookOpen, Heart, Share2, MessageCircle, Briefcase, Building2 } from 'lucide-react'
+import { LogIn, LogOut, User, Shield, Map, Newspaper, BookOpen, Heart, Share2, MessageCircle, Briefcase, Building2, BarChart2, Megaphone } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore.js'
 import toast from 'react-hot-toast'
 
@@ -9,6 +9,9 @@ const NAV_LINKS = [
   { to: '/directorio',  label: 'Directorio', icon: BookOpen,      hash: null,         color: null           },
   { to: '/posturas',    label: 'Posturas',   icon: Briefcase,     hash: null,         color: null           },
   { to: '/vacantes',    label: 'Vacantes',   icon: Building2,     hash: null,         color: null           },
+  { to: '/analitica',   label: 'Analítica',  icon: BarChart2,     hash: null,         color: null           },
+  { to: '/empresa',     label: 'Empresas',   icon: Building2,     hash: null,         color: null           },
+  { to: '/anunciate',   label: 'Anúnciate',  icon: Megaphone,     hash: null,         color: '#d97706'      },
   { to: '/#whatsapp',   label: 'WhatsApp',   icon: MessageCircle, hash: 'whatsapp',   color: '#16a34a'      },
   { to: '/#donativos',  label: 'Donativos',  icon: Heart,         hash: 'donativos',  color: '#db2777'      },
   { to: '/#redes',      label: 'Redes',      icon: Share2,        hash: 'redes',      color: '#7c3aed'      },
@@ -55,7 +58,7 @@ export default function Navbar() {
               <Link key={to} to={to}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
                 style={{
-                  color:      active ? '#1d4ed8' : '#64748b',
+                  color:      active ? '#1d4ed8' : (color || '#64748b'),
                   background: active ? '#eff6ff'  : 'transparent',
                 }}>
                 <Icon size={12} />

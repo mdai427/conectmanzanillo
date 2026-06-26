@@ -8,12 +8,14 @@ import path from 'path'
 import { fileURLToPath } from 'url'
 import rateLimit from 'express-rate-limit'
 
-import sectionsRouter  from './routes/sections.js'
-import reportsRouter   from './routes/reports.js'
-import reactionsRouter from './routes/reactions.js'
-import usersRouter     from './routes/users.js'
-import adminRouter     from './routes/admin.js'
-import chatRouter      from './routes/chat.js'
+import sectionsRouter     from './routes/sections.js'
+import reportsRouter      from './routes/reports.js'
+import reactionsRouter    from './routes/reactions.js'
+import usersRouter        from './routes/users.js'
+import adminRouter        from './routes/admin.js'
+import chatRouter         from './routes/chat.js'
+import predictionsRouter  from './routes/predictions.js'
+import rankingsRouter     from './routes/rankings.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
 
@@ -46,8 +48,10 @@ app.use('/api/sections',  sectionsRouter)
 app.use('/api/reports',   reportsRouter)
 app.use('/api/reactions', reactionsRouter)
 app.use('/api/users',     usersRouter)
-app.use('/api/admin',     adminRouter)
-app.use('/api/chat',      chatRouter)
+app.use('/api/admin',       adminRouter)
+app.use('/api/chat',        chatRouter)
+app.use('/api/predictions', predictionsRouter)
+app.use('/api/rankings',    rankingsRouter)
 
 app.get('/api/health', (_req, res) => res.json({ status: 'ok', ts: new Date().toISOString() }))
 

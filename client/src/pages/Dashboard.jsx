@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useSections } from '../hooks/useSections.js'
 import { supabase } from '../lib/supabase.js'
 import SectionCard from '../components/ui/SectionCard.jsx'
+import EstadoInteligente from '../components/ui/EstadoInteligente.jsx'
 import ActivityFeed from '../components/ui/ActivityFeed.jsx'
 import NewsCard from '../components/ui/NewsCard.jsx'
 import WeatherWidget from '../components/ui/WeatherWidget.jsx'
@@ -192,6 +193,11 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Estado inteligente del puerto */}
+        <div className="mb-5">
+          <EstadoInteligente sections={sections} />
+        </div>
+
         {/* Grid / Map */}
         {view === 'map' ? (
           <div className="flex flex-col lg:flex-row gap-5">
@@ -286,11 +292,11 @@ export default function Dashboard() {
       <div className="border-y border-slate-100 bg-slate-50 py-12 px-4">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { num: '+2,400',  label: 'Operadores conectados',   icon: Users        },
-            { num: '+18,000', label: 'Reportes generados',      icon: Radio        },
-            { num: '8',       label: 'Zonas monitoreadas',      icon: Map          },
-            { num: '24/7',    label: 'Información en vivo',     icon: Zap          },
-          ].map(({ num, label, icon: Icon }) => (
+            { num: '+500',    label: 'Operadores en la red',    icon: Users,       sub: 'y creciendo'         },
+            { num: '+8,000',  label: 'Reportes generados',      icon: Radio,       sub: 'desde el lanzamiento'},
+            { num: '8',       label: 'Zonas monitoreadas',      icon: Map,         sub: 'Puerto Manzanillo'   },
+            { num: '24/7',    label: 'Información en vivo',     icon: Zap,         sub: 'siempre activo'      },
+          ].map(({ num, label, icon: Icon, sub }) => (
             <div key={label} className="text-center">
               <div className="flex justify-center mb-2">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -300,6 +306,7 @@ export default function Dashboard() {
               </div>
               <p className="text-3xl font-black text-slate-800 mb-0.5">{num}</p>
               <p className="text-xs text-slate-500 font-medium">{label}</p>
+              {sub && <p className="text-[10px] text-slate-400">{sub}</p>}
             </div>
           ))}
         </div>
@@ -490,13 +497,20 @@ export default function Dashboard() {
           {/* CTA demo */}
           <div className="mt-10 text-center">
             <p className="text-slate-500 text-sm mb-4">¿Tienes dudas? Platícanos tu caso y te mostramos la plataforma en acción.</p>
-            <a href="https://wa.me/525566834948?text=Hola%2C%20quiero%20agendar%20una%20demo%20de%20ConectManzanillo%20para%20mi%20empresa"
-               target="_blank" rel="noopener noreferrer"
-               className="inline-flex items-center gap-2 px-8 py-3.5 rounded-2xl font-bold text-sm text-white transition-all hover:scale-105"
-               style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
-              {WA_ICON}
-              Solicitar demo gratuita
-            </a>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <a href="https://wa.me/525566834948?text=Hola%2C%20quiero%20agendar%20una%20demo%20de%20ConectManzanillo%20para%20mi%20empresa"
+                 target="_blank" rel="noopener noreferrer"
+                 className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl font-bold text-sm text-white transition-all hover:scale-105"
+                 style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
+                {WA_ICON}
+                Solicitar demo gratuita
+              </a>
+              <Link to="/empresa"
+                className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl font-bold text-sm text-blue-200 transition-all hover:bg-white/10"
+                style={{ border: '1px solid rgba(96,165,250,0.3)' }}>
+                Ver planes completos →
+              </Link>
+            </div>
           </div>
         </div>
       </div>

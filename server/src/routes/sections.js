@@ -59,4 +59,46 @@ router.get('/:slug', async (req, res) => {
   }
 })
 
+// GET /api/sections/:slug/history — historial de estado de zona
+router.get('/:slug/history', async (req, res) => {
+  try {
+    const { data: section } = await supabaseAdmin
+      .from('sections').select('id').eq('slug', req.params.slug).single()
+    if (!section) return res.status(404).json({ error: 'Sección no encontrada' })
+
+    const { data, error } = await supabaseAdmin
+      .from('zone_status_history')
+      .select('status, active_reports, confidence, recorded_at')
+      .eq('section_id', section.id)
+      .order('recorded_at', { ascending: false })
+      .limit(48)
+
+    if (error) throw error
+    res.json(data || [])
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// GET /api/sections/:slug/timeline — eventos de la zona
+router.get('/:slug/timeline', async (req, res) => {
+  try {
+    const { data: section } = await supabaseAdmin
+      .from('sections').select('id').eq('slug', req.params.slug).single()
+    if (!section) return res.status(404).json({ error: 'Sección no encontrada' })
+
+    const { data, error } = await supabaseAdmin
+      .from('timeline_events')
+      .select('id, tipo, severidad, descripcion, fuente, created_at')
+      .eq('section_id', section.id)
+      .order('created_at', { ascending: false })
+      .limit(20)
+
+    if (error) throw error
+    res.json(data || [])
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 export default router

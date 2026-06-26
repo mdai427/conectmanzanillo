@@ -14,6 +14,10 @@ import Noticias from './pages/Noticias.jsx'
 import Directorio from './pages/Directorio.jsx'
 import Posturas from './pages/Posturas.jsx'
 import Vacantes from './pages/Vacantes.jsx'
+import Analitica from './pages/Analitica.jsx'
+import Empresa from './pages/Empresa.jsx'
+import Anunciate from './pages/Anunciate.jsx'
+import Legal from './pages/Legal.jsx'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -49,6 +53,10 @@ export default function App() {
             <Route path="directorio" element={<Directorio />} />
             <Route path="posturas" element={<Posturas />} />
             <Route path="vacantes" element={<Vacantes />} />
+            <Route path="analitica" element={<Analitica />} />
+            <Route path="empresa" element={<Empresa />} />
+            <Route path="anunciate" element={<Anunciate />} />
+            <Route path="legal" element={<Legal />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />

@@ -6,6 +6,29 @@ const router = Router()
 const COOLDOWN_MINUTES = parseInt(process.env.VITE_REPORT_COOLDOWN_MINUTES || '30')
 const EXPIRY_HOURS     = parseInt(process.env.VITE_REPORT_EXPIRY_HOURS || '3')
 
+// GET /api/reports — timeline global de todos los reportes activos
+router.get('/', async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit || '40'), 100)
+    const { data, error } = await supabaseAdmin
+      .from('reports')
+      .select(`
+        id, status, comment, confirmations, contradictions, created_at, is_active,
+        sections(name, slug),
+        profiles(username)
+      `)
+      .eq('is_active', true)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(limit)
+
+    if (error) throw error
+    res.json(data || [])
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // GET /api/reports/:sectionSlug — últimos reportes de una sección
 router.get('/:sectionSlug', async (req, res) => {
   try {

@@ -5,10 +5,12 @@ import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../../lib/supabase.js'
 
 const SUGERENCIAS = [
-  '¿Cómo está el puerto ahora?',
-  '¿Cuál zona está menos saturada?',
-  '¿Hay alertas activas?',
-  '¿Cómo reporto una fila?',
+  '¿Conviene ingresar ahorita?',
+  '¿Cuál zona tiene menos espera?',
+  '¿Cuál es la mejor hora para entrar hoy?',
+  'Dame un resumen del puerto',
+  '¿Qué zonas debo evitar?',
+  '¿Cuánto tiempo se estima para entrar?',
 ]
 
 function MarkdownText({ text }) {
