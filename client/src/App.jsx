@@ -18,6 +18,8 @@ import Analitica from './pages/Analitica.jsx'
 import Empresa from './pages/Empresa.jsx'
 import Anunciate from './pages/Anunciate.jsx'
 import Legal from './pages/Legal.jsx'
+import Comunicados from './pages/Comunicados.jsx'
+import MapaTerminales from './pages/MapaTerminales.jsx'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -35,7 +37,7 @@ function PrivateRoute({ children }) {
 
 function AdminRoute({ children }) {
   const { profile } = useAuthStore()
-  return profile?.role === 'admin' ? children : <Navigate to="/" replace />
+  return ['admin', 'moderador'].includes(profile?.role) ? children : <Navigate to="/" replace />
 }
 
 export default function App() {
@@ -57,6 +59,8 @@ export default function App() {
             <Route path="empresa" element={<Empresa />} />
             <Route path="anunciate" element={<Anunciate />} />
             <Route path="legal" element={<Legal />} />
+            <Route path="comunicados" element={<Comunicados />} />
+            <Route path="mapa-terminales" element={<MapaTerminales />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />

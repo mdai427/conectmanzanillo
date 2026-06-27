@@ -8,6 +8,7 @@ import {
   Plus, Trash2, X, Shield, CreditCard, CheckCircle2, XCircle,
   Clock, ExternalLink, Ban, AlertOctagon, Eye, ChevronDown,
   FileWarning, Search, Truck, Building2, HelpCircle,
+  MessageSquare, ThumbsUp, ThumbsDown, Timer, Gavel,
 } from 'lucide-react'
 
 const ROLES = ['operator_free', 'operator_premium', 'company', 'moderador', 'admin']
@@ -907,6 +908,317 @@ function SuscripcionesTab() {
   )
 }
 
+// ── Comunicados (moderación) ──────────────────────────────────────────────────
+function ComunicadosTab() {
+  const qc = useQueryClient()
+  const [filtro, setFiltro] = useState('pendiente')
+  const [noteTarget, setNoteTarget] = useState(null)
+  const [note, setNote] = useState('')
+
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ['admin-comunicados', filtro],
+    queryFn: async () => {
+      const token = (await supabase.auth.getSession()).data.session?.access_token
+      const res = await fetch(`/api/comunicados/admin/all?status=${filtro}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      return res.json()
+    },
+    refetchInterval: 30_000,
+  })
+
+  const review = useMutation({
+    mutationFn: async ({ id, status, review_note }) => {
+      const token = (await supabase.auth.getSession()).data.session?.access_token
+      const res = await fetch(`/api/comunicados/${id}/review`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status, review_note }),
+      })
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
+      return res.json()
+    },
+    onSuccess: (_, v) => {
+      toast.success(v.status === 'aprobado' ? '✅ Comunicado aprobado' : '❌ Comunicado rechazado')
+      setNoteTarget(null); setNote('')
+      qc.invalidateQueries({ queryKey: ['admin-comunicados'] })
+    },
+    onError: e => toast.error(e.message),
+  })
+
+  const pendienteCount = filtro === 'pendiente' ? items.length : 0
+
+  return (
+    <div className="space-y-4">
+      {/* Filtros */}
+      <div className="flex gap-2 flex-wrap">
+        {[['pendiente','Pendientes'],['aprobado','Aprobados'],['rechazado','Rechazados'],['todos','Todos']].map(([v, l]) => (
+          <button key={v} onClick={() => setFiltro(v)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              filtro === v ? 'bg-blue-600 text-white' : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'
+            }`}>
+            {l}
+            {v === 'pendiente' && pendienteCount > 0 && (
+              <span className="ml-1.5 bg-amber-500 text-white rounded-full px-1.5 py-0.5 text-[9px] font-black">{pendienteCount}</span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {isLoading ? (
+        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="bg-white border border-gray-200 rounded-xl h-32 animate-pulse" />)}</div>
+      ) : items.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-xl p-10 text-center">
+          <MessageSquare size={28} className="text-gray-300 mx-auto mb-2" />
+          <p className="text-gray-500 text-sm">No hay comunicados {filtro !== 'todos' ? `"${filtro}"` : ''}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {items.map(c => {
+            const statusCfg = {
+              pendiente: { color: '#f59e0b', bg: 'bg-amber-50', border: 'border-amber-200', label: 'Pendiente' },
+              aprobado:  { color: '#16a34a', bg: 'bg-green-50',  border: 'border-green-200',  label: 'Aprobado'  },
+              rechazado: { color: '#dc2626', bg: 'bg-red-50',    border: 'border-red-200',    label: 'Rechazado' },
+            }[c.status] || {}
+            return (
+              <div key={c.id} className={`bg-white border rounded-xl p-4 space-y-3 ${statusCfg.border || 'border-gray-200'}`}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="font-bold text-gray-900 text-sm">{c.titulo}</span>
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${statusCfg.bg} border ${statusCfg.border}`}
+                            style={{ color: statusCfg.color }}>{statusCfg.label}</span>
+                    </div>
+                    <p className="text-gray-600 text-xs leading-relaxed line-clamp-3">{c.contenido}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-xs text-gray-400 pt-2 border-t border-gray-100">
+                  <span>{c.profiles?.full_name || c.profiles?.username || 'Anónimo'} · {new Date(c.created_at).toLocaleDateString('es-MX')}</span>
+                  {c.status === 'pendiente' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setNoteTarget({ ...c, action: 'rechazado' }) }}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition-all">
+                        <XCircle size={12} /> Rechazar
+                      </button>
+                      <button
+                        onClick={() => review.mutate({ id: c.id, status: 'aprobado' })}
+                        disabled={review.isPending}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold text-green-700 bg-green-50 border border-green-200 hover:bg-green-100 transition-all disabled:opacity-40">
+                        <CheckCircle2 size={12} /> Aprobar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Modal de rechazo con nota */}
+      {noteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setNoteTarget(null)}>
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+            <p className="font-bold text-gray-900">Rechazar comunicado</p>
+            <p className="text-gray-600 text-sm">"{noteTarget.titulo}"</p>
+            <textarea
+              value={note}
+              onChange={e => setNote(e.target.value)}
+              placeholder="Motivo del rechazo (opcional)…"
+              rows={3}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-400 resize-none"
+            />
+            <div className="flex gap-2">
+              <button onClick={() => setNoteTarget(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm">Cancelar</button>
+              <button
+                onClick={() => review.mutate({ id: noteTarget.id, status: 'rechazado', review_note: note })}
+                disabled={review.isPending}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 disabled:opacity-40">
+                Rechazar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Historial de Votos ────────────────────────────────────────────────────────
+function VotesTab() {
+  const qc = useQueryClient()
+  const [sancionTarget, setSancionTarget] = useState(null)
+  const [sancionType, setSancionType] = useState('warn')
+  const [motivo, setMotivo] = useState('')
+  const [dias, setDias] = useState(7)
+
+  const { data: votes = [], isLoading } = useQuery({
+    queryKey: ['admin-votes'],
+    queryFn: async () => {
+      const token = (await supabase.auth.getSession()).data.session?.access_token
+      const res = await fetch('/api/admin/vote-history', { headers: { Authorization: `Bearer ${token}` } })
+      return res.json()
+    },
+    refetchInterval: 60_000,
+  })
+
+  async function sancionar() {
+    if (!motivo.trim()) return toast.error('Escribe el motivo')
+    const token = (await supabase.auth.getSession()).data.session?.access_token
+    const userId = sancionTarget.profiles?.id
+    let url, body
+
+    if (sancionType === 'warn') {
+      url = `/api/admin/users/${userId}/warn`
+      body = { motivo, tipo: 'publicacion_falsa' }
+      // Anular el voto específico
+      await fetch(`/api/admin/reports/${sancionTarget.reports?.id}/annul`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ motivo }),
+      })
+    } else if (sancionType === 'annul-all') {
+      url = `/api/admin/users/${userId}/annul-votes`
+      body = { motivo }
+    } else if (sancionType === 'temp-ban') {
+      url = `/api/admin/users/${userId}/temp-ban`
+      body = { motivo, dias }
+    } else {
+      url = `/api/admin/users/${userId}/ban`
+      body = { motivo }
+    }
+
+    const res = await fetch(url, {
+      method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(body),
+    })
+    const data = await res.json()
+    if (!res.ok) return toast.error(data.error)
+
+    toast.success('Sanción aplicada')
+    setSancionTarget(null); setMotivo('')
+    qc.invalidateQueries({ queryKey: ['admin-votes', 'admin-users'] })
+  }
+
+  const REACTION_LABEL = { confirm: '✅ Confirma', contradict: '❌ Contradice' }
+
+  return (
+    <>
+      {/* Modal de sanción */}
+      {sancionTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" onClick={() => setSancionTarget(null)}>
+          <div className="bg-white rounded-2xl p-5 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-2">
+              <Gavel size={18} className="text-red-500" />
+              <p className="font-bold text-gray-900">Sancionar usuario</p>
+            </div>
+            <div className="p-3 bg-gray-50 rounded-xl text-xs text-gray-600 space-y-1">
+              <p><span className="font-semibold">Usuario:</span> {sancionTarget.profiles?.username || sancionTarget.profiles?.full_name}</p>
+              <p><span className="font-semibold">Voto:</span> {REACTION_LABEL[sancionTarget.reaction]}</p>
+              <p><span className="font-semibold">Reporte:</span> {sancionTarget.reports?.sections?.name}</p>
+            </div>
+
+            {/* Tipo de sanción */}
+            <div className="space-y-2">
+              {[
+                { v: 'warn',      l: '⚠️ Advertencia',         sub: 'Warning + anula este voto' },
+                { v: 'annul-all', l: '🚫 Anular todos los votos', sub: 'Borra historial de votos' },
+                { v: 'temp-ban',  l: '⏳ Ban temporal',         sub: 'Suspender por N días' },
+                { v: 'ban',       l: '🔴 Ban indefinido',        sub: 'Baneado permanentemente' },
+              ].map(({ v, l, sub }) => (
+                <button key={v} onClick={() => setSancionType(v)}
+                  className={`w-full text-left p-3 rounded-xl border-2 transition-all ${
+                    sancionType === v ? 'border-red-400 bg-red-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}>
+                  <p className="text-sm font-semibold text-gray-900">{l}</p>
+                  <p className="text-xs text-gray-500">{sub}</p>
+                </button>
+              ))}
+            </div>
+
+            {sancionType === 'temp-ban' && (
+              <div className="flex items-center gap-3">
+                <label className="text-sm text-gray-600 shrink-0">Días:</label>
+                <input type="number" min={1} max={365} value={dias} onChange={e => setDias(Number(e.target.value))}
+                  className="w-24 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 focus:outline-none focus:border-red-400" />
+              </div>
+            )}
+
+            <textarea value={motivo} onChange={e => setMotivo(e.target.value)}
+              placeholder="Motivo de la sanción…" rows={2}
+              className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-red-400 resize-none" />
+
+            <div className="flex gap-2">
+              <button onClick={() => setSancionTarget(null)} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm">Cancelar</button>
+              <button onClick={sancionar} disabled={!motivo.trim()}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700 disabled:opacity-40">
+                Aplicar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {isLoading ? (
+          <div className="space-y-2">{[1,2,3,4].map(i => <div key={i} className="bg-white border border-gray-200 rounded-xl h-16 animate-pulse" />)}</div>
+        ) : votes.length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-xl p-10 text-center">
+            <ThumbsUp size={28} className="text-gray-300 mx-auto mb-2" />
+            <p className="text-gray-500 text-sm">No hay historial de votos</p>
+          </div>
+        ) : (
+          votes.map(v => (
+            <div key={v.id} className={`bg-white border rounded-xl p-3 flex items-center gap-3 ${v.is_annulled ? 'border-gray-100 opacity-50' : 'border-gray-200'}`}>
+              {/* Reacción */}
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
+                v.reaction === 'confirm' ? 'bg-green-50' : 'bg-red-50'
+              }`}>
+                {v.reaction === 'confirm'
+                  ? <ThumbsUp size={14} className="text-green-600" />
+                  : <ThumbsDown size={14} className="text-red-500" />}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-sm font-semibold text-gray-900">
+                    {v.profiles?.username || v.profiles?.full_name || 'Anónimo'}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {v.reaction === 'confirm' ? 'confirmó' : 'contradijo'} en
+                  </span>
+                  <span className="text-xs text-gray-700 font-medium truncate max-w-[140px]">
+                    {v.reports?.sections?.name || '—'}
+                  </span>
+                  {v.is_annulled && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-black bg-red-100 text-red-600">ANULADO</span>
+                  )}
+                  {v.profiles?.warning_count > 0 && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded font-black bg-amber-100 text-amber-600">⚠️ {v.profiles.warning_count} warn</span>
+                  )}
+                </div>
+                <p className="text-[10px] text-gray-400">
+                  {new Date(v.created_at).toLocaleString('es-MX', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                </p>
+              </div>
+
+              {/* Acción */}
+              {!v.is_annulled && v.profiles && (
+                <button
+                  onClick={() => { setSancionTarget(v); setSancionType('warn'); setMotivo('') }}
+                  className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-[10px] font-bold text-red-500 bg-red-50 border border-red-200 hover:bg-red-100 transition-all shrink-0">
+                  <Gavel size={11} /> Sancionar
+                </button>
+              )}
+            </div>
+          ))
+        )}
+      </div>
+    </>
+  )
+}
+
 // ── Admin root ────────────────────────────────────────────────────────────────
 const TABS = [
   { id: 'reports',       label: 'Reportes',      icon: FileWarning  },
@@ -917,6 +1229,8 @@ const TABS = [
   { id: 'directory',     label: 'Directorio',     icon: List         },
   { id: 'sections',      label: 'Zonas',          icon: Map          },
   { id: 'suscripciones', label: 'Suscripciones',  icon: CreditCard   },
+  { id: 'comunicados',   label: 'Comunicados',    icon: MessageSquare },
+  { id: 'votes',         label: 'Votos',          icon: ThumbsUp     },
 ]
 
 export default function Admin() {
@@ -932,6 +1246,8 @@ export default function Admin() {
     directory:     <DirectoryTab />,
     sections:      <SectionsTab />,
     suscripciones: <SuscripcionesTab />,
+    comunicados:   <ComunicadosTab />,
+    votes:         <VotesTab />,
   }
 
   return (

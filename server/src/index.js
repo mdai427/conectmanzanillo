@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url'
 import rateLimit from 'express-rate-limit'
 
 import phoneAuthRouter    from './routes/phoneAuth.js'
+import comunicadosRouter  from './routes/comunicados.js'
 import sectionsRouter     from './routes/sections.js'
 import reportsRouter      from './routes/reports.js'
 import reactionsRouter    from './routes/reactions.js'
@@ -49,7 +50,8 @@ app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }))
 
 // API routes — con cache por tipo de dato
 // Tiempo real: sin cache
-app.use('/api/phone-auth', noCache,       phoneAuthRouter)
+app.use('/api/phone-auth',  noCache, phoneAuthRouter)
+app.use('/api/comunicados', noCache, comunicadosRouter)
 app.use('/api/reports',   noCache,        reportsRouter)
 app.use('/api/reactions', noCache,        reactionsRouter)
 app.use('/api/chat',      noCache,        chatRouter)
