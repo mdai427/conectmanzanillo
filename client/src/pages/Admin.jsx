@@ -752,7 +752,7 @@ function SectionsTab() {
       {sections.map(s => (
         <div key={s.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 bg-white">
           <div>
-            <p <span className="text-gray-900 text-sm font-semibold">{s.name}</p>
+            <p className="text-gray-900 text-sm font-semibold">{s.name}</p>
             <p className="text-gray-400 text-xs">{s.slug}</p>
           </div>
           <span className={`text-xs px-2 py-1 rounded-full ${s.is_active !== false ? 'bg-green-100 text-green-400' : 'bg-[#30363D] text-gray-400'}`}>
