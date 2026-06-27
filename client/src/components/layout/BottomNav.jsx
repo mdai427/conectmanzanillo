@@ -26,7 +26,7 @@ export default function BottomNav() {
       </NavLink>
       <NavLink to="/posturas" className={cls}>
         <Briefcase size={18} />
-        <span>Posturas</span>
+        <span>Operadores</span>
       </NavLink>
       <NavLink to="/vacantes" className={cls}>
         <Building2 size={18} />

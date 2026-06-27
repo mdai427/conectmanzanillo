@@ -7,7 +7,7 @@ const NAV_LINKS = [
   { to: '/',            label: 'Puerto',     icon: Map,           hash: null,         color: null           },
   { to: '/noticias',    label: 'Noticias',   icon: Newspaper,     hash: null,         color: null           },
   { to: '/directorio',  label: 'Directorio', icon: BookOpen,      hash: null,         color: null           },
-  { to: '/posturas',    label: 'Posturas',   icon: Briefcase,     hash: null,         color: null           },
+  { to: '/posturas',    label: 'Operadores', icon: Briefcase,     hash: null,         color: null           },
   { to: '/vacantes',    label: 'Vacantes',   icon: Building2,     hash: null,         color: null           },
   { to: '/analitica',   label: 'Analítica',  icon: BarChart2,     hash: null,         color: null           },
   { to: '/empresa',     label: 'Empresas',   icon: Building2,     hash: null,         color: null           },

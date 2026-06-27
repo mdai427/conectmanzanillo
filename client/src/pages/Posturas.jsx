@@ -418,7 +418,7 @@ export default function Posturas() {
               <Briefcase size={18} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-800">Posturas</h1>
+              <h1 className="text-xl font-black text-slate-800">Operadores</h1>
               <p className="text-slate-500 text-sm">
                 Operadores disponibles · <span className="text-green-600 font-bold">{disponibles} disponibles ahora</span>
               </p>

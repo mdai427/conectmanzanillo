@@ -805,7 +805,7 @@ export default function Dashboard() {
               <Link to="/" className="text-slate-400 hover:text-white transition-colors">Puerto</Link>
               <Link to="/noticias" className="text-slate-400 hover:text-white transition-colors">Noticias</Link>
               <Link to="/directorio" className="text-slate-400 hover:text-white transition-colors">Directorio</Link>
-              <Link to="/posturas" className="text-slate-400 hover:text-white transition-colors">Posturas</Link>
+              <Link to="/posturas" className="text-slate-400 hover:text-white transition-colors">Operadores</Link>
               <Link to="/vacantes" className="text-slate-400 hover:text-white transition-colors">Vacantes</Link>
               <Link to="/register" className="text-slate-400 hover:text-white transition-colors">Registrarse</Link>
             </div>
