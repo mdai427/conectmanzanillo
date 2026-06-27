@@ -78,42 +78,42 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D1117] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
 
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <span className="w-2 h-2 rounded-full bg-[#00C2FF] animate-pulse" />
-            <span className="font-bold text-white">ConectManzanillo</span>
+            <span className="font-bold text-gray-800">ConectManzanillo</span>
           </div>
-          <h1 className="text-2xl font-bold text-white">Crear cuenta</h1>
-          <p className="text-[#8B949E] text-sm mt-2">Únete a la comunidad del puerto</p>
+          <h1 className="text-2xl font-bold text-gray-900">Crear cuenta</h1>
+          <p className="text-gray-500 text-sm mt-2">Únete a la comunidad del puerto</p>
         </div>
 
-        <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-6 space-y-5">
+        <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5">
 
           {step === 1 ? (
             <>
               {/* Nombre */}
               <div>
-                <label className="block text-sm font-medium text-[#8B949E] mb-2">Nombre completo</label>
+                <label className="block text-sm font-medium text-gray-500 mb-2">Nombre completo</label>
                 <input
                   type="text"
                   value={fullName}
                   onChange={e => setFullName(e.target.value)}
                   placeholder="Tu nombre"
-                  className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white text-sm placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF] transition-colors"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#00C2FF] transition-colors"
                 />
               </div>
 
               {/* Teléfono */}
               <div>
-                <label className="block text-sm font-medium text-[#8B949E] mb-2">Número de celular</label>
-                <div className="flex items-center bg-[#0D1117] border border-[#30363D] rounded-xl overflow-hidden focus-within:border-[#00C2FF] transition-colors">
-                  <div className="flex items-center gap-1.5 px-3 border-r border-[#30363D] shrink-0">
+                <label className="block text-sm font-medium text-gray-500 mb-2">Número de celular</label>
+                <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#00C2FF] transition-colors">
+                  <div className="flex items-center gap-1.5 px-3 border-r border-gray-200 shrink-0">
                     <span className="text-lg">🇲🇽</span>
-                    <span className="text-[#8B949E] text-sm">+52</span>
+                    <span className="text-gray-500 text-sm">+52</span>
                   </div>
                   <input
                     type="tel"
@@ -121,15 +121,15 @@ export default function Register() {
                     onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
                     onKeyDown={e => e.key === 'Enter' && handleSend()}
                     placeholder="10 dígitos"
-                    className="flex-1 bg-transparent px-3 py-3 text-white text-sm placeholder-[#4B5563] focus:outline-none"
+                    className="flex-1 bg-transparent px-3 py-3 text-gray-900 text-sm placeholder-gray-400 focus:outline-none"
                   />
                 </div>
-                <p className="text-[11px] text-[#4B5563] mt-1.5">Recibirás un código SMS para verificar tu número</p>
+                <p className="text-[11px] text-gray-400 mt-1.5">Recibirás un código SMS para verificar tu número</p>
               </div>
 
               {/* Tipo de usuario */}
               <div>
-                <label className="block text-sm font-medium text-[#8B949E] mb-3">
+                <label className="block text-sm font-medium text-gray-500 mb-3">
                   ¿Cómo usarás ConectManzanillo? <span className="text-red-400">*</span>
                 </label>
                 <div className="space-y-2">
@@ -180,7 +180,7 @@ export default function Register() {
               {/* Step 2: OTP */}
               <button
                 onClick={() => setStep(1)}
-                className="flex items-center gap-1.5 text-[#8B949E] hover:text-white text-sm transition-colors"
+                className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 text-sm transition-colors"
               >
                 <ArrowLeft size={14} /> Cambiar número
               </button>
@@ -189,9 +189,9 @@ export default function Register() {
                 <div className="w-12 h-12 rounded-full bg-[#00C2FF]/10 flex items-center justify-center mx-auto mb-3">
                   <KeyRound size={22} className="text-[#00C2FF]" />
                 </div>
-                <p className="text-white font-semibold">Ingresa tu código</p>
-                <p className="text-[#8B949E] text-sm mt-1">
-                  Enviamos un SMS a <span className="text-white">{sentPhone}</span>
+                <p className="text-gray-900 font-semibold">Ingresa tu código</p>
+                <p className="text-gray-500 text-sm mt-1">
+                  Enviamos un SMS a <span className="text-gray-900 font-semibold">{sentPhone}</span>
                 </p>
               </div>
 
@@ -203,7 +203,7 @@ export default function Register() {
                   onKeyDown={e => e.key === 'Enter' && handleVerify()}
                   placeholder="000000"
                   maxLength={6}
-                  className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-4 text-white text-center text-2xl tracking-[0.5em] font-mono placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF] transition-colors"
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-900 text-center text-2xl tracking-[0.5em] font-mono placeholder-gray-400 focus:outline-none focus:border-[#00C2FF] transition-colors"
                 />
               </div>
 
@@ -218,7 +218,7 @@ export default function Register() {
               <button
                 onClick={handleSend}
                 disabled={loading}
-                className="w-full text-[#8B949E] text-sm hover:text-white transition-colors"
+                className="w-full text-gray-500 text-sm hover:text-gray-900 transition-colors"
               >
                 ¿No llegó? Reenviar código
               </button>
@@ -226,7 +226,7 @@ export default function Register() {
           )}
         </div>
 
-        <p className="text-center text-sm text-[#8B949E] mt-6">
+        <p className="text-center text-sm text-gray-500 mt-6">
           ¿Ya tienes cuenta?{' '}
           <Link to="/login" className="text-[#00C2FF] hover:underline">Iniciar sesión</Link>
         </p>

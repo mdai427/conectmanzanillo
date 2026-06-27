@@ -20,7 +20,7 @@ const ROLE_LABELS = {
 }
 const TIPO_ICONS = { operador: Truck, empresa: Building2, otro: HelpCircle }
 
-const INPUT = 'bg-[#0D1117] border border-[#30363D] rounded-xl px-3 py-2 text-sm text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF] w-full'
+const INPUT = 'bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00C2FF] w-full'
 
 // ── Alertas ───────────────────────────────────────────────────────────────────
 function AlertsTab() {
@@ -55,8 +55,8 @@ function AlertsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#161B22] border border-red-500/30 rounded-xl p-4 space-y-3">
-        <p className="text-xs text-[#8B949E]">Alerta de emergencia visible para todos los usuarios</p>
+      <div className="bg-white border border-red-500/30 rounded-xl p-4 space-y-3">
+        <p className="text-xs text-gray-500">Alerta de emergencia visible para todos los usuarios</p>
         <input value={msg} onChange={e => setMsg(e.target.value)}
           placeholder="Mensaje de emergencia…"
           className={INPUT} />
@@ -68,17 +68,17 @@ function AlertsTab() {
       <div className="space-y-2">
         {alerts.map(a => (
           <div key={a.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
-            a.is_active ? 'border-red-500/40 bg-red-950/20' : 'border-[#30363D] bg-[#161B22] opacity-60'
+            a.is_active ? 'border-red-500/40 bg-red-50' : 'border-gray-200 bg-white opacity-60'
           }`}>
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm truncate">{a.message}</p>
-              <p className="text-[#4B5563] text-xs mt-0.5">
+              <p className="text-gray-900 text-sm truncate">{a.message}</p>
+              <p className="text-gray-400 text-xs mt-0.5">
                 {a.is_active ? '🔴 Activa' : '⚫ Resuelta'} · {new Date(a.created_at).toLocaleString('es-MX')}
               </p>
             </div>
             {a.is_active && (
               <button onClick={() => deactivate(a.id)}
-                className="text-[#4B5563] hover:text-white p-1.5 rounded-lg hover:bg-[#30363D] transition-colors">
+                className="text-gray-400 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
                 <X size={14} />
               </button>
             )}
@@ -128,22 +128,22 @@ function NewsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#161B22] border border-[#30363D] rounded-xl p-4 space-y-3">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
         <div className="flex gap-2">
           <select value={category} onChange={e => setCategory(e.target.value)}
-            className="bg-[#0D1117] border border-[#30363D] rounded-xl px-3 py-2 text-sm text-[#8B949E] focus:outline-none">
+            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 focus:outline-none">
             {NEWS_CATS.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <input type="number" value={priority} onChange={e => setPriority(e.target.value)}
             placeholder="Prioridad"
-            className="w-24 bg-[#0D1117] border border-[#30363D] rounded-xl px-3 py-2 text-sm text-[#8B949E] focus:outline-none" />
+            className="w-24 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 focus:outline-none" />
         </div>
         <textarea value={content} onChange={e => setContent(e.target.value)}
           placeholder="Contenido de la noticia (máx 200 caracteres)…"
           maxLength={200} rows={3}
-          className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-sm text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF]/50 resize-none" />
+          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00C2FF]/50 resize-none" />
         <div className="flex items-center justify-between">
-          <span className="text-xs text-[#4B5563]">{content.length}/200</span>
+          <span className="text-xs text-gray-400">{content.length}/200</span>
           <button onClick={create} disabled={!content.trim() || sending}
             className="flex items-center gap-2 bg-[#00C2FF] hover:bg-[#00AADD] text-black text-sm font-semibold px-4 py-2 rounded-xl transition-colors disabled:opacity-40">
             <Plus size={14} /> Publicar
@@ -153,17 +153,17 @@ function NewsTab() {
       <div className="space-y-2">
         {news.map(n => (
           <div key={n.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
-            n.is_active ? 'border-[#30363D] bg-[#161B22]' : 'border-[#30363D]/30 bg-[#161B22] opacity-50'
+            n.is_active ? 'border-gray-200 bg-white' : 'border-gray-200/30 bg-white opacity-50'
           }`}>
             <div className="flex-1 min-w-0">
-              <p className="text-white text-xs truncate">{n.content}</p>
-              <p className="text-[#4B5563] text-[10px] mt-0.5">
+              <p className="text-gray-900 text-xs truncate">{n.content}</p>
+              <p className="text-gray-400 text-[10px] mt-0.5">
                 {n.category} · prioridad {n.priority} · {n.is_active ? '✅ Activa' : '⛔ Inactiva'}
               </p>
             </div>
             {n.is_active && (
               <button onClick={() => deactivate(n.id)}
-                className="text-[#4B5563] hover:text-white p-1.5 rounded-lg hover:bg-[#30363D] transition-colors">
+                className="text-gray-400 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
                 <Trash2 size={13} />
               </button>
             )}
@@ -208,7 +208,7 @@ function AdsTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#161B22] border border-[#30363D] rounded-xl p-4 space-y-3">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {[['company_name','Nombre empresa *'],['tagline','Tagline'],['cta_url','URL destino'],['cta_text','Texto botón'],['phone','Teléfono'],['whatsapp','WhatsApp (sin +52)']].map(([key, label]) => (
             <input key={key} value={form[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))}
@@ -217,11 +217,11 @@ function AdsTab() {
         </div>
         <div className="flex gap-2">
           <select value={form.plan} onChange={e => setForm(p => ({ ...p, plan: e.target.value }))}
-            className="bg-[#0D1117] border border-[#30363D] rounded-xl px-3 py-2 text-sm text-[#8B949E] focus:outline-none">
+            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 focus:outline-none">
             {['basic','premium','featured'].map(v => <option key={v} value={v}>{v}</option>)}
           </select>
           <select value={form.position} onChange={e => setForm(p => ({ ...p, position: e.target.value }))}
-            className="bg-[#0D1117] border border-[#30363D] rounded-xl px-3 py-2 text-sm text-[#8B949E] focus:outline-none">
+            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 focus:outline-none">
             {['dashboard','sidebar','ticker','all'].map(v => <option key={v} value={v}>{v}</option>)}
           </select>
         </div>
@@ -232,13 +232,13 @@ function AdsTab() {
       </div>
       <div className="space-y-2">
         {ads.map(ad => (
-          <div key={ad.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border border-[#30363D] ${ad.is_active ? 'bg-[#161B22]' : 'bg-[#161B22] opacity-50'}`}>
+          <div key={ad.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 ${ad.is_active ? 'bg-white' : 'bg-white opacity-50'}`}>
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-semibold truncate">{ad.company_name}</p>
-              <p className="text-[#4B5563] text-xs">{ad.plan} · {ad.position} · {ad.clicks} clicks · {ad.is_active ? '✅' : '⛔'}</p>
+              <p className="text-gray-900 text-sm font-semibold truncate">{ad.company_name}</p>
+              <p className="text-gray-400 text-xs">{ad.plan} · {ad.position} · {ad.clicks} clicks · {ad.is_active ? '✅' : '⛔'}</p>
             </div>
             <button onClick={() => toggleAd(ad.id, ad.is_active)}
-              className="text-xs px-3 py-1.5 rounded-lg border border-[#30363D] text-[#8B949E] hover:text-white transition-colors">
+              className="text-xs px-3 py-1.5 rounded-lg border border-gray-200 text-gray-500 hover:text-gray-900 transition-colors">
               {ad.is_active ? 'Pausar' : 'Activar'}
             </button>
           </div>
@@ -285,11 +285,11 @@ function DirectoryTab() {
 
   return (
     <div className="space-y-4">
-      <div className="bg-[#161B22] border border-[#30363D] rounded-xl p-4 space-y-3">
+      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="Nombre del negocio *" className={INPUT} />
           <select value={form.category} onChange={e => setForm(p => ({ ...p, category: e.target.value }))}
-            className="bg-[#0D1117] border border-[#30363D] rounded-xl px-3 py-2 text-sm text-[#8B949E] focus:outline-none">
+            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 focus:outline-none">
             {DIR_CATS.map(c => <option key={c} value={c}>{c}</option>)}
           </select>
           <input value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} placeholder="Descripción" className={`${INPUT} sm:col-span-2`} />
@@ -298,7 +298,7 @@ function DirectoryTab() {
           <input value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} placeholder="Dirección" className={INPUT} />
           <input value={form.maps_url} onChange={e => setForm(p => ({ ...p, maps_url: e.target.value }))} placeholder="URL Google Maps" className={INPUT} />
         </div>
-        <label className="flex items-center gap-2 text-sm text-[#8B949E] cursor-pointer">
+        <label className="flex items-center gap-2 text-sm text-gray-500 cursor-pointer">
           <input type="checkbox" checked={form.is_featured} onChange={e => setForm(p => ({ ...p, is_featured: e.target.checked }))} className="w-4 h-4 accent-[#00C2FF]" />
           Destacado (de pago)
         </label>
@@ -309,13 +309,13 @@ function DirectoryTab() {
       </div>
       <div className="space-y-2">
         {listings.map(l => (
-          <div key={l.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border border-[#30363D] ${l.is_active ? 'bg-[#161B22]' : 'opacity-50 bg-[#161B22]'}`}>
+          <div key={l.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 ${l.is_active ? 'bg-white' : 'opacity-50 bg-white'}`}>
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-semibold truncate">{l.name} {l.is_featured ? '⭐' : ''}</p>
-              <p className="text-[#4B5563] text-xs">{l.category} · {l.phone || l.whatsapp || 'Sin contacto'}</p>
+              <p className="text-gray-900 text-sm font-semibold truncate">{l.name} {l.is_featured ? '⭐' : ''}</p>
+              <p className="text-gray-400 text-xs">{l.category} · {l.phone || l.whatsapp || 'Sin contacto'}</p>
             </div>
             {l.is_active && (
-              <button onClick={() => remove(l.id)} className="text-[#4B5563] hover:text-red-400 p-1.5 rounded-lg hover:bg-[#30363D] transition-colors">
+              <button onClick={() => remove(l.id)} className="text-gray-400 hover:text-red-400 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
                 <Trash2 size={13} />
               </button>
             )}
@@ -356,16 +356,16 @@ function WarnModal({ user, onClose, onSent }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" onClick={onClose}>
-      <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
+      <div className="bg-white border border-gray-200 rounded-2xl p-6 w-full max-w-sm space-y-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center gap-3">
           <AlertOctagon size={20} className="text-amber-400" />
           <div>
-            <p className="text-white font-bold text-sm">Enviar warning</p>
-            <p className="text-[#8B949E] text-xs">{user.username || user.full_name}</p>
+            <p className="text-gray-900 font-bold text-sm">Enviar warning</p>
+            <p className="text-gray-500 text-xs">{user.username || user.full_name}</p>
           </div>
         </div>
         <select value={tipo} onChange={e => setTipo(e.target.value)}
-          className="bg-[#0D1117] border border-[#30363D] rounded-xl px-3 py-2 text-sm text-[#8B949E] w-full focus:outline-none">
+          className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 w-full focus:outline-none">
           <option value="publicacion_falsa">Publicación falsa</option>
           <option value="spam">Spam</option>
           <option value="ofensivo">Contenido ofensivo</option>
@@ -374,13 +374,13 @@ function WarnModal({ user, onClose, onSent }) {
         <textarea value={motivo} onChange={e => setMotivo(e.target.value)}
           placeholder="Motivo detallado del warning…"
           rows={3}
-          className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-sm text-white placeholder-[#4B5563] focus:outline-none focus:border-amber-500/50 resize-none" />
-        <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-900/20 border border-amber-500/30">
+          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-amber-500/50 resize-none" />
+        <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-500/30">
           <AlertTriangle size={13} className="text-amber-400 shrink-0" />
-          <p className="text-xs text-amber-300">Con 3 warnings el usuario es baneado automáticamente.</p>
+          <p className="text-xs text-amber-700">Con 3 warnings el usuario es baneado automáticamente.</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-[#30363D] text-[#8B949E] text-sm hover:text-white transition-colors">
+          <button onClick={onClose} className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-500 text-sm hover:text-gray-900 transition-colors">
             Cancelar
           </button>
           <button onClick={send} disabled={loading || !motivo.trim()}
@@ -449,7 +449,7 @@ function ReportsTab() {
           {[['active','Activos'],['inactive','Eliminados'],['all','Todos']].map(([v, l]) => (
             <button key={v} onClick={() => setFiltro(v)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-                filtro === v ? 'bg-[#00C2FF] text-black' : 'bg-[#161B22] border border-[#30363D] text-[#8B949E] hover:text-white'
+                filtro === v ? 'bg-[#00C2FF] text-black' : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'
               }`}>
               {l}
             </button>
@@ -458,11 +458,11 @@ function ReportsTab() {
 
         {isLoading ? (
           <div className="space-y-2">
-            {[1,2,3].map(i => <div key={i} className="bg-[#161B22] border border-[#30363D] rounded-xl h-20 animate-pulse" />)}
+            {[1,2,3].map(i => <div key={i} className="bg-white border border-gray-200 rounded-xl h-20 animate-pulse" />)}
           </div>
         ) : reports.length === 0 ? (
-          <div className="bg-[#161B22] border border-[#30363D] rounded-xl p-8 text-center">
-            <p className="text-[#8B949E] text-sm">No hay reportes {filtro === 'active' ? 'activos' : ''}</p>
+          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+            <p className="text-gray-500 text-sm">No hay reportes {filtro === 'active' ? 'activos' : ''}</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -470,8 +470,8 @@ function ReportsTab() {
               const user = r.profiles
               const isBanned = user?.is_banned
               return (
-                <div key={r.id} className={`bg-[#161B22] border rounded-xl p-4 space-y-3 ${
-                  isBanned ? 'border-red-800/40' : 'border-[#30363D]'
+                <div key={r.id} className={`bg-white border rounded-xl p-4 space-y-3 ${
+                  isBanned ? 'border-red-200' : 'border-gray-200'
                 }`}>
                   {/* Header */}
                   <div className="flex items-start justify-between gap-3">
@@ -482,32 +482,32 @@ function ReportsTab() {
                         {STATUS_LABEL[r.status] || r.status}
                       </span>
                       {/* Zona */}
-                      <span className="text-[#8B949E] text-xs">{r.sections?.name || '—'}</span>
+                      <span className="text-gray-500 text-xs">{r.sections?.name || '—'}</span>
                       {/* Fecha */}
-                      <span className="text-[#4B5563] text-[10px]">
+                      <span className="text-gray-400 text-[10px]">
                         {new Date(r.created_at).toLocaleString('es-MX', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' })}
                       </span>
                     </div>
                     {/* Confirmaciones */}
                     <div className="text-right shrink-0">
-                      <p className="text-[10px] text-[#8B949E]">✅ {r.confirmations || 0} · ❌ {r.contradictions || 0}</p>
+                      <p className="text-[10px] text-gray-500">✅ {r.confirmations || 0} · ❌ {r.contradictions || 0}</p>
                     </div>
                   </div>
 
                   {/* Comentario */}
                   {r.comment && (
-                    <p className="text-sm text-white bg-[#0D1117] rounded-lg px-3 py-2 italic">
+                    <p className="text-sm text-gray-700 bg-gray-50 rounded-lg px-3 py-2 italic">
                       "{r.comment}"
                     </p>
                   )}
 
                   {/* Usuario */}
-                  <div className="flex items-center justify-between gap-3 pt-1 border-t border-[#30363D]/50">
+                  <div className="flex items-center justify-between gap-3 pt-1 border-t border-gray-200/50">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-[#30363D] flex items-center justify-center text-[10px] text-white font-bold">
+                      <div className="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center text-[10px] text-gray-700 font-bold">
                         {(user?.username || '?')[0].toUpperCase()}
                       </div>
-                      <span className="text-xs text-[#8B949E]">{user?.username || user?.full_name || 'Anónimo'}</span>
+                      <span className="text-xs text-gray-500">{user?.username || user?.full_name || 'Anónimo'}</span>
                       {user?.warning_count > 0 && (
                         <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-900/30 text-amber-400">
                           {user.warning_count} warn
@@ -527,7 +527,7 @@ function ReportsTab() {
                         <button
                           onClick={() => setWarnTarget(user)}
                           title="Enviar warning"
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-amber-400 bg-amber-900/20 hover:bg-amber-900/40 border border-amber-800/30 transition-all">
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-amber-400 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all">
                           <AlertOctagon size={11} /> Warn
                         </button>
                       )}
@@ -540,7 +540,7 @@ function ReportsTab() {
                             }
                           }}
                           title="Banear usuario"
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-red-400 bg-red-900/20 hover:bg-red-900/40 border border-red-800/30 transition-all">
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-red-400 bg-red-50 hover:bg-red-100 border border-red-200 transition-all">
                           <Ban size={11} /> Ban
                         </button>
                       )}
@@ -549,7 +549,7 @@ function ReportsTab() {
                         <button
                           onClick={() => deleteReport.mutate(r.id)}
                           title="Eliminar reporte"
-                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-[#4B5563] hover:text-white bg-[#0D1117] border border-[#30363D] hover:border-red-800/40 transition-all">
+                          className="flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold text-gray-500 hover:text-gray-900 bg-gray-50 border border-gray-200 hover:border-red-200 transition-all">
                           <Trash2 size={11} /> Eliminar
                         </button>
                       )}
@@ -621,22 +621,22 @@ function UsersTab() {
       <div className="space-y-4">
         {/* Búsqueda */}
         <div className="relative">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#4B5563]" />
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Buscar por usuario o nombre…"
-            className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF]"
+            className="w-full bg-gray-50 border border-gray-200 rounded-xl pl-9 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00C2FF]"
           />
         </div>
 
         {isLoading ? (
           <div className="space-y-2">
-            {[1,2,3,4,5].map(i => <div key={i} className="bg-[#161B22] border border-[#30363D] rounded-xl h-16 animate-pulse" />)}
+            {[1,2,3,4,5].map(i => <div key={i} className="bg-white border border-gray-200 rounded-xl h-16 animate-pulse" />)}
           </div>
         ) : users.length === 0 ? (
-          <div className="bg-[#161B22] border border-[#30363D] rounded-xl p-8 text-center">
-            <p className="text-[#8B949E] text-sm">No se encontraron usuarios</p>
+          <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+            <p className="text-gray-500 text-sm">No se encontraron usuarios</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -644,7 +644,7 @@ function UsersTab() {
               const roleConfig = ROLE_LABELS[u.role] || ROLE_LABELS.operator_free
               const TipoIcon = TIPO_ICONS[u.tipo_usuario] || HelpCircle
               return (
-                <div key={u.id} className={`bg-[#161B22] border rounded-xl p-4 ${u.is_banned ? 'border-red-800/40 opacity-75' : 'border-[#30363D]'}`}>
+                <div key={u.id} className={`bg-white border rounded-xl p-4 ${u.is_banned ? 'border-red-200 opacity-75' : 'border-gray-200'}`}>
                   <div className="flex items-center gap-3 flex-wrap">
                     {/* Avatar */}
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm shrink-0">
@@ -654,7 +654,7 @@ function UsersTab() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-white text-sm font-bold">{u.username || u.full_name || 'Sin nombre'}</span>
+                        <span className="text-gray-900 text-sm font-bold">{u.username || u.full_name || 'Sin nombre'}</span>
                         {/* Tipo */}
                         {u.tipo_usuario && (
                           <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-bold"
@@ -679,7 +679,7 @@ function UsersTab() {
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] text-[#4B5563] mt-0.5">
+                      <p className="text-[10px] text-gray-400 mt-0.5">
                         {u.total_reportes || 0} reportes · {u.puntos || 0} pts · rep {u.reputation}
                       </p>
                     </div>
@@ -690,14 +690,14 @@ function UsersTab() {
                       <select
                         value={u.role}
                         onChange={e => roleMutation.mutate({ id: u.id, role: e.target.value })}
-                        className="bg-[#0D1117] border border-[#30363D] rounded-lg px-2 py-1 text-[10px] text-[#8B949E] focus:outline-none focus:border-[#00C2FF]">
+                        className="bg-gray-50 border border-gray-200 rounded-lg px-2 py-1 text-[10px] text-gray-500 focus:outline-none focus:border-[#00C2FF]">
                         {ROLES.map(r => <option key={r} value={r}>{r}</option>)}
                       </select>
                       {/* Warning */}
                       {!u.is_banned && (
                         <button onClick={() => setWarnTarget(u)}
                           title="Enviar warning"
-                          className="p-1.5 rounded-lg text-amber-400 bg-amber-900/20 hover:bg-amber-900/40 border border-amber-800/30 transition-all">
+                          className="p-1.5 rounded-lg text-amber-400 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition-all">
                           <AlertOctagon size={13} />
                         </button>
                       )}
@@ -715,8 +715,8 @@ function UsersTab() {
                         title={u.is_banned ? 'Desbanear' : 'Banear'}
                         className={`p-1.5 rounded-lg border transition-all ${
                           u.is_banned
-                            ? 'text-green-400 bg-green-900/20 hover:bg-green-900/40 border-green-800/30'
-                            : 'text-red-400 bg-red-900/20 hover:bg-red-900/40 border-red-800/30'
+                            ? 'text-green-400 bg-green-50 hover:bg-green-100 border-green-200'
+                            : 'text-red-400 bg-red-50 hover:bg-red-100 border-red-200'
                         }`}>
                         {u.is_banned ? <CheckCircle2 size={13} /> : <Ban size={13} />}
                       </button>
@@ -749,12 +749,12 @@ function SectionsTab() {
   return (
     <div className="space-y-2">
       {sections.map(s => (
-        <div key={s.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border border-[#30363D] bg-[#161B22]">
+        <div key={s.id} className="flex items-center justify-between gap-3 p-3 rounded-xl border border-gray-200 bg-white">
           <div>
-            <p className="text-white text-sm font-semibold">{s.name}</p>
-            <p className="text-[#4B5563] text-xs">{s.slug}</p>
+            <p <span className="text-gray-900 text-sm font-semibold">{s.name}</p>
+            <p className="text-gray-400 text-xs">{s.slug}</p>
           </div>
-          <span className={`text-xs px-2 py-1 rounded-full ${s.is_active !== false ? 'bg-green-900/40 text-green-400' : 'bg-[#30363D] text-[#4B5563]'}`}>
+          <span className={`text-xs px-2 py-1 rounded-full ${s.is_active !== false ? 'bg-green-100 text-green-400' : 'bg-[#30363D] text-gray-400'}`}>
             {s.is_active !== false ? 'Activa' : 'Inactiva'}
           </span>
         </div>
@@ -818,16 +818,16 @@ function SuscripcionesTab() {
   return (
     <div className="space-y-4">
       {filtro === 'pendiente' && pendientesCount > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-900/20 border border-amber-500/40">
+        <div className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-50 border border-amber-500/40">
           <Clock size={16} className="text-amber-400 shrink-0" />
-          <p className="text-sm text-amber-300 font-bold">{pendientesCount} pago{pendientesCount !== 1 ? 's' : ''} esperando verificación</p>
+          <p className="text-sm text-amber-700 font-bold">{pendientesCount} pago{pendientesCount !== 1 ? 's' : ''} esperando verificación</p>
         </div>
       )}
       <div className="flex gap-2 flex-wrap">
         {['pendiente','activa','vencida','cancelada','todos'].map(f => (
           <button key={f} onClick={() => setFiltro(f)}
             className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
-              filtro === f ? 'bg-[#00C2FF] text-black' : 'bg-[#161B22] border border-[#30363D] text-[#8B949E] hover:text-white'
+              filtro === f ? 'bg-[#00C2FF] text-black' : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'
             }`}>
             {f.charAt(0).toUpperCase() + f.slice(1)}
             {f === 'pendiente' && pendientesCount > 0 && (
@@ -837,10 +837,10 @@ function SuscripcionesTab() {
         ))}
       </div>
       {isLoading ? (
-        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="bg-[#161B22] border border-[#30363D] rounded-xl h-28 animate-pulse" />)}</div>
+        <div className="space-y-3">{[1,2,3].map(i => <div key={i} className="bg-white border border-gray-200 rounded-xl h-28 animate-pulse" />)}</div>
       ) : subs.length === 0 ? (
-        <div className="bg-[#161B22] border border-[#30363D] rounded-xl p-8 text-center">
-          <p className="text-[#8B949E] text-sm">No hay suscripciones {filtro !== 'todos' ? `"${filtro}"` : ''}</p>
+        <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
+          <p className="text-gray-500 text-sm">No hay suscripciones {filtro !== 'todos' ? `"${filtro}"` : ''}</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -848,31 +848,31 @@ function SuscripcionesTab() {
             const cfg = ESTATUS_CFG[sub.estatus] || ESTATUS_CFG.pendiente
             const EstatusIcon = cfg.icon
             return (
-              <div key={sub.id} className="bg-[#161B22] border border-[#30363D] rounded-xl p-4 space-y-3">
+              <div key={sub.id} className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-white font-bold text-sm">{sub.profiles?.username || sub.profiles?.email || 'Usuario desconocido'}</span>
+                      <span className="text-gray-900 font-bold text-sm">{sub.profiles?.username || sub.profiles?.email || 'Usuario desconocido'}</span>
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1"
                             style={{ background: cfg.bg, color: cfg.color, border: `1px solid ${cfg.border}` }}>
                         <EstatusIcon size={9} /> {cfg.label}
                       </span>
                     </div>
-                    <p className="text-[#8B949E] text-xs">{sub.profiles?.email}</p>
+                    <p className="text-gray-500 text-xs">{sub.profiles?.email}</p>
                   </div>
                   <div className="text-right shrink-0">
                     <p className="text-green-400 font-black text-base">${Number(sub.monto).toLocaleString()} {sub.moneda}</p>
-                    <p className="text-[#8B949E] text-[10px]">{sub.metodo_pago || '—'}</p>
+                    <p className="text-gray-500 text-[10px]">{sub.metodo_pago || '—'}</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-[#0D1117] rounded-lg p-2">
-                    <p className="text-[#8B949E] mb-0.5">Referencia de pago</p>
-                    <p className="text-white font-mono truncate">{sub.referencia_pago || '—'}</p>
+                  <div className="bg-gray-50 rounded-lg p-2">
+                    <p className="text-gray-500 mb-0.5">Referencia de pago</p>
+                    <p className="text-gray-900 font-mono truncate">{sub.referencia_pago || '—'}</p>
                   </div>
-                  <div className="bg-[#0D1117] rounded-lg p-2">
-                    <p className="text-[#8B949E] mb-0.5">Solicitado</p>
-                    <p className="text-white">{new Date(sub.created_at).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })}</p>
+                  <div className="bg-gray-50 rounded-lg p-2">
+                    <p className="text-gray-500 mb-0.5">Solicitado</p>
+                    <p className="text-gray-900">{new Date(sub.created_at).toLocaleDateString('es-MX', { day:'2-digit', month:'short', year:'numeric' })}</p>
                   </div>
                 </div>
                 {sub.comprobante_url && (
@@ -882,7 +882,7 @@ function SuscripcionesTab() {
                   </a>
                 )}
                 {sub.estatus === 'activa' && sub.expires_at && (
-                  <div className="flex items-center gap-1.5 text-[10px] text-[#8B949E]">
+                  <div className="flex items-center gap-1.5 text-[10px] text-gray-500">
                     <Clock size={10} /> Vence: {new Date(sub.expires_at).toLocaleDateString('es-MX', { day:'2-digit', month:'long', year:'numeric' })}
                   </div>
                 )}
@@ -893,7 +893,7 @@ function SuscripcionesTab() {
                       <CheckCircle2 size={13} /> Activar
                     </button>
                     <button onClick={() => rechazar.mutate({ id: sub.id })} disabled={rechazar.isPending}
-                      className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-red-400 bg-red-900/20 border border-red-800/40 hover:bg-red-900/40 transition-all disabled:opacity-40">
+                      className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold text-red-400 bg-red-50 border border-red-200 hover:bg-red-100 transition-all disabled:opacity-40">
                       <XCircle size={13} /> Rechazar
                     </button>
                   </div>
@@ -935,13 +935,13 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D1117]">
+    <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
         <div className="flex items-center gap-3">
           <Shield size={20} className="text-[#00C2FF]" />
           <div>
-            <h1 className="text-xl font-bold text-white">Panel de Administración</h1>
-            <p className="text-[#8B949E] text-xs mt-0.5">ConectManzanillo · Control total de la plataforma</p>
+            <h1 className="text-xl font-bold text-gray-900">Panel de Administración</h1>
+            <p className="text-gray-500 text-xs mt-0.5">ConectManzanillo · Control total de la plataforma</p>
           </div>
         </div>
 
@@ -955,9 +955,9 @@ export default function Admin() {
               { label: 'Reacciones', value: stats.reactions,      color: '#f59e0b' },
               { label: 'Warnings',   value: stats.warnings,       color: '#ef4444' },
             ].map(s => (
-              <div key={s.label} className="bg-[#161B22] border border-[#30363D] rounded-xl p-4 text-center">
+              <div key={s.label} className="bg-white border border-gray-200 rounded-xl p-4 text-center">
                 <div className="text-2xl font-bold" style={{ color: s.color }}>{s.value ?? '—'}</div>
-                <div className="text-xs text-[#8B949E] mt-1">{s.label}</div>
+                <div className="text-xs text-gray-500 mt-1">{s.label}</div>
               </div>
             ))}
           </div>
@@ -968,7 +968,7 @@ export default function Admin() {
           {TABS.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setTab(id)}
               className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                tab === id ? 'bg-[#00C2FF] text-black' : 'bg-[#161B22] border border-[#30363D] text-[#8B949E] hover:text-white'
+                tab === id ? 'bg-[#00C2FF] text-black' : 'bg-white border border-gray-200 text-gray-500 hover:text-gray-900'
               }`}>
               <Icon size={13} />
               {label}
