@@ -1,21 +1,10 @@
-import { createClient } from '@supabase/supabase-js'
-
-let _supabase = null
-function getSupabase() {
-  if (!_supabase) {
-    _supabase = createClient(
-      process.env.SUPABASE_URL,
-      process.env.SUPABASE_ANON_KEY
-    )
-  }
-  return _supabase
-}
+import { supabaseAdmin } from '../config/supabase.js'
 
 export async function requireAuth(req, res, next) {
   const token = req.headers.authorization?.replace('Bearer ', '')
   if (!token) return res.status(401).json({ error: 'No autenticado' })
 
-  const { data: { user }, error } = await getSupabase().auth.getUser(token)
+  const { data: { user }, error } = await supabaseAdmin.auth.getUser(token)
   if (error || !user) return res.status(401).json({ error: 'Token inválido' })
 
   req.user = user
