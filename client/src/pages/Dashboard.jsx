@@ -134,12 +134,12 @@ export default function Dashboard() {
               style={{ background: 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.3)', color: 'white', backdropFilter: 'blur(12px)' }}>
               Registrar empresa
             </Link>
-            <a href="https://wa.me/525566834948?text=Hola%2C%20quiero%20una%20demo%20de%20ConectManzanillo"
+            <a href="https://whatsapp.com/channel/0029VbBN73rId7nJ3RTSsq3s"
                target="_blank" rel="noopener noreferrer"
               className="flex items-center gap-2 px-7 py-3.5 rounded-2xl font-black text-sm text-white transition-all hover:scale-105 active:scale-95"
               style={{ background: '#25D366' }}>
               {WA_ICON}
-              Solicitar Demo
+              Unirse al Canal
             </a>
           </div>
 
@@ -498,12 +498,12 @@ export default function Dashboard() {
           <div className="mt-10 text-center">
             <p className="text-slate-500 text-sm mb-4">¿Tienes dudas? Platícanos tu caso y te mostramos la plataforma en acción.</p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <a href="https://wa.me/525566834948?text=Hola%2C%20quiero%20agendar%20una%20demo%20de%20ConectManzanillo%20para%20mi%20empresa"
+              <a href="https://whatsapp.com/channel/0029VbBN73rId7nJ3RTSsq3s"
                  target="_blank" rel="noopener noreferrer"
                  className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl font-bold text-sm text-white transition-all hover:scale-105"
                  style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)' }}>
                 {WA_ICON}
-                Solicitar demo gratuita
+                Unirse al Canal de WhatsApp
               </a>
               <Link to="/empresa"
                 className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-2xl font-bold text-sm text-blue-200 transition-all hover:bg-white/10"
