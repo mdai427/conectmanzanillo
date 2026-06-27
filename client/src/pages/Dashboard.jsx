@@ -292,10 +292,10 @@ export default function Dashboard() {
       <div className="border-y border-slate-100 bg-slate-50 py-12 px-4">
         <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { num: '+500',    label: 'Operadores en la red',    icon: Users,       sub: 'y creciendo'         },
-            { num: '+8,000',  label: 'Reportes generados',      icon: Radio,       sub: 'desde el lanzamiento'},
-            { num: '8',       label: 'Zonas monitoreadas',      icon: Map,         sub: 'Puerto Manzanillo'   },
-            { num: '24/7',    label: 'Información en vivo',     icon: Zap,         sub: 'siempre activo'      },
+            { num: `${sections.length || '—'}`,  label: 'Zonas monitoreadas',      icon: Map,   sub: 'Puerto Manzanillo'   },
+            { num: `${totalReports || '0'}`,   label: 'Reportes activos ahora',  icon: Radio, sub: 'datos de la comunidad'},
+            { num: `${freeCount}/${sections.length || '—'}`, label: 'Zonas libres ahora', icon: Zap, sub: 'en tiempo real' },
+            { num: '24/7',                     label: 'Monitoreo continuo',      icon: Users, sub: 'siempre activo'      },
           ].map(({ num, label, icon: Icon, sub }) => (
             <div key={label} className="text-center">
               <div className="flex justify-center mb-2">
