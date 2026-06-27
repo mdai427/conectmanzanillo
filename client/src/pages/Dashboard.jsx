@@ -811,18 +811,28 @@ export default function Dashboard() {
             </div>
           </div>
 
+          {/* Redes sociales */}
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
+            {[
+              { href: 'https://www.facebook.com/conectmanzanillooficial/', label: 'Facebook', color: 'text-blue-400 hover:text-blue-300', badge: 'Oficial' },
+              { href: 'https://www.facebook.com/groups/conectmanzanillo/', label: 'Grupo FB', color: 'text-blue-300 hover:text-blue-200', badge: 'Comunidad' },
+              { href: 'https://whatsapp.com/channel/0029VbBN73rId7nJ3RTSsq3s', label: 'Canal WA', color: 'text-green-400 hover:text-green-300', badge: 'Noticias' },
+              { href: 'https://chat.whatsapp.com/HbR3pQLSjrkFHjINylqDjW', label: 'Comunidad WA', color: 'text-green-300 hover:text-green-200', badge: 'Chat' },
+              { href: 'https://www.instagram.com/conectmanzanillo/', label: 'Instagram', color: 'text-pink-400 hover:text-pink-300', badge: null },
+              { href: 'https://www.tiktok.com/@conectmanzanilloo/', label: 'TikTok', color: 'text-slate-300 hover:text-white', badge: null },
+            ].map(({ href, label, color, badge }) => (
+              <a key={href} href={href} target="_blank" rel="noopener noreferrer"
+                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-slate-700 text-xs font-semibold transition-colors ${color}`}>
+                {label}
+                {badge && <span className="text-[9px] opacity-60 font-normal">{badge}</span>}
+              </a>
+            ))}
+          </div>
+
           <div className="border-t border-slate-800 pt-8 flex flex-col sm:flex-row items-center justify-between gap-3">
             <p className="text-xs text-slate-600">© 2025 ConectManzanillo · Puerto de Manzanillo, Colima</p>
-            <div className="flex gap-4">
-              <a href="https://wa.me/525566834948" target="_blank" rel="noopener noreferrer"
-                 className="text-green-500 hover:text-green-400 text-xs font-semibold transition-colors">WhatsApp</a>
-              <a href="https://www.facebook.com/conectmanzanillo" target="_blank" rel="noopener noreferrer"
-                 className="text-blue-400 hover:text-blue-300 text-xs font-semibold transition-colors">Facebook</a>
-              <a href="https://www.instagram.com/conectmanzanillo" target="_blank" rel="noopener noreferrer"
-                 className="text-pink-400 hover:text-pink-300 text-xs font-semibold transition-colors">Instagram</a>
-              <a href="mailto:contacto@conectmanzanillo.com"
-                 className="text-slate-400 hover:text-slate-300 text-xs transition-colors">Email</a>
-            </div>
+            <a href="mailto:contacto@conectmanzanillo.com"
+               className="text-slate-400 hover:text-slate-300 text-xs transition-colors">contacto@conectmanzanillo.com</a>
           </div>
         </div>
       </footer>
