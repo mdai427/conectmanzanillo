@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Truck, Building2, HelpCircle, CheckCircle2, Phone, KeyRound, ArrowLeft } from 'lucide-react'
+import { Truck, Building2, HelpCircle, CheckCircle2, Phone, KeyRound, ArrowLeft, MapPin } from 'lucide-react'
 import { sendOtp, verifyOtp } from '../hooks/useAuth.js'
+import { supabase } from '../lib/supabase.js'
+import EmpresaPolygonMap from '../components/ui/EmpresaPolygonMap.jsx'
 
 const TIPOS = [
   {
@@ -34,21 +36,29 @@ const TIPOS = [
   },
 ]
 
+// Pasos:
+// 1 → datos (nombre, teléfono, tipo)
+// 2 → código OTP
+// 3 → mapa (solo empresas)
+
 export default function Register() {
-  const [step, setStep]         = useState(1)   // 1 = datos, 2 = OTP
-  const [fullName, setFullName] = useState('')
-  const [phone, setPhone]       = useState('')
-  const [tipo, setTipo]         = useState('')
-  const [code, setCode]         = useState('')
-  const [loading, setLoading]   = useState(false)
-  const [sentPhone, setSentPhone] = useState('')
+  const [step, setStep]               = useState(1)
+  const [fullName, setFullName]       = useState('')
+  const [phone, setPhone]             = useState('')
+  const [tipo, setTipo]               = useState('')
+  const [code, setCode]               = useState('')
+  const [loading, setLoading]         = useState(false)
+  const [sentPhone, setSentPhone]     = useState('')
+  const [userId, setUserId]           = useState(null)   // guardamos userId tras OTP para luego guardar polígono
+  const [polygon, setPolygon]         = useState(null)
+  const [empresaName, setEmpresaName] = useState('')
   const navigate = useNavigate()
 
+  // ── Paso 1 → enviar OTP ───────────────────────────────────────────────────
   const handleSend = async () => {
     if (!fullName.trim()) return toast.error('Ingresa tu nombre')
-    if (!phone.trim())    return toast.error('Ingresa tu número de celular')
     if (phone.replace(/\D/g, '').length < 10) return toast.error('Número inválido (10 dígitos)')
-    if (!tipo)            return toast.error('Selecciona tu tipo de usuario')
+    if (!tipo) return toast.error('Selecciona tu tipo de usuario')
 
     setLoading(true)
     try {
@@ -63,12 +73,41 @@ export default function Register() {
     }
   }
 
+  // ── Paso 2 → verificar OTP ────────────────────────────────────────────────
   const handleVerify = async () => {
     if (code.length < 4) return toast.error('Ingresa el código')
     setLoading(true)
     try {
-      await verifyOtp({ phone: sentPhone, code, fullName, tipo })
-      toast.success('¡Cuenta creada! Bienvenido.')
+      const { session } = await verifyOtp({ phone: sentPhone, code, fullName, tipo })
+      const uid = session?.user?.id
+      setUserId(uid)
+
+      if (tipo === 'empresa') {
+        // Ir al paso del mapa
+        setStep(3)
+        setLoading(false)
+      } else {
+        toast.success('¡Cuenta creada! Bienvenido.')
+        navigate('/')
+      }
+    } catch (err) {
+      toast.error(err.message)
+      setLoading(false)
+    }
+  }
+
+  // ── Paso 3 → guardar polígono y finalizar ─────────────────────────────────
+  const handleFinish = async (skip = false) => {
+    if (!skip && !polygon) return toast.error('Dibuja el polígono de tu empresa en el mapa')
+    setLoading(true)
+    try {
+      if (!skip && polygon && userId) {
+        await supabase.from('profiles').update({
+          empresa_polygon: polygon,
+          empresa_name:    empresaName.trim() || fullName.trim(),
+        }).eq('id', userId)
+      }
+      toast.success('¡Bienvenido! Tu empresa está registrada.')
       navigate('/')
     } catch (err) {
       toast.error(err.message)
@@ -77,9 +116,14 @@ export default function Register() {
     }
   }
 
+  const onPolygonChange = useCallback((pts) => setPolygon(pts), [])
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  const isMapStep = step === 3
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+      <div className={`w-full ${isMapStep ? 'max-w-2xl' : 'max-w-md'}`}>
 
         {/* Header */}
         <div className="text-center mb-8">
@@ -87,15 +131,31 @@ export default function Register() {
             <span className="w-2 h-2 rounded-full bg-[#00C2FF] animate-pulse" />
             <span className="font-bold text-gray-800">ConectManzanillo</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">Crear cuenta</h1>
-          <p className="text-gray-500 text-sm mt-2">Únete a la comunidad del puerto</p>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {step === 3 ? 'Ubicación de tu empresa' : 'Crear cuenta'}
+          </h1>
+          <p className="text-gray-500 text-sm mt-2">
+            {step === 3
+              ? 'Dibuja el área que ocupa tu empresa en el puerto'
+              : 'Únete a la comunidad del puerto'}
+          </p>
+          {/* Indicador de pasos para empresa */}
+          {tipo === 'empresa' && (
+            <div className="flex items-center justify-center gap-2 mt-4">
+              {[1, 2, 3].map(s => (
+                <div key={s} className={`h-1.5 rounded-full transition-all ${
+                  s <= step ? 'bg-[#00C2FF] w-8' : 'bg-gray-200 w-4'
+                }`} />
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-white border border-gray-200 rounded-2xl p-6 space-y-5">
 
-          {step === 1 ? (
+          {/* ── PASO 1: Datos ──────────────────────────────────────────── */}
+          {step === 1 && (
             <>
-              {/* Nombre */}
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-2">Nombre completo</label>
                 <input
@@ -107,7 +167,6 @@ export default function Register() {
                 />
               </div>
 
-              {/* Teléfono */}
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-2">Número de celular</label>
                 <div className="flex items-center bg-gray-50 border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#00C2FF] transition-colors">
@@ -127,7 +186,6 @@ export default function Register() {
                 <p className="text-[11px] text-gray-400 mt-1.5">Recibirás un código SMS para verificar tu número</p>
               </div>
 
-              {/* Tipo de usuario */}
               <div>
                 <label className="block text-sm font-medium text-gray-500 mb-3">
                   ¿Cómo usarás ConectManzanillo? <span className="text-red-400">*</span>
@@ -143,28 +201,33 @@ export default function Register() {
                         className="w-full text-left rounded-xl px-4 py-3 border-2 transition-all flex items-start gap-3"
                         style={selected
                           ? { background: bg, borderColor: color }
-                          : { background: '#0D1117', borderColor: '#30363D' }}
+                          : { background: 'white', borderColor: '#e5e7eb' }}
                       >
                         <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                             style={{ background: selected ? color : '#1f2937' }}>
+                             style={{ background: selected ? color : '#f3f4f6' }}>
                           <Icon size={15} style={{ color: selected ? 'white' : '#6b7280' }} />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className="text-sm font-bold" style={{ color: selected ? color : '#e2e8f0' }}>
+                            <p className="text-sm font-bold" style={{ color: selected ? color : '#111827' }}>
                               {label}
                             </p>
                             {selected && <CheckCircle2 size={13} style={{ color }} />}
                           </div>
-                          <p className="text-[11px] mt-0.5" style={{ color: selected ? '#475569' : '#4B5563' }}>
-                            {desc}
-                          </p>
+                          <p className="text-[11px] mt-0.5 text-gray-500">{desc}</p>
                         </div>
                       </button>
                     )
                   })}
                 </div>
               </div>
+
+              {tipo === 'empresa' && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-purple-50 border border-purple-200 text-purple-700 text-xs">
+                  <MapPin size={14} className="shrink-0 mt-0.5" />
+                  <span>Como empresa, después de verificar tu número te pediremos marcar la ubicación de tu empresa en el mapa del puerto.</span>
+                </div>
+              )}
 
               <button
                 onClick={handleSend}
@@ -175,9 +238,11 @@ export default function Register() {
                 {loading ? 'Enviando código…' : 'Enviar código SMS'}
               </button>
             </>
-          ) : (
+          )}
+
+          {/* ── PASO 2: OTP ────────────────────────────────────────────── */}
+          {step === 2 && (
             <>
-              {/* Step 2: OTP */}
               <button
                 onClick={() => setStep(1)}
                 className="flex items-center gap-1.5 text-gray-500 hover:text-gray-900 text-sm transition-colors"
@@ -195,24 +260,22 @@ export default function Register() {
                 </p>
               </div>
 
-              <div>
-                <input
-                  type="tel"
-                  value={code}
-                  onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                  onKeyDown={e => e.key === 'Enter' && handleVerify()}
-                  placeholder="000000"
-                  maxLength={6}
-                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-900 text-center text-2xl tracking-[0.5em] font-mono placeholder-gray-400 focus:outline-none focus:border-[#00C2FF] transition-colors"
-                />
-              </div>
+              <input
+                type="tel"
+                value={code}
+                onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                onKeyDown={e => e.key === 'Enter' && handleVerify()}
+                placeholder="000000"
+                maxLength={6}
+                className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-4 text-gray-900 text-center text-2xl tracking-[0.5em] font-mono placeholder-gray-400 focus:outline-none focus:border-[#00C2FF] transition-colors"
+              />
 
               <button
                 onClick={handleVerify}
                 disabled={loading || code.length < 4}
                 className="w-full py-4 rounded-xl bg-[#00C2FF] text-[#0D1117] font-bold text-sm disabled:opacity-40 hover:bg-[#33CFFF] active:scale-95 transition-all min-h-[48px]"
               >
-                {loading ? 'Verificando…' : 'Verificar y crear cuenta'}
+                {loading ? 'Verificando…' : tipo === 'empresa' ? 'Verificar y continuar →' : 'Verificar y crear cuenta'}
               </button>
 
               <button
@@ -221,6 +284,41 @@ export default function Register() {
                 className="w-full text-gray-500 text-sm hover:text-gray-900 transition-colors"
               >
                 ¿No llegó? Reenviar código
+              </button>
+            </>
+          )}
+
+          {/* ── PASO 3: Mapa (solo empresas) ───────────────────────────── */}
+          {step === 3 && (
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-500 mb-2">Nombre de tu empresa</label>
+                <input
+                  type="text"
+                  value={empresaName}
+                  onChange={e => setEmpresaName(e.target.value)}
+                  placeholder={fullName}
+                  className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-[#00C2FF] transition-colors"
+                />
+              </div>
+
+              <EmpresaPolygonMap onChange={onPolygonChange} />
+
+              <button
+                onClick={() => handleFinish(false)}
+                disabled={loading || !polygon}
+                className="w-full py-4 rounded-xl bg-[#00C2FF] text-[#0D1117] font-bold text-sm disabled:opacity-40 hover:bg-[#33CFFF] active:scale-95 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+              >
+                <CheckCircle2 size={16} />
+                {loading ? 'Guardando…' : 'Guardar y entrar'}
+              </button>
+
+              <button
+                onClick={() => handleFinish(true)}
+                disabled={loading}
+                className="w-full text-gray-400 text-sm hover:text-gray-600 transition-colors"
+              >
+                Omitir por ahora
               </button>
             </>
           )}
