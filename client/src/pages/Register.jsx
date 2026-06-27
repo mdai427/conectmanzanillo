@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Truck, Building2, HelpCircle, CheckCircle2 } from 'lucide-react'
-import { signUp } from '../hooks/useAuth.js'
+import { Truck, Building2, HelpCircle, CheckCircle2, Phone, KeyRound, ArrowLeft } from 'lucide-react'
+import { sendOtp, verifyOtp } from '../hooks/useAuth.js'
 
 const TIPOS = [
   {
@@ -35,25 +35,41 @@ const TIPOS = [
 ]
 
 export default function Register() {
-  const [fullName, setFullName]   = useState('')
-  const [email, setEmail]         = useState('')
-  const [password, setPassword]   = useState('')
-  const [tipo, setTipo]           = useState('')
-  const [loading, setLoading]     = useState(false)
+  const [step, setStep]         = useState(1)   // 1 = datos, 2 = OTP
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone]       = useState('')
+  const [tipo, setTipo]         = useState('')
+  const [code, setCode]         = useState('')
+  const [loading, setLoading]   = useState(false)
+  const [sentPhone, setSentPhone] = useState('')
   const navigate = useNavigate()
 
-  const handleRegister = async () => {
-    if (!fullName.trim())   return toast.error('Ingresa tu nombre')
-    if (!email.trim())      return toast.error('Ingresa tu correo')
-    if (!password)          return toast.error('Ingresa una contraseña')
-    if (password.length < 6) return toast.error('La contraseña debe tener al menos 6 caracteres')
-    if (!tipo)              return toast.error('Selecciona tu tipo de usuario')
+  const handleSend = async () => {
+    if (!fullName.trim()) return toast.error('Ingresa tu nombre')
+    if (!phone.trim())    return toast.error('Ingresa tu número de celular')
+    if (phone.replace(/\D/g, '').length < 10) return toast.error('Número inválido (10 dígitos)')
+    if (!tipo)            return toast.error('Selecciona tu tipo de usuario')
 
     setLoading(true)
     try {
-      await signUp(email, password, fullName, tipo)
-      toast.success('Cuenta creada. Revisa tu correo para confirmar.')
-      navigate('/login')
+      const res = await sendOtp(phone)
+      setSentPhone(res.phone)
+      setStep(2)
+      toast.success(`Código enviado al ${res.phone}`)
+    } catch (err) {
+      toast.error(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleVerify = async () => {
+    if (code.length < 4) return toast.error('Ingresa el código')
+    setLoading(true)
+    try {
+      await verifyOtp({ phone: sentPhone, code, fullName, tipo })
+      toast.success('¡Cuenta creada! Bienvenido.')
+      navigate('/')
     } catch (err) {
       toast.error(err.message)
     } finally {
@@ -77,88 +93,137 @@ export default function Register() {
 
         <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-6 space-y-5">
 
-          {/* Datos básicos */}
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-[#8B949E] mb-2">Nombre completo</label>
-              <input
-                type="text"
-                value={fullName}
-                onChange={e => setFullName(e.target.value)}
-                placeholder="Tu nombre"
-                className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white text-sm placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF] transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#8B949E] mb-2">Correo electrónico</label>
-              <input
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="tu@correo.com"
-                className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white text-sm placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF] transition-colors"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#8B949E] mb-2">Contraseña</label>
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleRegister()}
-                placeholder="Mínimo 6 caracteres"
-                className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white text-sm placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF] transition-colors"
-              />
-            </div>
-          </div>
+          {step === 1 ? (
+            <>
+              {/* Nombre */}
+              <div>
+                <label className="block text-sm font-medium text-[#8B949E] mb-2">Nombre completo</label>
+                <input
+                  type="text"
+                  value={fullName}
+                  onChange={e => setFullName(e.target.value)}
+                  placeholder="Tu nombre"
+                  className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-3 text-white text-sm placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF] transition-colors"
+                />
+              </div>
 
-          {/* Tipo de usuario */}
-          <div>
-            <label className="block text-sm font-medium text-[#8B949E] mb-3">
-              ¿Cómo usarás ConectManzanillo? <span className="text-red-400">*</span>
-            </label>
-            <div className="space-y-2">
-              {TIPOS.map(({ id, label, desc, icon: Icon, color, bg, border }) => {
-                const selected = tipo === id
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    onClick={() => setTipo(id)}
-                    className="w-full text-left rounded-xl px-4 py-3 border-2 transition-all flex items-start gap-3"
-                    style={selected
-                      ? { background: bg, borderColor: color }
-                      : { background: '#0D1117', borderColor: '#30363D' }
-                    }
-                  >
-                    <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-                         style={{ background: selected ? color : '#1f2937' }}>
-                      <Icon size={15} style={{ color: selected ? 'white' : '#6b7280' }} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-bold" style={{ color: selected ? color : '#e2e8f0' }}>
-                          {label}
-                        </p>
-                        {selected && <CheckCircle2 size={13} style={{ color }} />}
-                      </div>
-                      <p className="text-[11px] mt-0.5" style={{ color: selected ? '#475569' : '#4B5563' }}>
-                        {desc}
-                      </p>
-                    </div>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+              {/* Teléfono */}
+              <div>
+                <label className="block text-sm font-medium text-[#8B949E] mb-2">Número de celular</label>
+                <div className="flex items-center bg-[#0D1117] border border-[#30363D] rounded-xl overflow-hidden focus-within:border-[#00C2FF] transition-colors">
+                  <div className="flex items-center gap-1.5 px-3 border-r border-[#30363D] shrink-0">
+                    <span className="text-lg">🇲🇽</span>
+                    <span className="text-[#8B949E] text-sm">+52</span>
+                  </div>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                    onKeyDown={e => e.key === 'Enter' && handleSend()}
+                    placeholder="10 dígitos"
+                    className="flex-1 bg-transparent px-3 py-3 text-white text-sm placeholder-[#4B5563] focus:outline-none"
+                  />
+                </div>
+                <p className="text-[11px] text-[#4B5563] mt-1.5">Recibirás un código SMS para verificar tu número</p>
+              </div>
 
-          <button
-            onClick={handleRegister}
-            disabled={loading || !tipo}
-            className="w-full py-4 rounded-xl bg-[#00C2FF] text-[#0D1117] font-bold text-sm disabled:opacity-40 hover:bg-[#33CFFF] active:scale-95 transition-all min-h-[48px]"
-          >
-            {loading ? 'Creando cuenta…' : 'Crear cuenta'}
-          </button>
+              {/* Tipo de usuario */}
+              <div>
+                <label className="block text-sm font-medium text-[#8B949E] mb-3">
+                  ¿Cómo usarás ConectManzanillo? <span className="text-red-400">*</span>
+                </label>
+                <div className="space-y-2">
+                  {TIPOS.map(({ id, label, desc, icon: Icon, color, bg, border }) => {
+                    const selected = tipo === id
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        onClick={() => setTipo(id)}
+                        className="w-full text-left rounded-xl px-4 py-3 border-2 transition-all flex items-start gap-3"
+                        style={selected
+                          ? { background: bg, borderColor: color }
+                          : { background: '#0D1117', borderColor: '#30363D' }}
+                      >
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
+                             style={{ background: selected ? color : '#1f2937' }}>
+                          <Icon size={15} style={{ color: selected ? 'white' : '#6b7280' }} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="text-sm font-bold" style={{ color: selected ? color : '#e2e8f0' }}>
+                              {label}
+                            </p>
+                            {selected && <CheckCircle2 size={13} style={{ color }} />}
+                          </div>
+                          <p className="text-[11px] mt-0.5" style={{ color: selected ? '#475569' : '#4B5563' }}>
+                            {desc}
+                          </p>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <button
+                onClick={handleSend}
+                disabled={loading || !tipo}
+                className="w-full py-4 rounded-xl bg-[#00C2FF] text-[#0D1117] font-bold text-sm disabled:opacity-40 hover:bg-[#33CFFF] active:scale-95 transition-all flex items-center justify-center gap-2 min-h-[48px]"
+              >
+                <Phone size={16} />
+                {loading ? 'Enviando código…' : 'Enviar código SMS'}
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Step 2: OTP */}
+              <button
+                onClick={() => setStep(1)}
+                className="flex items-center gap-1.5 text-[#8B949E] hover:text-white text-sm transition-colors"
+              >
+                <ArrowLeft size={14} /> Cambiar número
+              </button>
+
+              <div className="text-center py-2">
+                <div className="w-12 h-12 rounded-full bg-[#00C2FF]/10 flex items-center justify-center mx-auto mb-3">
+                  <KeyRound size={22} className="text-[#00C2FF]" />
+                </div>
+                <p className="text-white font-semibold">Ingresa tu código</p>
+                <p className="text-[#8B949E] text-sm mt-1">
+                  Enviamos un SMS a <span className="text-white">{sentPhone}</span>
+                </p>
+              </div>
+
+              <div>
+                <input
+                  type="tel"
+                  value={code}
+                  onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onKeyDown={e => e.key === 'Enter' && handleVerify()}
+                  placeholder="000000"
+                  maxLength={6}
+                  className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-4 text-white text-center text-2xl tracking-[0.5em] font-mono placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF] transition-colors"
+                />
+              </div>
+
+              <button
+                onClick={handleVerify}
+                disabled={loading || code.length < 4}
+                className="w-full py-4 rounded-xl bg-[#00C2FF] text-[#0D1117] font-bold text-sm disabled:opacity-40 hover:bg-[#33CFFF] active:scale-95 transition-all min-h-[48px]"
+              >
+                {loading ? 'Verificando…' : 'Verificar y crear cuenta'}
+              </button>
+
+              <button
+                onClick={handleSend}
+                disabled={loading}
+                className="w-full text-[#8B949E] text-sm hover:text-white transition-colors"
+              >
+                ¿No llegó? Reenviar código
+              </button>
+            </>
+          )}
         </div>
 
         <p className="text-center text-sm text-[#8B949E] mt-6">
