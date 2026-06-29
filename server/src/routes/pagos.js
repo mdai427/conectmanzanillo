@@ -15,10 +15,16 @@ function getStripe() {
   return _stripe
 }
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
+let _supabase = null
+function getSupabase() {
+  if (!_supabase) {
+    _supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_KEY
+    )
+  }
+  return _supabase
+}
 
 // ── Paquetes disponibles ──────────────────────────────────────────────────────
 // Sustituye los price_XXXX por los Price IDs reales de tu cuenta Stripe
@@ -109,7 +115,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const fechaFin = new Date()
     fechaFin.setMonth(fechaFin.getMonth() + 1)
 
-    const { error } = await supabase.from('publicidad_campanas').insert({
+    const { error } = await getSupabase().from('publicidad_campanas').insert({
       titulo: empresa_nombre || `Campaña ${paquete}`,
       whatsapp: empresa_whatsapp || null,
       zona: zona || 'global',
