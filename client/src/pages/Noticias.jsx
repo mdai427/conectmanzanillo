@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { Newspaper } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
+import BannerRotativo from '../components/ui/BannerRotativo.jsx'
 
 const CATEGORY_CONFIG = {
   aviso:     { label: 'Aviso',     bg: 'bg-blue-50',   border: 'border-blue-200',   text: 'text-blue-700',   icon: '📢' },
@@ -42,6 +43,7 @@ export default function Noticias() {
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6">
+        <BannerRotativo zona="noticias" className="h-20 mb-4" />
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (

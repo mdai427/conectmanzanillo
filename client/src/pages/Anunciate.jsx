@@ -1,15 +1,17 @@
-import { BarChart2, Users, Megaphone, CheckCircle2, Star, Zap, Eye, Phone } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
+import {
+  BarChart2, Users, Megaphone, CheckCircle2, Star, Zap, Eye,
+  ShoppingCart, Shield, CreditCard, X, CheckCircle,
+} from 'lucide-react'
 
-const WA_ICON = (
-  <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" aria-hidden="true">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-  </svg>
-)
+const API = import.meta.env.VITE_API_URL || ''
 
 const PAQUETES = [
   {
+    id: 'basico',
     nombre: 'Banner Básico',
-    precio: '$500',
+    precio: 500,
     periodo: '/mes',
     color: '#3b82f6',
     bg: '#eff6ff',
@@ -17,84 +19,202 @@ const PAQUETES = [
     features: [
       'Banner en página principal',
       'Visible en desktop y mobile',
-      'Hasta 500 impresiones estimadas/mes',
-      'Enlace a tu sitio web',
+      '~500 impresiones estimadas/mes',
+      'Enlace a tu sitio web o WhatsApp',
       'Diseño incluido',
     ],
-    desc: 'Ideal para talleres mecánicos, refaccionarias y servicios relacionados al transporte.',
-    cta: 'Solicitar banner básico',
+    desc: 'Ideal para talleres, refaccionarias y servicios al transporte.',
   },
   {
+    id: 'zona',
     nombre: 'Patrocinador de Zona',
-    precio: '$1,500',
+    precio: 1500,
     periodo: '/mes',
     color: '#7c3aed',
     bg: '#f5f3ff',
     border: '#ddd6fe',
     features: [
-      'Banner exclusivo en una zona del puerto',
+      'Banner exclusivo en Directorio Empresarial',
       'Mención en el canal de WhatsApp',
-      'Hasta 2,000 impresiones estimadas/mes',
+      '~2,000 impresiones estimadas/mes',
       'Logo en reportes de la zona',
-      'Integración con alertas de la zona',
       'Reporte de métricas mensual',
     ],
-    desc: 'Para agencias aduanales, importadores/exportadores y transportistas especializados en una terminal.',
-    cta: 'Solicitar patrocinio de zona',
+    desc: 'Para agencias aduanales, importadores y transportistas especializados.',
     destacado: true,
   },
   {
+    id: 'principal',
     nombre: 'Patrocinador Principal',
-    precio: '$3,500',
+    precio: 3500,
     periodo: '/mes',
     color: '#d97706',
     bg: '#fffbeb',
     border: '#fde68a',
     features: [
       'Banner premium en posición #1',
-      'Logo en TODAS las páginas',
+      'Presencia en TODAS las páginas',
       'Mención diaria en canal WhatsApp',
-      'Hasta 8,000 impresiones estimadas/mes',
-      'Banner en reportes automáticos WA',
+      '~8,000 impresiones estimadas/mes',
       'Reporte semanal de métricas',
-      'Llamada mensual de resultados',
     ],
     desc: 'Para navieras, terminales, grupos logísticos y empresas con presencia fuerte en el puerto.',
-    cta: 'Solicitar patrocinio principal',
   },
   {
+    id: 'reporte',
     nombre: 'Reporte WA Patrocinado',
-    precio: '$5,000',
+    precio: 5000,
     periodo: '/mes',
     color: '#059669',
     bg: '#f0fdf4',
     border: '#bbf7d0',
     features: [
       'Tu empresa al inicio del reporte matutino',
-      'Mensaje patrocinado cada reporte WA',
+      'Mensaje patrocinado en cada reporte WA',
       'Exposición directa a todos los suscriptores',
       '10,000+ impresiones estimadas/mes',
       'Creatividad y copy incluidos',
       'Reportes quincenales de alcance',
-      'Posicionamiento premium de marca',
     ],
-    desc: 'Máxima visibilidad. Tu marca en el reporte diario que cientos de operadores leen cada mañana.',
-    cta: 'Solicitar reporte patrocinado',
+    desc: 'Máxima visibilidad. Tu marca en el reporte que cientos de operadores leen cada mañana.',
   },
 ]
 
 const UBICACIONES = [
-  { nombre: 'Dashboard principal', donde: 'Arriba del mapa del puerto', impresiones: '~1,200/mes', tipo: 'Banner horizontal' },
-  { nombre: 'Sidebar desktop', donde: 'Columna derecha de la vista principal', impresiones: '~900/mes', tipo: 'Banner cuadrado' },
-  { nombre: 'Reporte WhatsApp', donde: 'Canal de WhatsApp ConectManzanillo', impresiones: '~5,000/mes', tipo: 'Mensaje patrocinado' },
-  { nombre: 'Sección de noticias', donde: 'Entre las noticias del puerto', impresiones: '~600/mes', tipo: 'Banner nativo' },
-  { nombre: 'Directorio empresarial', donde: 'Listado destacado en directorio', impresiones: '~400/mes', tipo: 'Listado premium' },
-  { nombre: 'Zona específica del puerto', donde: 'Página de la terminal o patio', impresiones: '~300/mes', tipo: 'Banner contextual' },
+  { nombre: 'Dashboard principal',       donde: 'Arriba del mapa del puerto',              impresiones: '~1,200/mes', tipo: 'Banner horizontal' },
+  { nombre: 'Directorio Empresarial',    donde: 'Listado de empresas del puerto',           impresiones: '~800/mes',   tipo: 'Banner rotativo' },
+  { nombre: 'Sección de noticias',       donde: 'Entre las noticias del puerto',            impresiones: '~600/mes',   tipo: 'Banner nativo' },
+  { nombre: 'Bolsa de trabajo',          donde: 'Página de vacantes activas',               impresiones: '~400/mes',   tipo: 'Banner contextual' },
+  { nombre: 'Reporte WhatsApp',          donde: 'Canal de WhatsApp ConectManzanillo',       impresiones: '~5,000/mes', tipo: 'Mensaje patrocinado' },
+  { nombre: 'Global (todas las páginas)',donde: 'Aparece en todas las secciones',           impresiones: '~3,000/mes', tipo: 'Banner global' },
 ]
 
+function ModalCheckout({ paquete, onClose }) {
+  const [empresa, setEmpresa] = useState('')
+  const [whatsapp, setWhatsapp] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleComprar = async () => {
+    if (!empresa.trim()) { setError('Escribe el nombre de tu empresa'); return }
+    setError('')
+    setLoading(true)
+    try {
+      const res = await fetch(`${API}/api/pagos/checkout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paquete: paquete.id, empresa_nombre: empresa, empresa_whatsapp: whatsapp }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        setError(data.error || 'Error al iniciar el pago')
+        setLoading(false)
+      }
+    } catch {
+      setError('Error de conexión. Intenta de nuevo.')
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="px-5 py-4 flex items-center justify-between border-b border-gray-100"
+             style={{ background: paquete.bg }}>
+          <div>
+            <p className="text-xs font-semibold text-gray-500">Comprando</p>
+            <p className="font-black text-gray-900">{paquete.nombre}</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <p className="text-xl font-black" style={{ color: paquete.color }}>
+              ${paquete.precio.toLocaleString()}<span className="text-sm font-semibold text-gray-400">/mes</span>
+            </p>
+            <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
+              <X size={16} />
+            </button>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="p-5 space-y-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">Nombre de tu empresa *</label>
+            <input
+              value={empresa}
+              onChange={e => setEmpresa(e.target.value)}
+              placeholder="Ej. Transportes del Puerto S.A."
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-blue-400 transition-colors"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-gray-700 mb-1.5">WhatsApp de contacto <span className="font-normal text-gray-400">(opcional)</span></label>
+            <input
+              value={whatsapp}
+              onChange={e => setWhatsapp(e.target.value)}
+              placeholder="5231400000"
+              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-blue-400 transition-colors"
+            />
+          </div>
+
+          {error && (
+            <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-xl">{error}</p>
+          )}
+
+          <button
+            onClick={handleComprar}
+            disabled={loading}
+            className="w-full py-3.5 rounded-2xl font-black text-sm text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2"
+            style={{ background: loading ? '#9ca3af' : paquete.color }}>
+            {loading ? (
+              <>
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Redirigiendo a Stripe...
+              </>
+            ) : (
+              <>
+                <CreditCard size={15} />
+                Pagar ${paquete.precio.toLocaleString()}/mes
+              </>
+            )}
+          </button>
+
+          {/* Stripe badge */}
+          <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+            <Shield size={11} />
+            <span>Pago seguro con</span>
+            <span className="font-black text-gray-600">Stripe</span>
+            <span>· Cancela cuando quieras</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function Anunciate() {
+  const [searchParams] = useSearchParams()
+  const [modalPaquete, setModalPaquete] = useState(null)
+
+  const success  = searchParams.get('success') === 'true'
+  const canceled = searchParams.get('canceled') === 'true'
+
   return (
     <div className="min-h-screen bg-slate-50">
+
+      {/* Toast de éxito */}
+      {success && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-green-600 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-bold">
+          <CheckCircle size={18} /> ¡Pago exitoso! Tu campaña será activada en breve.
+        </div>
+      )}
+      {canceled && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-700 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-bold">
+          <X size={16} /> Pago cancelado. Puedes intentarlo de nuevo cuando quieras.
+        </div>
+      )}
 
       {/* Hero */}
       <div className="relative overflow-hidden"
@@ -119,7 +239,6 @@ export default function Anunciate() {
             Tu empresa frente a cientos de operadores, transportistas, importadores y agentes aduanales
             que usan ConectManzanillo cada día.
           </p>
-
           <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mb-8">
             {[
               { val: '+500', label: 'Operadores activos' },
@@ -133,13 +252,11 @@ export default function Anunciate() {
               </div>
             ))}
           </div>
-
-          <a href="https://wa.me/525566834948?text=Hola%2C%20quiero%20anunciarme%20en%20ConectManzanillo"
-             target="_blank" rel="noopener noreferrer"
-             className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm text-white shadow-xl hover:scale-105 active:scale-95 transition-all"
-             style={{ background: '#25D366' }}>
-            {WA_ICON} Solicitar información
-          </a>
+          <button
+            onClick={() => document.getElementById('paquetes').scrollIntoView({ behavior: 'smooth' })}
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm bg-white text-blue-700 shadow-xl hover:scale-105 active:scale-95 transition-all">
+            <ShoppingCart size={16} /> Ver paquetes y precios
+          </button>
         </div>
       </div>
 
@@ -151,12 +268,12 @@ export default function Anunciate() {
           <h2 className="text-xl font-black text-slate-800 text-center mb-5">Audiencia 100% portuaria</h2>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {[
-              { icon: Users,    color: '#3b82f6', title: 'Audiencia específica', desc: 'Solo personas del ecosistema portuario de Manzanillo. Sin ruido.' },
-              { icon: Eye,      color: '#10b981', title: 'Alta frecuencia',      desc: 'Los operadores consultan la plataforma varias veces al día.' },
-              { icon: Zap,      color: '#f59e0b', title: 'Contexto relevante',   desc: 'Tu anuncio aparece cuando el usuario está pensando en el puerto.' },
-              { icon: Phone,    color: '#8b5cf6', title: 'Canal WhatsApp',       desc: 'Mención en el canal que cientos de operadores leen cada mañana.' },
-              { icon: BarChart2,color: '#dc2626', title: 'Métricas reales',      desc: 'Reportes de impresiones, clics y alcance mensual.' },
-              { icon: Star,     color: '#d97706', title: 'Formatos flexibles',   desc: 'Banners, mensajes patrocinados, listados premium y más.' },
+              { icon: Users,    color: '#3b82f6', title: 'Audiencia específica',  desc: 'Solo personas del ecosistema portuario de Manzanillo. Sin ruido.' },
+              { icon: Eye,      color: '#10b981', title: 'Alta frecuencia',       desc: 'Los operadores consultan la plataforma varias veces al día.' },
+              { icon: Zap,      color: '#f59e0b', title: 'Contexto relevante',    desc: 'Tu anuncio aparece cuando el usuario está pensando en el puerto.' },
+              { icon: Megaphone,color: '#8b5cf6', title: 'Canal WhatsApp',        desc: 'Mención en el canal que cientos de operadores leen cada mañana.' },
+              { icon: BarChart2,color: '#dc2626', title: 'Métricas reales',       desc: 'Dashboard con impresiones, clics y estadísticas en tiempo real.' },
+              { icon: Star,     color: '#d97706', title: 'Activación inmediata',  desc: 'Tu campaña queda activa al instante después del pago.' },
             ].map(({ icon: Icon, color, title, desc }) => (
               <div key={title} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2"
@@ -171,12 +288,13 @@ export default function Anunciate() {
         </div>
 
         {/* Paquetes */}
-        <div>
+        <div id="paquetes">
           <p className="text-xs font-black text-blue-600 uppercase tracking-widest mb-1 text-center">Paquetes de publicidad</p>
-          <h2 className="text-xl font-black text-slate-800 text-center mb-5">Elige tu nivel de visibilidad</h2>
+          <h2 className="text-xl font-black text-slate-800 text-center mb-2">Elige tu nivel de visibilidad</h2>
+          <p className="text-center text-sm text-slate-500 mb-5">Suscripción mensual · Cancela cuando quieras · Pago seguro con Stripe</p>
           <div className="grid gap-4 sm:grid-cols-2">
             {PAQUETES.map(paq => (
-              <div key={paq.nombre}
+              <div key={paq.id}
                    className={`rounded-2xl p-5 border-2 flex flex-col ${paq.destacado ? 'ring-2 ring-purple-300 shadow-lg' : ''}`}
                    style={{ background: paq.bg, borderColor: paq.border }}>
                 {paq.destacado && (
@@ -191,7 +309,7 @@ export default function Anunciate() {
                     <p className="text-[11px] text-slate-500 mt-0.5">{paq.desc}</p>
                   </div>
                   <div className="text-right shrink-0 ml-2">
-                    <p className="text-xl font-black text-slate-800">{paq.precio}</p>
+                    <p className="text-xl font-black text-slate-800">${paq.precio.toLocaleString()}</p>
                     <p className="text-[10px] text-slate-400">{paq.periodo}</p>
                   </div>
                 </div>
@@ -203,22 +321,29 @@ export default function Anunciate() {
                     </li>
                   ))}
                 </ul>
-                <a href={`https://wa.me/525566834948?text=${encodeURIComponent(`Hola, quiero cotizar el paquete "${paq.nombre}" de publicidad en ConectManzanillo`)}`}
-                   target="_blank" rel="noopener noreferrer"
-                   className="flex items-center justify-center gap-1.5 w-full py-3 rounded-2xl font-bold text-xs text-white transition-all hover:opacity-90 mt-auto"
-                   style={{ background: paq.color }}>
-                  {WA_ICON} {paq.cta}
-                </a>
+                <button
+                  onClick={() => setModalPaquete(paq)}
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl font-bold text-xs text-white transition-all hover:opacity-90 active:scale-95 mt-auto"
+                  style={{ background: paq.color }}>
+                  <ShoppingCart size={13} /> Comprar ahora
+                </button>
               </div>
             ))}
+          </div>
+          {/* Stripe trust badge */}
+          <div className="flex items-center justify-center gap-2 mt-4 text-xs text-slate-400">
+            <Shield size={12} />
+            <span>Pago seguro y encriptado con</span>
+            <span className="font-black text-slate-600">Stripe</span>
+            <span>· No guardamos datos de tarjeta</span>
           </div>
         </div>
 
         {/* Ubicaciones */}
         <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="px-5 py-4 border-b border-slate-100">
-            <p className="text-sm font-black text-slate-800">Ubicaciones disponibles</p>
-            <p className="text-xs text-slate-400">Dónde puede aparecer tu anuncio</p>
+            <p className="text-sm font-black text-slate-800">Dónde aparece tu anuncio</p>
+            <p className="text-xs text-slate-400">Zonas disponibles en la plataforma</p>
           </div>
           <div className="divide-y divide-slate-50">
             {UBICACIONES.map(u => (
@@ -241,10 +366,10 @@ export default function Anunciate() {
           <p className="text-sm font-black text-slate-800 mb-4">¿Cómo funciona?</p>
           <div className="space-y-3">
             {[
-              { paso: '01', label: 'Contáctanos por WhatsApp', desc: 'Dinos tu empresa, objetivo y presupuesto disponible.' },
-              { paso: '02', label: 'Elegimos el paquete',      desc: 'Te asesoramos para elegir el formato y ubicación más efectivos.' },
-              { paso: '03', label: 'Diseño y activación',      desc: 'Diseño incluido. Tu anuncio queda activo en 48 horas.' },
-              { paso: '04', label: 'Reportes mensuales',       desc: 'Recibes métricas de alcance, impresiones y clics cada mes.' },
+              { paso: '01', label: 'Elige tu paquete',         desc: 'Selecciona el plan que mejor se adapte a tu presupuesto y objetivo.' },
+              { paso: '02', label: 'Pago seguro con Stripe',   desc: 'Ingresa los datos de tu tarjeta en la plataforma segura de Stripe.' },
+              { paso: '03', label: 'Campaña activa al instante',desc: 'Tu banner queda visible en la plataforma inmediatamente.' },
+              { paso: '04', label: 'Métricas en tiempo real',  desc: 'Seguimiento de impresiones, clics y estadísticas de tu campaña.' },
             ].map(({ paso, label, desc }) => (
               <div key={paso} className="flex items-start gap-4">
                 <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-black text-white"
@@ -265,17 +390,24 @@ export default function Anunciate() {
              style={{ background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)', border: '1px solid rgba(96,165,250,0.3)' }}>
           <p className="text-white font-black text-lg mb-1">¿Listo para anunciarte?</p>
           <p className="text-blue-200 text-sm mb-5">
-            Contáctanos ahora y ten tu anuncio activo antes de 48 horas.
+            Elige tu paquete y ten tu anuncio activo al instante.
           </p>
-          <a href="https://wa.me/525566834948?text=Hola%2C%20quiero%20anunciarme%20en%20ConectManzanillo"
-             target="_blank" rel="noopener noreferrer"
-             className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm text-white shadow-xl hover:scale-105 transition-all"
-             style={{ background: '#25D366' }}>
-            {WA_ICON} Solicitar por WhatsApp
-          </a>
-          <p className="text-[11px] text-blue-300 mt-3">Sin compromisos · Respuesta en menos de 24 horas</p>
+          <button
+            onClick={() => document.getElementById('paquetes').scrollIntoView({ behavior: 'smooth' })}
+            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm bg-white text-blue-700 shadow-xl hover:scale-105 active:scale-95 transition-all">
+            <ShoppingCart size={16} /> Elegir paquete
+          </button>
+          <p className="text-[11px] text-blue-300 mt-3">Suscripción mensual · Cancela cuando quieras</p>
         </div>
       </div>
+
+      {/* Modal checkout */}
+      {modalPaquete && (
+        <ModalCheckout
+          paquete={modalPaquete}
+          onClose={() => setModalPaquete(null)}
+        />
+      )}
     </div>
   )
 }

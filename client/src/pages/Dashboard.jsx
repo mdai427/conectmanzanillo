@@ -8,7 +8,7 @@ import EstadoInteligente from '../components/ui/EstadoInteligente.jsx'
 import ActivityFeed from '../components/ui/ActivityFeed.jsx'
 import NewsCard from '../components/ui/NewsCard.jsx'
 import WeatherWidget from '../components/ui/WeatherWidget.jsx'
-import AdBanner from '../components/ui/AdBanner.jsx'
+import BannerRotativo from '../components/ui/BannerRotativo.jsx'
 import {
   LayoutGrid, Map, Newspaper, Radio, PhoneCall, Megaphone,
   ArrowRight, CheckCircle2, Zap, Users, TrendingUp, Shield,
@@ -235,7 +235,7 @@ export default function Dashboard() {
                 </div>
                 <ActivityFeed />
               </div>
-              <AdBanner position="dashboard" />
+              <BannerRotativo zona="principal" className="h-24" />
             </div>
           </div>
         ) : (
@@ -280,7 +280,7 @@ export default function Dashboard() {
                 </div>
                 <ActivityFeed />
               </div>
-              <AdBanner position="dashboard" />
+              <BannerRotativo zona="principal" className="h-24" />
             </div>
           </div>
         )}

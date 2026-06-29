@@ -20,6 +20,7 @@ import predictionsRouter  from './routes/predictions.js'
 import rankingsRouter     from './routes/rankings.js'
 import directorioRouter   from './routes/directorio.js'
 import publicidadRouter   from './routes/publicidad.js'
+import pagosRouter        from './routes/pagos.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
 import { initWorkers } from './services/workers.js'
@@ -39,6 +40,9 @@ const io = new SocketIO(httpServer, {
 })
 initSocket(io)
 app.set('io', io)
+
+// Stripe webhook necesita body crudo — montarlo ANTES de express.json
+app.use('/api/pagos/webhook', express.raw({ type: 'application/json' }))
 
 // Middlewares
 app.use(helmet({ contentSecurityPolicy: false }))
@@ -63,6 +67,7 @@ app.use('/api/admin',     noCache,        adminRouter)
 // Directorio y publicidad
 app.use('/api/directorio', cacheFor(60),  directorioRouter)
 app.use('/api/publicidad', cacheFor(120), publicidadRouter)
+app.use('/api/pagos',      noCache,        pagosRouter)
 
 // Semi-estático: cache corto + stale-while-revalidate
 app.use('/api/sections',  cacheFor(30),   sectionsRouter)   // 30s  — zonas cambian seguido

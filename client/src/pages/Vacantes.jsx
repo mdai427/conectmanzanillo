@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import { Building2, Search, ChevronDown, MapPin, Clock, BadgeCheck, Sparkles, Lock, CheckCircle2, Upload, AlertCircle } from 'lucide-react'
 import { supabase } from '../lib/supabase.js'
 import { useAuthStore } from '../stores/authStore.js'
+import BannerRotativo from '../components/ui/BannerRotativo.jsx'
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 const LICENCIAS = [
@@ -673,6 +674,8 @@ export default function Vacantes() {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
+
+        <BannerRotativo zona="vacantes" className="h-20 mb-4" />
 
         {/* ── VER VACANTES ── */}
         {tab === 'buscar' && (
