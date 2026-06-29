@@ -1219,6 +1219,311 @@ function VotesTab() {
   )
 }
 
+// ── Empresas ─────────────────────────────────────────────────────────────────
+function EmpresasTab() {
+  const qc = useQueryClient()
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm] = useState({ nombre_comercial: '', categoria_slug: '', descripcion: '', whatsapp: '', telefono: '', email: '', sitio_web: '', direccion: '', es_premium: false, es_destacado: false, es_verificado: false })
+  const [editId, setEditId] = useState(null)
+  const [filtro, setFiltro] = useState('')
+
+  const { data: empresas = [], isLoading } = useQuery({
+    queryKey: ['admin-empresas', filtro],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const params = new URLSearchParams({ limit: 50 })
+      if (filtro) params.set('tier', filtro)
+      const res = await fetch(`/api/directorio?${params}`, { headers: { Authorization: `Bearer ${session?.access_token}` } })
+      const json = await res.json()
+      return json.data || []
+    },
+  })
+
+  const submit = useMutation({
+    mutationFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const url = editId ? `/api/directorio/${editId}` : '/api/directorio'
+      const method = editId ? 'PATCH' : 'POST'
+      const slug = form.nombre_comercial.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'')
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` }, body: JSON.stringify({ ...form, slug: editId ? undefined : slug }) })
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
+      return res.json()
+    },
+    onSuccess: () => {
+      toast.success(editId ? 'Empresa actualizada' : 'Empresa creada')
+      setShowForm(false); setEditId(null)
+      setForm({ nombre_comercial: '', categoria_slug: '', descripcion: '', whatsapp: '', telefono: '', email: '', sitio_web: '', direccion: '', es_premium: false, es_destacado: false, es_verificado: false })
+      qc.invalidateQueries({ queryKey: ['admin-empresas'] })
+    },
+    onError: e => toast.error(e.message),
+  })
+
+  const toggleTier = useMutation({
+    mutationFn: async ({ id, campo, val }) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch(`/api/directorio/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` }, body: JSON.stringify({ [campo]: val }) })
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-empresas'] }),
+  })
+
+  const desactivar = useMutation({
+    mutationFn: async (id) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch(`/api/directorio/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${session?.access_token}` } })
+    },
+    onSuccess: () => { toast.success('Empresa desactivada'); qc.invalidateQueries({ queryKey: ['admin-empresas'] }) },
+  })
+
+  const CATEGORIAS = ['transportistas','agencias-aduanales','terminales','patios','forwarders','navieras','almacenadoras','llanteras','gruas','montacargas','gasolineras','refacciones','talleres','hoteles','restaurantes','seguridad','gps','seguros','consultoria','tecnologia','capacitacion','servicios-portuarios']
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex gap-2">
+          {[['','Todas'],['premium','Premium'],['destacado','Destacadas'],['verificado','Verificadas']].map(([v,l]) => (
+            <button key={v} onClick={() => setFiltro(v)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${filtro===v?'bg-blue-600 text-white border-blue-600':'bg-white text-gray-600 border-gray-200'}`}>
+              {l}
+            </button>
+          ))}
+        </div>
+        <button onClick={() => setShowForm(v => !v)}
+          className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 transition-colors">
+          <Plus size={13}/> Nueva empresa
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-3">
+          <p className="font-semibold text-gray-900 text-sm">{editId ? 'Editar empresa' : 'Nueva empresa'}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input value={form.nombre_comercial} onChange={e=>setForm(f=>({...f,nombre_comercial:e.target.value}))} placeholder="Nombre comercial *" className={INPUT}/>
+            <select value={form.categoria_slug} onChange={e=>setForm(f=>({...f,categoria_slug:e.target.value}))} className={INPUT}>
+              <option value="">Categoría</option>
+              {CATEGORIAS.map(c=><option key={c} value={c}>{c}</option>)}
+            </select>
+            <input value={form.whatsapp} onChange={e=>setForm(f=>({...f,whatsapp:e.target.value}))} placeholder="WhatsApp" className={INPUT}/>
+            <input value={form.telefono} onChange={e=>setForm(f=>({...f,telefono:e.target.value}))} placeholder="Teléfono" className={INPUT}/>
+            <input value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="Email" className={INPUT}/>
+            <input value={form.sitio_web} onChange={e=>setForm(f=>({...f,sitio_web:e.target.value}))} placeholder="Sitio web" className={INPUT}/>
+            <input value={form.direccion} onChange={e=>setForm(f=>({...f,direccion:e.target.value}))} placeholder="Dirección" className={`${INPUT} sm:col-span-2`}/>
+            <textarea value={form.descripcion} onChange={e=>setForm(f=>({...f,descripcion:e.target.value}))} placeholder="Descripción" rows={2} className={`${INPUT} sm:col-span-2 resize-none`}/>
+          </div>
+          <div className="flex gap-4">
+            {[['es_premium','Premium'],['es_destacado','Destacada'],['es_verificado','Verificada']].map(([k,l])=>(
+              <label key={k} className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+                <input type="checkbox" checked={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.checked}))} className="rounded"/>
+                {l}
+              </label>
+            ))}
+          </div>
+          <div className="flex gap-2 justify-end">
+            <button onClick={()=>{setShowForm(false);setEditId(null)}} className="px-4 py-2 text-xs text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50">Cancelar</button>
+            <button onClick={()=>submit.mutate()} disabled={!form.nombre_comercial||submit.isPending}
+              className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-40">
+              {submit.isPending?'Guardando…':'Guardar'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? <div className="h-32 bg-gray-100 rounded-xl animate-pulse"/> : (
+        <div className="space-y-2">
+          {empresas.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No hay empresas registradas</p>}
+          {empresas.map(e => (
+            <div key={e.id} className="bg-white border border-gray-200 rounded-xl p-4 flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3 min-w-0">
+                <div className="w-9 h-9 rounded-lg bg-gray-100 flex items-center justify-center overflow-hidden shrink-0">
+                  {e.logo_url ? <img src={e.logo_url} alt="" className="w-full h-full object-cover"/> : <Building2 size={16} className="text-gray-400"/>}
+                </div>
+                <div className="min-w-0">
+                  <p className="text-gray-900 text-sm font-semibold truncate">{e.nombre_comercial}</p>
+                  <p className="text-gray-400 text-xs">{e.categoria_slug || 'Sin categoría'}</p>
+                </div>
+                <div className="flex gap-1 shrink-0">
+                  {e.es_premium && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700">Premium</span>}
+                  {e.es_destacado && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700">Dest.</span>}
+                  {e.es_verificado && <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700">✓</span>}
+                </div>
+              </div>
+              <div className="flex gap-1.5 shrink-0 flex-wrap">
+                <button onClick={()=>toggleTier.mutate({id:e.id,campo:'es_premium',val:!e.es_premium})}
+                  className={`px-2 py-1 text-[10px] font-semibold rounded-lg border transition-colors ${e.es_premium?'bg-amber-100 text-amber-700 border-amber-200':'border-gray-200 text-gray-500 hover:bg-amber-50'}`}>
+                  Premium
+                </button>
+                <button onClick={()=>toggleTier.mutate({id:e.id,campo:'es_destacado',val:!e.es_destacado})}
+                  className={`px-2 py-1 text-[10px] font-semibold rounded-lg border transition-colors ${e.es_destacado?'bg-blue-100 text-blue-700 border-blue-200':'border-gray-200 text-gray-500 hover:bg-blue-50'}`}>
+                  Destacar
+                </button>
+                <button onClick={()=>toggleTier.mutate({id:e.id,campo:'es_verificado',val:!e.es_verificado})}
+                  className={`px-2 py-1 text-[10px] font-semibold rounded-lg border transition-colors ${e.es_verificado?'bg-green-100 text-green-700 border-green-200':'border-gray-200 text-gray-500 hover:bg-green-50'}`}>
+                  Verificar
+                </button>
+                <button onClick={()=>{setEditId(e.id);setForm({nombre_comercial:e.nombre_comercial,categoria_slug:e.categoria_slug||'',descripcion:e.descripcion||'',whatsapp:e.whatsapp||'',telefono:e.telefono||'',email:e.email||'',sitio_web:e.sitio_web||'',direccion:e.direccion||'',es_premium:e.es_premium,es_destacado:e.es_destacado,es_verificado:e.es_verificado});setShowForm(true)}}
+                  className="px-2 py-1 text-[10px] font-semibold rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">
+                  Editar
+                </button>
+                <button onClick={()=>{ if(confirm('¿Desactivar esta empresa?')) desactivar.mutate(e.id) }}
+                  className="px-2 py-1 text-[10px] font-semibold rounded-lg border border-red-200 text-red-500 hover:bg-red-50">
+                  Desactivar
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Publicidad ────────────────────────────────────────────────────────────────
+function PublicidadTab() {
+  const qc = useQueryClient()
+  const [showForm, setShowForm] = useState(false)
+  const [form, setForm] = useState({ titulo: '', imagen_url: '', link_url: '', whatsapp: '', zona: 'global', prioridad: 0, fecha_inicio: '', fecha_fin: '', is_active: true })
+  const [editId, setEditId] = useState(null)
+
+  const { data: campanas = [], isLoading } = useQuery({
+    queryKey: ['admin-publicidad'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/publicidad/admin/all', { headers: { Authorization: `Bearer ${session?.access_token}` } })
+      return res.ok ? res.json() : []
+    },
+  })
+
+  const submit = useMutation({
+    mutationFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const url = editId ? `/api/publicidad/admin/${editId}` : '/api/publicidad/admin'
+      const method = editId ? 'PATCH' : 'POST'
+      const body = { ...form, prioridad: parseInt(form.prioridad) || 0 }
+      if (!body.fecha_inicio) delete body.fecha_inicio
+      if (!body.fecha_fin)    delete body.fecha_fin
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` }, body: JSON.stringify(body) })
+      if (!res.ok) { const d = await res.json(); throw new Error(d.error) }
+    },
+    onSuccess: () => {
+      toast.success(editId ? 'Campaña actualizada' : 'Campaña creada')
+      setShowForm(false); setEditId(null)
+      setForm({ titulo:'',imagen_url:'',link_url:'',whatsapp:'',zona:'global',prioridad:0,fecha_inicio:'',fecha_fin:'',is_active:true })
+      qc.invalidateQueries({ queryKey: ['admin-publicidad'] })
+    },
+    onError: e => toast.error(e.message),
+  })
+
+  const eliminar = useMutation({
+    mutationFn: async (id) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch(`/api/publicidad/admin/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${session?.access_token}` } })
+    },
+    onSuccess: () => { toast.success('Campaña eliminada'); qc.invalidateQueries({ queryKey: ['admin-publicidad'] }) },
+  })
+
+  const toggleActiva = useMutation({
+    mutationFn: async ({ id, val }) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch(`/api/publicidad/admin/${id}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token}` }, body: JSON.stringify({ is_active: val }) })
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['admin-publicidad'] }),
+  })
+
+  const ZONAS = ['global','principal','directorio','noticias','vacantes','empresa']
+
+  const ctr = (c) => c.impresiones > 0 ? ((c.clics / c.impresiones) * 100).toFixed(1) + '%' : '—'
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <button onClick={() => setShowForm(v => !v)}
+          className="flex items-center gap-1.5 px-3 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 transition-colors">
+          <Plus size={13}/> Nueva campaña
+        </button>
+      </div>
+
+      {showForm && (
+        <div className="bg-white border border-gray-200 rounded-2xl p-5 space-y-3">
+          <p className="font-semibold text-gray-900 text-sm">{editId ? 'Editar campaña' : 'Nueva campaña'}</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <input value={form.titulo} onChange={e=>setForm(f=>({...f,titulo:e.target.value}))} placeholder="Título *" className={INPUT}/>
+            <select value={form.zona} onChange={e=>setForm(f=>({...f,zona:e.target.value}))} className={INPUT}>
+              {ZONAS.map(z=><option key={z} value={z}>{z}</option>)}
+            </select>
+            <input value={form.imagen_url} onChange={e=>setForm(f=>({...f,imagen_url:e.target.value}))} placeholder="URL imagen" className={INPUT}/>
+            <input value={form.link_url} onChange={e=>setForm(f=>({...f,link_url:e.target.value}))} placeholder="URL destino" className={INPUT}/>
+            <input value={form.whatsapp} onChange={e=>setForm(f=>({...f,whatsapp:e.target.value}))} placeholder="WhatsApp (alternativo)" className={INPUT}/>
+            <input type="number" value={form.prioridad} onChange={e=>setForm(f=>({...f,prioridad:e.target.value}))} placeholder="Prioridad (0-10)" className={INPUT}/>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Fecha inicio</label>
+              <input type="date" value={form.fecha_inicio} onChange={e=>setForm(f=>({...f,fecha_inicio:e.target.value}))} className={INPUT}/>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500 mb-1 block">Fecha fin</label>
+              <input type="date" value={form.fecha_fin} onChange={e=>setForm(f=>({...f,fecha_fin:e.target.value}))} className={INPUT}/>
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-xs text-gray-600 cursor-pointer">
+            <input type="checkbox" checked={form.is_active} onChange={e=>setForm(f=>({...f,is_active:e.target.checked}))} className="rounded"/>
+            Campaña activa
+          </label>
+          <div className="flex gap-2 justify-end">
+            <button onClick={()=>{setShowForm(false);setEditId(null)}} className="px-4 py-2 text-xs text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50">Cancelar</button>
+            <button onClick={()=>submit.mutate()} disabled={!form.titulo||submit.isPending}
+              className="px-4 py-2 bg-blue-600 text-white text-xs font-semibold rounded-xl hover:bg-blue-700 disabled:opacity-40">
+              {submit.isPending?'Guardando…':'Guardar'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {isLoading ? <div className="h-32 bg-gray-100 rounded-xl animate-pulse"/> : (
+        <div className="space-y-2">
+          {campanas.length === 0 && <p className="text-gray-400 text-sm text-center py-8">No hay campañas creadas</p>}
+          {campanas.map(c => (
+            <div key={c.id} className={`bg-white border rounded-xl p-4 space-y-2 ${c.is_active ? 'border-gray-200' : 'border-gray-100 opacity-60'}`}>
+              <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="flex items-center gap-3 min-w-0">
+                  {c.imagen_url && <img src={c.imagen_url} alt="" className="w-12 h-8 object-cover rounded-lg shrink-0"/>}
+                  <div className="min-w-0">
+                    <p className="text-gray-900 text-sm font-semibold truncate">{c.titulo}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="text-[10px] text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded">{c.zona}</span>
+                      {c.fecha_inicio && <span className="text-[10px] text-gray-400">{c.fecha_inicio} → {c.fecha_fin || '∞'}</span>}
+                      <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${c.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {c.is_active ? 'Activa' : 'Inactiva'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="text-right">
+                    <p className="text-xs text-gray-400">Imp. <span className="font-bold text-gray-700">{(c.impresiones||0).toLocaleString()}</span></p>
+                    <p className="text-xs text-gray-400">Clics <span className="font-bold text-gray-700">{(c.clics||0).toLocaleString()}</span> · CTR {ctr(c)}</p>
+                  </div>
+                  <div className="flex gap-1.5">
+                    <button onClick={()=>toggleActiva.mutate({id:c.id,val:!c.is_active})}
+                      className={`px-2 py-1 text-[10px] font-semibold rounded-lg border transition-colors ${c.is_active?'border-red-200 text-red-500 hover:bg-red-50':'border-green-200 text-green-600 hover:bg-green-50'}`}>
+                      {c.is_active?'Pausar':'Activar'}
+                    </button>
+                    <button onClick={()=>{setEditId(c.id);setForm({titulo:c.titulo,imagen_url:c.imagen_url||'',link_url:c.link_url||'',whatsapp:c.whatsapp||'',zona:c.zona,prioridad:c.prioridad||0,fecha_inicio:c.fecha_inicio||'',fecha_fin:c.fecha_fin||'',is_active:c.is_active});setShowForm(true)}}
+                      className="px-2 py-1 text-[10px] font-semibold rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50">
+                      Editar
+                    </button>
+                    <button onClick={()=>{ if(confirm('¿Eliminar campaña?')) eliminar.mutate(c.id) }}
+                      className="px-2 py-1 text-[10px] font-semibold rounded-lg border border-red-200 text-red-500 hover:bg-red-50">
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ── Admin root ────────────────────────────────────────────────────────────────
 const TABS = [
   { id: 'reports',       label: 'Reportes',      icon: FileWarning  },
@@ -1231,6 +1536,8 @@ const TABS = [
   { id: 'suscripciones', label: 'Suscripciones',  icon: CreditCard   },
   { id: 'comunicados',   label: 'Comunicados',    icon: MessageSquare },
   { id: 'votes',         label: 'Votos',          icon: ThumbsUp     },
+  { id: 'empresas',      label: 'Empresas',       icon: Building2    },
+  { id: 'publicidad',    label: 'Publicidad',     icon: Megaphone    },
 ]
 
 export default function Admin() {
@@ -1248,6 +1555,8 @@ export default function Admin() {
     suscripciones: <SuscripcionesTab />,
     comunicados:   <ComunicadosTab />,
     votes:         <VotesTab />,
+    empresas:      <EmpresasTab />,
+    publicidad:    <PublicidadTab />,
   }
 
   return (

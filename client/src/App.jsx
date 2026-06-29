@@ -20,6 +20,8 @@ import Anunciate from './pages/Anunciate.jsx'
 import Legal from './pages/Legal.jsx'
 import Comunicados from './pages/Comunicados.jsx'
 import MapaTerminales from './pages/MapaTerminales.jsx'
+import DirectorioEmpresarial from './pages/DirectorioEmpresarial.jsx'
+import EmpresaPerfil from './pages/EmpresaPerfil.jsx'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -61,6 +63,8 @@ export default function App() {
             <Route path="legal" element={<Legal />} />
             <Route path="comunicados" element={<Comunicados />} />
             <Route path="mapa-terminales" element={<MapaTerminales />} />
+            <Route path="directorio-empresarial" element={<DirectorioEmpresarial />} />
+            <Route path="directorio-empresarial/:slug" element={<EmpresaPerfil />} />
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />

@@ -18,6 +18,8 @@ import adminRouter        from './routes/admin.js'
 import chatRouter         from './routes/chat.js'
 import predictionsRouter  from './routes/predictions.js'
 import rankingsRouter     from './routes/rankings.js'
+import directorioRouter   from './routes/directorio.js'
+import publicidadRouter   from './routes/publicidad.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
 import { initWorkers } from './services/workers.js'
@@ -57,6 +59,10 @@ app.use('/api/reactions', noCache,        reactionsRouter)
 app.use('/api/chat',      noCache,        chatRouter)
 app.use('/api/users',     noCache,        usersRouter)
 app.use('/api/admin',     noCache,        adminRouter)
+
+// Directorio y publicidad
+app.use('/api/directorio', cacheFor(60),  directorioRouter)
+app.use('/api/publicidad', cacheFor(120), publicidadRouter)
 
 // Semi-estático: cache corto + stale-while-revalidate
 app.use('/api/sections',  cacheFor(30),   sectionsRouter)   // 30s  — zonas cambian seguido
