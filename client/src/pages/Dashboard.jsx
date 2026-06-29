@@ -163,6 +163,13 @@ export default function Dashboard() {
       </div>
 
       {/* ══════════════════════════════════════════════════════════
+          BANNER PUBLICITARIO
+      ══════════════════════════════════════════════════════════ */}
+      <div className="max-w-5xl mx-auto px-4 py-4">
+        <BannerRotativo zona="principal" className="h-28 sm:h-32" />
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════
           DASHBOARD OPERATIVO
       ══════════════════════════════════════════════════════════ */}
       <div className="max-w-7xl mx-auto px-4 -mt-16 relative z-10 pb-10">
@@ -235,7 +242,6 @@ export default function Dashboard() {
                 </div>
                 <ActivityFeed />
               </div>
-              <BannerRotativo zona="principal" className="h-24" />
             </div>
           </div>
         ) : (
@@ -280,7 +286,6 @@ export default function Dashboard() {
                 </div>
                 <ActivityFeed />
               </div>
-              <BannerRotativo zona="principal" className="h-24" />
             </div>
           </div>
         )}
