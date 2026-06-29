@@ -321,11 +321,11 @@ export default function DirectorioEmpresarial() {
       {/* CTA para empresas */}
       <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-center">
         <h3 className="text-white font-bold text-lg mb-1">¿Tu empresa no aparece?</h3>
-        <p className="text-blue-100 text-sm mb-4">Regístrate y sé parte del directorio empresarial del Puerto de Manzanillo</p>
-        <a href="https://whatsapp.com/channel/0029VbBN73rId7nJ3RTSsq3s" target="_blank" rel="noopener noreferrer"
+        <p className="text-blue-100 text-sm mb-4">Registra tu empresa y llega a miles de profesionales del Puerto de Manzanillo</p>
+        <Link to="/anunciate"
           className="inline-block px-6 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-xl hover:bg-blue-50 transition-colors">
-          Registrar mi empresa
-        </a>
+          Ver paquetes de publicidad
+        </Link>
       </div>
     </div>
   )

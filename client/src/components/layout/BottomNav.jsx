@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { Home, User, BarChart2, Briefcase, Building2, BookOpen } from 'lucide-react'
+import { Home, User, BarChart2, Briefcase, Building2 } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore.js'
 
 export default function BottomNav() {
@@ -20,8 +20,8 @@ export default function BottomNav() {
         <BarChart2 size={18} />
         <span>Analítica</span>
       </NavLink>
-      <NavLink to="/directorio" className={cls}>
-        <BookOpen size={18} />
+      <NavLink to="/directorio-empresarial" className={cls}>
+        <Building2 size={18} />
         <span>Directorio</span>
       </NavLink>
       <NavLink to="/posturas" className={cls}>
