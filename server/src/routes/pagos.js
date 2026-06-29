@@ -4,9 +4,16 @@ import { createClient } from '@supabase/supabase-js'
 
 const router = express.Router()
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2024-12-18.acacia',
-})
+// Lazy init — no lanza error si la key no está configurada aún
+let _stripe = null
+function getStripe() {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY
+    if (!key) throw new Error('STRIPE_SECRET_KEY no configurada en variables de entorno')
+    _stripe = new Stripe(key, { apiVersion: '2024-12-18.acacia' })
+  }
+  return _stripe
+}
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
@@ -53,7 +60,7 @@ router.post('/checkout', async (req, res) => {
 
     const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173'
 
-    const session = await stripe.checkout.sessions.create({
+    const session = await getStripe().checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: plan.priceId, quantity: 1 }],
       success_url: `${baseUrl}/anunciate?success=true&paquete=${paquete}`,
@@ -87,7 +94,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
 
   let event
   try {
-    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret)
+    event = getStripe().webhooks.constructEvent(req.body, sig, webhookSecret)
   } catch (err) {
     console.error('[webhook] Firma inválida:', err.message)
     return res.status(400).send(`Webhook Error: ${err.message}`)
