@@ -128,7 +128,7 @@ Los permisos se comprueban en el backend. El campo heredado `profiles.role` se c
 5. Aplicar las migraciones en Supabase antes de recibir tráfico.
 6. Comprobar que `/health` responda `200`.
 
-`railway.json` configura el healthcheck y `nixpacks.toml` instala dependencias con `npm ci`.
+`railway.json` configura Railpack, instala las dependencias de cliente y servidor, compila la aplicación y valida `/health` antes de activar una versión.
 
 ## Almacenamiento y copias de seguridad
 
