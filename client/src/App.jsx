@@ -26,6 +26,7 @@ const CompanyOnboarding = lazy(() => import('./pages/CompanyOnboarding.jsx'))
 const SmartRoutes = lazy(() => import('./pages/SmartRoutes.jsx'))
 const CustomsControl = lazy(() => import('./pages/CustomsControl.jsx'))
 const ControlTower = lazy(() => import('./pages/ControlTower.jsx'))
+const Calculators = lazy(() => import('./pages/Calculators.jsx'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -73,7 +74,8 @@ export default function App() {
             <Route path="mapa-terminales" element={<Navigate to="/" replace />} />
             <Route path="directorio-empresarial" element={<DirectorioEmpresarial />} />
             <Route path="directorio-empresarial/:slug" element={<EmpresaPerfil />} />
-            {['marketplace', 'fletes', 'salarios', 'capacitacion', 'documentos', 'calculadoras', 'comunidad', 'resenas', 'ia-portuaria'].map(path => (
+            <Route path="calculadoras" element={<Calculators />} />
+            {['marketplace', 'fletes', 'salarios', 'capacitacion', 'documentos', 'comunidad', 'resenas', 'ia-portuaria'].map(path => (
               <Route key={path} path={path} element={<EcosystemModule />} />
             ))}
             <Route path="login" element={<Login />} />
