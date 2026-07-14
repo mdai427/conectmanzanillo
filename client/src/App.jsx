@@ -23,6 +23,9 @@ const DirectorioEmpresarial = lazy(() => import('./pages/DirectorioEmpresarial.j
 const EmpresaPerfil = lazy(() => import('./pages/EmpresaPerfil.jsx'))
 const EcosystemModule = lazy(() => import('./pages/EcosystemModule.jsx'))
 const CompanyOnboarding = lazy(() => import('./pages/CompanyOnboarding.jsx'))
+const SmartRoutes = lazy(() => import('./pages/SmartRoutes.jsx'))
+const CustomsControl = lazy(() => import('./pages/CustomsControl.jsx'))
+const ControlTower = lazy(() => import('./pages/ControlTower.jsx'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -61,6 +64,9 @@ export default function App() {
             <Route path="analitica" element={<Navigate to="/" replace />} />
             <Route path="empresa" element={<Empresa />} />
             <Route path="empresa/onboarding" element={<PrivateRoute><CompanyOnboarding /></PrivateRoute>} />
+            <Route path="rutas-inteligentes" element={<PrivateRoute><SmartRoutes /></PrivateRoute>} />
+            <Route path="control-aduanal" element={<PrivateRoute><CustomsControl /></PrivateRoute>} />
+            <Route path="torre-control" element={<PrivateRoute><ControlTower /></PrivateRoute>} />
             <Route path="anunciate" element={<Anunciate />} />
             <Route path="legal" element={<Legal />} />
             <Route path="comunicados" element={<Comunicados />} />

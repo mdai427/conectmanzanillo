@@ -22,6 +22,7 @@ import directorioRouter   from './routes/directorio.js'
 import publicidadRouter   from './routes/publicidad.js'
 import pagosRouter        from './routes/pagos.js'
 import foundationsRouter  from './routes/foundations.js'
+import operationsRouter   from './routes/operations.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
 import { initWorkers } from './services/workers.js'
@@ -70,6 +71,7 @@ app.use('/api/directorio', cacheFor(60),  directorioRouter)
 app.use('/api/publicidad', cacheFor(120), publicidadRouter)
 app.use('/api/pagos',      noCache,        pagosRouter)
 app.use('/api/foundations', noCache,       foundationsRouter)
+app.use('/api/operations',  noCache,       operationsRouter)
 
 // Semi-estático: cache corto + stale-while-revalidate
 app.use('/api/sections',  cacheFor(30),   sectionsRouter)   // 30s  — zonas cambian seguido

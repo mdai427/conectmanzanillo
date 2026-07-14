@@ -5,6 +5,7 @@ import {
   ArrowRight, BadgeCheck, BriefcaseBusiness, Building2, ChevronRight, Container,
   GraduationCap, Handshake, Landmark, MapPin, Newspaper, PackageSearch, Search,
   ShieldCheck, Ship, Store, Truck, Users, Warehouse, Wrench,
+  MapPinned, RadioTower, CircleGauge, ShieldAlert,
 } from 'lucide-react'
 import SponsoredCompanies from '../components/ui/SponsoredCompanies.jsx'
 import { isDemoMode, supabase } from '../lib/supabase.js'
@@ -110,6 +111,20 @@ export default function Dashboard() {
               [PackageSearch, 'Oportunidades comerciales', 'Accede progresivamente a fletes, cotizaciones y publicaciones.'],
               [BriefcaseBusiness, 'Empleo especializado', 'Publica vacantes y organiza candidatos desde un mismo espacio.'],
             ].map(([Icon, title, text]) => <div key={title} className="border-t border-slate-200 pt-5"><Icon size={20} className="text-teal-800" /><h3 className="mt-4 font-black">{title}</h3><p className="mt-2 text-sm leading-6 text-slate-500">{text}</p></div>)}</div>
+          </div>
+        </section>
+
+        <section className="border-b border-slate-100 bg-[#f5f7f8] py-16 sm:py-20">
+          <div className="mx-auto max-w-7xl px-4">
+            <div className="grid gap-12 lg:grid-cols-[.9fr_1.1fr] lg:items-start">
+              <div><Heading eyebrow="Operación conectada" title="Rutas inteligentes y aduanas bajo control." text="Faro Portuario combina reglas vehiculares, riesgos, fuentes GPS autorizadas y seguimiento aduanal para anticipar bloqueos y retrasos con información trazable." /><Link to="/torre-control" className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d4f4b] px-5 text-xs font-extrabold text-white">Conocer la Torre de Control <ArrowRight size={14}/></Link><p className="mt-4 text-xs leading-5 text-slate-500">La disponibilidad y frecuencia dependen de las fuentes oficiales, proveedores GPS, agentes aduanales, terminales y servicios conectados.</p></div>
+              <div className="grid gap-3 sm:grid-cols-2">{[
+                [MapPinned,'Compatibilidad por segmento','Valida configuración, peso, dimensiones y permisos antes de asignar.'],
+                [CircleGauge,'Tráfico e incidentes','Prepara adaptadores de tráfico y ETA sin confundirlos con autorización legal.'],
+                [ShieldAlert,'Seguridad y paradas','Gestiona riesgo por tramo, horario y puntos autorizados con geocercas.'],
+                [RadioTower,'Control aduanal y portuario','Concentra pedimento, liberación, citas y próximas acciones con su fuente.'],
+              ].map(([Icon,title,copy])=><div key={title} className="rounded-xl border border-slate-200 bg-white p-5"><Icon size={19} className="text-teal-700"/><h3 className="mt-4 text-sm font-black">{title}</h3><p className="mt-2 text-xs leading-5 text-slate-500">{copy}</p></div>)}</div>
+            </div>
           </div>
         </section>
 

@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import {
   BookOpen, Briefcase, Building2, Calculator, ChevronDown, GraduationCap, Home,
   LogIn, LogOut, Menu, MessageSquareText, Newspaper, PackageSearch, Shield,
-  Store, User, X,
+  Store, User, X, MapPinned, RadioTower, Anchor,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '../../stores/authStore.js'
@@ -16,6 +16,8 @@ const PRIMARY = [
 const MORE = [
   ['/comunidad', 'Comunidad', MessageSquareText], ['/capacitacion', 'Capacitación', GraduationCap],
   ['/documentos', 'Biblioteca', BookOpen], ['/calculadoras', 'Herramientas', Calculator],
+  ['/torre-control', 'Torre de control', RadioTower], ['/rutas-inteligentes', 'Rutas inteligentes', MapPinned],
+  ['/control-aduanal', 'Control aduanal', Anchor],
 ]
 
 export default function Navbar() {

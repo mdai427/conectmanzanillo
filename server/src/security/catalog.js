@@ -28,6 +28,7 @@ export const PERMISSIONS = [
   'marketplace.create', 'ad.create', 'ad.approve', 'subscription.manage',
   'moderation.manage', 'admin.analytics', 'admin.audit.read', 'content.manage',
   'admin.users.manage', 'admin.roles.manage',
+  'operations.view', 'route.plan', 'route.override', 'customs.manage', 'integrations.manage',
 ]
 
 export function isValidAccountSelection(kind, type) {
