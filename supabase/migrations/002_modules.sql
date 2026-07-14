@@ -27,7 +27,7 @@ create policy "public_read_news"   on public.news_items for select using (true);
 create policy "service_write_news" on public.news_items for all using (true);
 
 insert into public.news_items (content, category, priority, expires_at) values
-  ('Bienvenido a ConectManzanillo · Reporta el estado de las zonas del puerto en tiempo real', 'general', 10, now() + interval '365 days'),
+  ('Bienvenido a Faro Portuario · Conecta con el ecosistema logístico de Manzanillo', 'general', 10, now() + interval '365 days'),
   ('Para reportar necesitas registrarte · Es gratis · Tarda menos de 1 minuto', 'aviso', 5, now() + interval '365 days');
 
 -- ── Módulo 4: Anuncios Comerciales ───────────────────────────────────────────
@@ -54,7 +54,7 @@ create policy "public_read_ads"   on public.ads for select using (is_active = tr
 create policy "service_write_ads" on public.ads for all using (true);
 
 insert into public.ads (company_name, tagline, cta_text, cta_url, phone, plan, position) values
-  ('Tu Empresa Aquí', 'Llega a cientos de transportistas del Puerto de Manzanillo', 'Anúnciate', 'mailto:contacto@conectmanzanillo.com', '3141234567', 'featured', 'dashboard');
+  ('Tu Empresa Aquí', 'Presenta tus servicios ante una audiencia especializada del sector logístico', 'Anúnciate', '/anunciate', NULL, 'featured', 'dashboard');
 
 -- ── Módulo 6: Directorio de Servicios ────────────────────────────────────────
 create table if not exists public.directory_listings (

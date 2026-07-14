@@ -23,7 +23,7 @@ function formatPhone(raw) {
 // Derivar un email estable a partir del teléfono para auth Supabase
 function phoneToEmail(phone) {
   // Dominio interno heredado: se conserva para no romper el acceso de usuarios existentes.
-  return `${phone.replace('+', '')}@phone.conectmanzanillo.app`
+  return `${phone.replace('+', '')}@phone.faroportuario.app`
 }
 
 // POST /api/phone-auth/send  — enviar código SMS
