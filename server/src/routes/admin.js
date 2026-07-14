@@ -1,14 +1,14 @@
 import { Router } from 'express'
 import { supabaseAdmin } from '../config/supabase.js'
-import { requireAuth, requireRole } from '../middleware/auth.js'
+import { requireAuth, requirePermission } from '../middleware/auth.js'
+import { PLATFORM_ROLES } from '../security/catalog.js'
 
 const router = Router()
 
 router.use(requireAuth)
-router.use(requireRole('admin'))
 
 // GET /api/admin/stats
-router.get('/stats', async (_req, res) => {
+router.get('/stats', requirePermission('admin.analytics'), async (_req, res) => {
   try {
     const [
       { count: users },
@@ -35,7 +35,7 @@ router.get('/stats', async (_req, res) => {
 })
 
 // GET /api/admin/users
-router.get('/users', async (req, res) => {
+router.get('/users', requirePermission('admin.users.manage'), async (req, res) => {
   try {
     const { search } = req.query
     let q = supabaseAdmin
@@ -44,7 +44,8 @@ router.get('/users', async (req, res) => {
       .order('created_at', { ascending: false })
       .limit(100)
 
-    if (search) q = q.or(`username.ilike.%${search}%,full_name.ilike.%${search}%`)
+    const safeSearch = String(search || '').replace(/[,().%]/g, '').trim().slice(0, 60)
+    if (safeSearch) q = q.or(`username.ilike.%${safeSearch}%,full_name.ilike.%${safeSearch}%`)
 
     const { data, error } = await q
     if (error) throw error
@@ -55,17 +56,25 @@ router.get('/users', async (req, res) => {
 })
 
 // PATCH /api/admin/users/:id/role
-router.patch('/users/:id/role', async (req, res) => {
+router.patch('/users/:id/role', requirePermission('admin.roles.manage'), async (req, res) => {
   const { role } = req.body
-  const VALID_ROLES = ['operator_free', 'operator_premium', 'company', 'moderador', 'admin']
+  const LEGACY_ROLES = ['operator_free', 'operator_premium', 'company', 'moderador', 'admin']
 
-  if (!role || !VALID_ROLES.includes(role))
+  if (!role || ![...LEGACY_ROLES, ...PLATFORM_ROLES].includes(role))
     return res.status(400).json({ error: 'Rol inválido' })
 
   try {
-    const { data, error } = await supabaseAdmin
-      .from('profiles').update({ role }).eq('id', req.params.id).select().single()
+    if (PLATFORM_ROLES.includes(role)) {
+      const { data: roleRecord, error: roleError } = await supabaseAdmin.from('roles').select('id, code, name').eq('code', role).single()
+      if (roleError) throw roleError
+      const { error } = await supabaseAdmin.from('user_roles').upsert({ user_id: req.params.id, role_id: roleRecord.id, assigned_by: req.user.id })
+      if (error) throw error
+      await supabaseAdmin.from('audit_logs').insert({ actor_user_id: req.user.id, action: 'role.assigned', entity_type: 'user', entity_id: req.params.id, new_state: { role } })
+      return res.json(roleRecord)
+    }
+    const { data, error } = await supabaseAdmin.from('profiles').update({ role }).eq('id', req.params.id).select().single()
     if (error) throw error
+    await supabaseAdmin.from('audit_logs').insert({ actor_user_id: req.user.id, action: 'legacy_role.changed', entity_type: 'user', entity_id: req.params.id, new_state: { role } })
     res.json(data)
   } catch (err) {
     res.status(500).json({ error: err.message })
@@ -73,7 +82,7 @@ router.patch('/users/:id/role', async (req, res) => {
 })
 
 // POST /api/admin/users/:id/warn — enviar warning
-router.post('/users/:id/warn', async (req, res) => {
+router.post('/users/:id/warn', requirePermission('moderation.manage'), async (req, res) => {
   const { motivo, tipo = 'publicacion_falsa' } = req.body
   if (!motivo) return res.status(400).json({ error: 'El motivo es requerido' })
 
@@ -103,7 +112,7 @@ router.post('/users/:id/warn', async (req, res) => {
 })
 
 // POST /api/admin/users/:id/temp-ban — ban temporal por N días
-router.post('/users/:id/temp-ban', async (req, res) => {
+router.post('/users/:id/temp-ban', requirePermission('moderation.manage'), async (req, res) => {
   const { dias, motivo } = req.body
   if (!dias || dias < 1) return res.status(400).json({ error: 'Días requeridos' })
 
@@ -128,7 +137,7 @@ router.post('/users/:id/temp-ban', async (req, res) => {
 })
 
 // POST /api/admin/users/:id/annul-votes — anular todos los votos del usuario
-router.post('/users/:id/annul-votes', async (req, res) => {
+router.post('/users/:id/annul-votes', requirePermission('moderation.manage'), async (req, res) => {
   const { motivo } = req.body
   try {
     const now = new Date().toISOString()
@@ -156,7 +165,7 @@ router.post('/users/:id/annul-votes', async (req, res) => {
 })
 
 // POST /api/admin/reports/:id/annul — anular el voto/reporte específico
-router.post('/reports/:id/annul', async (req, res) => {
+router.post('/reports/:id/annul', requirePermission('moderation.manage'), async (req, res) => {
   const { motivo } = req.body
   try {
     // Marcar reporte como inactivo
@@ -186,7 +195,7 @@ router.post('/reports/:id/annul', async (req, res) => {
 })
 
 // GET /api/admin/vote-history — historial de votos recientes
-router.get('/vote-history', async (req, res) => {
+router.get('/vote-history', requirePermission('moderation.manage'), async (req, res) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('vote_reactions')
@@ -205,7 +214,7 @@ router.get('/vote-history', async (req, res) => {
 })
 
 // POST /api/admin/users/:id/ban — ban directo
-router.post('/users/:id/ban', async (req, res) => {
+router.post('/users/:id/ban', requirePermission('moderation.manage'), async (req, res) => {
   const { motivo } = req.body
   try {
     await supabaseAdmin.from('profiles')
@@ -230,7 +239,7 @@ router.post('/users/:id/ban', async (req, res) => {
 })
 
 // POST /api/admin/users/:id/unban
-router.post('/users/:id/unban', async (req, res) => {
+router.post('/users/:id/unban', requirePermission('moderation.manage'), async (req, res) => {
   try {
     await supabaseAdmin.from('profiles')
       .update({ is_banned: false })
@@ -242,7 +251,7 @@ router.post('/users/:id/unban', async (req, res) => {
 })
 
 // GET /api/admin/reports — todos los reportes recientes con perfil
-router.get('/reports', async (req, res) => {
+router.get('/reports', requirePermission('moderation.manage'), async (req, res) => {
   try {
     const { status, section } = req.query
     let q = supabaseAdmin
@@ -268,7 +277,7 @@ router.get('/reports', async (req, res) => {
 })
 
 // DELETE /api/admin/reports/:id — desactivar reporte
-router.delete('/reports/:id', async (req, res) => {
+router.delete('/reports/:id', requirePermission('moderation.manage'), async (req, res) => {
   try {
     const { error } = await supabaseAdmin
       .from('reports').update({ is_active: false }).eq('id', req.params.id)
@@ -280,7 +289,7 @@ router.delete('/reports/:id', async (req, res) => {
 })
 
 // GET /api/admin/warnings — historial de warnings
-router.get('/warnings', async (_req, res) => {
+router.get('/warnings', requirePermission('moderation.manage'), async (_req, res) => {
   try {
     const { data, error } = await supabaseAdmin
       .from('user_warnings')

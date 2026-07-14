@@ -30,8 +30,8 @@ export default function AdBanner({ position = 'dashboard', className = '' }) {
   if (ads.length === 0) return (
     <div className={`bg-[#161B22] border border-dashed border-[#30363D] rounded-xl p-6 text-center ${className}`}>
       <p className="text-[#4B5563] text-xs">¿Quieres anunciarte aquí?</p>
-      <a href="mailto:contacto@conectmanzanillo.com" className="text-[#00C2FF] text-xs hover:underline">
-        Contáctanos →
+      <a href="/anunciate" className="text-teal-400 text-xs hover:underline">
+        Ver opciones de publicidad →
       </a>
     </div>
   )

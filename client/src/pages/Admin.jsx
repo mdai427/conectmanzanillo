@@ -1566,7 +1566,7 @@ export default function Admin() {
           <Shield size={20} className="text-[#00C2FF]" />
           <div>
             <h1 className="text-xl font-bold text-gray-900">Panel de Administración</h1>
-            <p className="text-gray-500 text-xs mt-0.5">ConectManzanillo · Control total de la plataforma</p>
+            <p className="text-gray-500 text-xs mt-0.5">Faro Portuario · Control de la plataforma</p>
           </div>
         </div>
 

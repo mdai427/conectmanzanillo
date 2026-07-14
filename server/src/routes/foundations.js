@@ -1,0 +1,155 @@
+import { Router } from 'express'
+import { supabaseAdmin } from '../config/supabase.js'
+import { requireAuth, requireCompanyAccess } from '../middleware/auth.js'
+import { ACCOUNT_KINDS, isValidAccountSelection } from '../security/catalog.js'
+import { randomUUID } from 'crypto'
+
+const router = Router()
+const cleanText = (value, max = 160) => String(value || '').trim().slice(0, max)
+
+router.get('/account-types', async (_req, res) => {
+  const { data, error } = await supabaseAdmin.from('account_types').select('code, account_kind, name, description, sort_order').eq('is_active', true).order('account_kind').order('sort_order')
+  if (error) return res.status(500).json({ error: error.message })
+  res.json(data || [])
+})
+
+router.get('/plans', async (req, res) => {
+  let query = supabaseAdmin.from('plans').select('id, code, name, audience, description, currency, monthly_price, annual_price, trial_days, is_featured').eq('is_active', true).order('sort_order')
+  if (req.query.audience) query = query.eq('audience', req.query.audience)
+  const { data, error } = await query
+  if (error) return res.status(500).json({ error: error.message })
+  res.json(data || [])
+})
+
+router.get('/me/capabilities', requireAuth, async (req, res) => {
+  const [{ data: profile }, { data: roles }, { data: subscription }] = await Promise.all([
+    supabaseAdmin.from('profiles').select('id, full_name, account_kind, account_type, onboarding_status, is_verified').eq('id', req.user.id).single(),
+    supabaseAdmin.from('user_roles').select('roles(code, name), role_id').eq('user_id', req.user.id),
+    supabaseAdmin.from('subscriptions').select('id, estatus, billing_period, plan_id, plans(code, name)').eq('user_id', req.user.id).in('estatus', ['activa', 'pendiente']).order('created_at', { ascending: false }).limit(1).maybeSingle(),
+  ])
+  const { data: permissions } = await supabaseAdmin.rpc('get_user_permissions', { p_user_id: req.user.id })
+  res.json({ profile, roles: roles || [], permissions: permissions || [], subscription: subscription || null })
+})
+
+router.post('/me/account', requireAuth, async (req, res) => {
+  const { account_kind: kind, account_type: type } = req.body
+  if (!ACCOUNT_KINDS.includes(kind) || !isValidAccountSelection(kind, type)) return res.status(400).json({ error: 'Tipo de cuenta inválido' })
+
+  const { data, error } = await supabaseAdmin.from('profiles').update({ account_kind: kind, account_type: type, onboarding_status: 'profile_pending', updated_at: new Date().toISOString() }).eq('id', req.user.id).select().single()
+  if (error) return res.status(400).json({ error: error.message })
+  res.json(data)
+})
+
+router.get('/companies/me', requireAuth, async (req, res) => {
+  const { data, error } = await supabaseAdmin.from('company_members').select('member_role, status, companies(*)').eq('user_id', req.user.id).eq('status', 'active')
+  if (error) return res.status(500).json({ error: error.message })
+  res.json(data || [])
+})
+
+router.post('/companies', requireAuth, async (req, res) => {
+  const { company_type: type } = req.body
+  if (!isValidAccountSelection('company', type)) return res.status(400).json({ error: 'Tipo de empresa inválido' })
+  const legalName = cleanText(req.body.legal_name, 180)
+  const tradeName = cleanText(req.body.trade_name, 140)
+  if (!legalName || !tradeName) return res.status(400).json({ error: 'Razón social y nombre comercial son requeridos' })
+
+  const { data, error } = await supabaseAdmin.rpc('create_company_draft', {
+    p_owner_id: req.user.id,
+    p_company_type: type,
+    p_legal_name: legalName,
+    p_trade_name: tradeName,
+  })
+  if (error) return res.status(400).json({ error: error.message })
+  res.status(201).json(data)
+})
+
+router.patch('/companies/:companyId', requireAuth, requireCompanyAccess('company.manage_profile'), async (req, res) => {
+  const allowed = ['legal_name', 'trade_name', 'tax_id', 'tax_regime', 'fiscal_address', 'founded_year', 'responsible_name', 'responsible_title', 'business_email', 'phone', 'whatsapp', 'website', 'description', 'services', 'coverage', 'ports_served', 'states_served', 'business_hours']
+  const updates = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)))
+  for (const key of ['tax_id', 'tax_regime', 'fiscal_address', 'responsible_name', 'responsible_title', 'business_email', 'phone', 'whatsapp', 'website', 'description']) {
+    if (key in updates) updates[key] = cleanText(updates[key], key === 'description' ? 2000 : 300) || null
+  }
+  if (updates.tax_id) updates.tax_id = updates.tax_id.slice(0, 13).toUpperCase()
+  updates.updated_at = new Date().toISOString()
+  const { data, error } = await supabaseAdmin.from('companies').update(updates).eq('id', req.companyId).select().single()
+  if (error) return res.status(400).json({ error: error.message })
+  res.json(data)
+})
+
+router.post('/companies/:companyId/submit-verification', requireAuth, requireCompanyAccess('company.manage_profile'), async (req, res) => {
+  const { data: company, error: readError } = await supabaseAdmin.from('companies').select('id, legal_name, trade_name, tax_id, fiscal_address, responsible_name, business_email, status').eq('id', req.companyId).single()
+  if (readError || !company) return res.status(404).json({ error: 'Empresa no encontrada' })
+  const missing = ['legal_name', 'trade_name', 'tax_id', 'fiscal_address', 'responsible_name', 'business_email'].filter((field) => !company[field])
+  if (missing.length) return res.status(422).json({ error: 'Registro incompleto', missing_fields: missing })
+  if (!['draft', 'incomplete', 'corrections_required'].includes(company.status)) return res.status(409).json({ error: 'La empresa no puede enviarse desde su estado actual' })
+  const [{ count: fiscalDocuments }, { count: subscriptions }] = await Promise.all([
+    supabaseAdmin.from('company_documents').select('id', { count: 'exact', head: true }).eq('company_id', req.companyId).eq('document_type', 'tax_certificate').is('deleted_at', null),
+    supabaseAdmin.from('subscriptions').select('id', { count: 'exact', head: true }).eq('company_id', req.companyId).in('estatus', ['activa', 'pendiente']),
+  ])
+  if (!fiscalDocuments) return res.status(422).json({ error: 'Registro incompleto', missing_fields: ['constancia de situación fiscal'] })
+  if (!subscriptions) return res.status(422).json({ error: 'Registro incompleto', missing_fields: ['plan'] })
+
+  const { data, error } = await supabaseAdmin.from('companies').update({ status: 'pending_verification', submitted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', req.companyId).select().single()
+  if (error) return res.status(400).json({ error: error.message })
+  await supabaseAdmin.from('company_verifications').insert({ company_id: req.companyId, level: 2, status: 'pending', requested_by: req.user.id })
+  res.json(data)
+})
+
+router.post('/companies/:companyId/documents/upload-url', requireAuth, requireCompanyAccess('company.manage_profile'), async (req, res) => {
+  const allowedMime = new Map([['application/pdf', 'pdf'], ['image/jpeg', 'jpg'], ['image/png', 'png'], ['image/webp', 'webp']])
+  const mimeType = cleanText(req.body.mime_type, 80)
+  const sizeBytes = Number(req.body.size_bytes)
+  const documentType = cleanText(req.body.document_type, 60)
+  if (!documentType || !allowedMime.has(mimeType)) return res.status(400).json({ error: 'Tipo de documento no permitido' })
+  if (!Number.isInteger(sizeBytes) || sizeBytes < 1 || sizeBytes > 10 * 1024 * 1024) return res.status(400).json({ error: 'El archivo debe pesar menos de 10 MB' })
+
+  const storagePath = `${req.companyId}/${randomUUID()}.${allowedMime.get(mimeType)}`
+  const { data: upload, error: uploadError } = await supabaseAdmin.storage.from('company-documents').createSignedUploadUrl(storagePath)
+  if (uploadError) return res.status(500).json({ error: 'No fue posible preparar la carga segura' })
+
+  const { data: document, error } = await supabaseAdmin.from('company_documents').insert({
+    company_id: req.companyId,
+    document_type: documentType,
+    storage_path: storagePath,
+    original_name: cleanText(req.body.original_name, 180),
+    mime_type: mimeType,
+    size_bytes: sizeBytes,
+    uploaded_by: req.user.id,
+  }).select('id, document_type, status').single()
+  if (error) return res.status(400).json({ error: error.message })
+  res.status(201).json({ document, path: storagePath, token: upload.token })
+})
+
+router.post('/companies/:companyId/select-plan', requireAuth, requireCompanyAccess('subscription.manage'), async (req, res) => {
+  const planCode = cleanText(req.body.plan_code, 60)
+  const billingPeriod = req.body.billing_period === 'annual' ? 'annual' : 'monthly'
+  const { data: company } = await supabaseAdmin.from('companies').select('company_type').eq('id', req.companyId).single()
+  const carrierTypes = ['carrier', 'owner_operator']
+  const providerTypes = ['supplier', 'workshop', 'tire_shop', 'crane_company', 'gps_company', 'security_company', 'insurer', 'financial_company', 'training_center']
+  const audience = carrierTypes.includes(company?.company_type) ? 'carrier' : providerTypes.includes(company?.company_type) ? 'provider' : 'company'
+  const { data: plan, error: planError } = await supabaseAdmin.from('plans').select('id, code, monthly_price, annual_price').eq('code', planCode).eq('audience', audience).eq('is_active', true).single()
+  if (planError || !plan) return res.status(400).json({ error: 'El plan no corresponde a este tipo de empresa' })
+  const amount = billingPeriod === 'annual' ? plan.annual_price : plan.monthly_price
+  const isFree = Number(amount) === 0
+  const { data, error } = await supabaseAdmin.from('subscriptions').insert({
+    user_id: req.user.id,
+    company_id: req.companyId,
+    plan_id: plan.id,
+    tipo: 'saas_platform',
+    estatus: isFree ? 'activa' : 'pendiente',
+    monto: amount,
+    moneda: 'MXN',
+    billing_period: billingPeriod,
+    starts_at: isFree ? new Date().toISOString() : null,
+  }).select('id, estatus, monto, billing_period').single()
+  if (error) return res.status(400).json({ error: error.message })
+  res.status(201).json(data)
+})
+
+router.get('/companies/:companyId/limits', requireAuth, requireCompanyAccess('company.manage_profile'), async (req, res) => {
+  const { data, error } = await supabaseAdmin.rpc('get_company_entitlements', { p_company_id: req.companyId })
+  if (error) return res.status(500).json({ error: error.message })
+  res.json(data || [])
+})
+
+export default router

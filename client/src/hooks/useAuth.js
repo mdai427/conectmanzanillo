@@ -15,11 +15,11 @@ export async function sendOtp(phone) {
   return data
 }
 
-export async function verifyOtp({ phone, code, fullName, tipo }) {
+export async function verifyOtp({ phone, code, fullName, accountKind, accountType }) {
   const res = await fetch(`${API}/api/phone-auth/verify`, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ phone, code, fullName, tipo }),
+    body:    JSON.stringify({ phone, code, fullName, accountKind, accountType }),
   })
   const data = await res.json()
   if (!res.ok) throw new Error(data.error || 'Código incorrecto')

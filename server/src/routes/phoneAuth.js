@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import twilio from 'twilio'
 import { supabaseAdmin } from '../config/supabase.js'
+import { isValidAccountSelection } from '../security/catalog.js'
 
 const router = Router()
 
@@ -21,6 +22,7 @@ function formatPhone(raw) {
 
 // Derivar un email estable a partir del teléfono para auth Supabase
 function phoneToEmail(phone) {
+  // Dominio interno heredado: se conserva para no romper el acceso de usuarios existentes.
   return `${phone.replace('+', '')}@phone.conectmanzanillo.app`
 }
 
@@ -43,7 +45,7 @@ router.post('/send', async (req, res) => {
 
 // POST /api/phone-auth/verify  — verificar código y devolver sesión
 router.post('/verify', async (req, res) => {
-  const { phone, code, fullName, tipo } = req.body
+  const { phone, code, fullName, accountKind, accountType } = req.body
   if (!phone || !code) return res.status(400).json({ error: 'Teléfono y código requeridos' })
 
   const formatted = formatPhone(phone)
@@ -61,39 +63,30 @@ router.post('/verify', async (req, res) => {
     return res.status(400).json({ error: 'Código inválido o expirado' })
   }
 
-  // 2. Buscar o crear usuario en Supabase
-  let userId
+  // 2. Crear la cuenta cuando el flujo incluye onboarding. Los accesos existentes
+  // continúan directamente a la generación de sesión sin recorrer todos los usuarios.
   let isNew = false
-
-  // Buscar por email derivado
-  const { data: { users }, error: listErr } = await supabaseAdmin.auth.admin.listUsers({ perPage: 1000 })
-  const existing = users?.find(u => u.email === email)
-
-  if (existing) {
-    userId = existing.id
-  } else {
-    // Nuevo usuario — requiere fullName y tipo
+  if (fullName || accountKind || accountType) {
     if (!fullName?.trim()) return res.status(400).json({ error: 'Nombre requerido para registro', needsProfile: true })
-    if (!tipo)             return res.status(400).json({ error: 'Tipo de usuario requerido', needsProfile: true })
-
-    const roleMap = { operador: 'operator_free', empresa: 'company', otro: 'operator_free' }
-
+    if (!isValidAccountSelection(accountKind, accountType)) return res.status(400).json({ error: 'Tipo de cuenta inválido', needsProfile: true })
     const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
       email,
       email_confirm: true,
       user_metadata: {
-        full_name:    fullName.trim(),
-        tipo_usuario: tipo,
-        role:         roleMap[tipo] || 'operator_free',
-        phone:        formatted,
+        full_name: fullName.trim(),
+        account_kind: accountKind,
+        account_type: accountType,
+        tipo_usuario: accountKind === 'company' ? 'empresa' : 'operador',
+        role: accountKind === 'company' ? 'company' : 'operator_free',
+        phone: formatted,
       },
     })
-    if (createErr) {
+    const alreadyExists = createErr && ['email_exists', 'user_already_exists'].includes(createErr.code)
+    if (createErr && !alreadyExists) {
       console.error('[phoneAuth] create user error:', createErr.message)
       return res.status(500).json({ error: 'Error al crear cuenta' })
     }
-    userId = created.user.id
-    isNew  = true
+    isNew = Boolean(created?.user)
   }
 
   // 3. Generar token de magic link para obtener sesión en el cliente
@@ -110,9 +103,7 @@ router.post('/verify', async (req, res) => {
   // Extraer token_hash de la URL
   const url       = new URL(linkData.properties.action_link)
   const tokenHash = url.searchParams.get('token')
-  const tokenType = url.searchParams.get('type') || 'email'   // siempre 'email' para magiclink
-
-  res.json({ ok: true, token_hash: tokenHash, token_type: tokenType, isNew })
+  res.json({ ok: true, token_hash: tokenHash, token_type: url.searchParams.get('type') || 'email', isNew })
 })
 
 export default router

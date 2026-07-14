@@ -6,7 +6,11 @@
  * @param {number} seconds  Tiempo de vida del cache en segundos
  */
 export function cacheFor(seconds) {
-  return (_req, res, next) => {
+  return (req, res, next) => {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      res.set('Cache-Control', 'no-store')
+      return next()
+    }
     res.set(
       'Cache-Control',
       `public, max-age=${seconds}, stale-while-revalidate=${seconds * 2}`

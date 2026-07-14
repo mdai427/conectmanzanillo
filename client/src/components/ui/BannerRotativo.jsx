@@ -36,15 +36,7 @@ export default function BannerRotativo({ zona = 'global', className = '', interv
     return () => clearInterval(t)
   }, [banners.length, siguiente, intervalo])
 
-  if (!banners.length) return (
-    <a href="/anunciate"
-      className={`flex items-center justify-center gap-3 rounded-xl border-2 border-dashed border-blue-200 bg-blue-50 hover:bg-blue-100 transition-colors cursor-pointer ${className}`}>
-      <div className="text-center">
-        <p className="text-blue-600 font-bold text-sm">📢 Tu anuncio aquí</p>
-        <p className="text-blue-400 text-xs">Llega a cientos de operadores del Puerto de Manzanillo</p>
-      </div>
-    </a>
-  )
+  if (!banners.length) return null
 
   const banner = banners[idx]
   const href = banner.link_url || (banner.whatsapp ? `https://wa.me/${banner.whatsapp.replace(/\D/g,'')}` : null)

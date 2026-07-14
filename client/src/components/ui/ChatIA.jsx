@@ -1,17 +1,25 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageCircle, X, Send, Bot, ChevronDown, Sparkles, Zap } from 'lucide-react'
 import { useAuthStore } from '../../stores/authStore.js'
-import { useQuery } from '@tanstack/react-query'
-import { supabase } from '../../lib/supabase.js'
 
 const SUGERENCIAS = [
-  '¿Conviene ingresar ahorita?',
-  '¿Cuál zona tiene menos espera?',
-  '¿Cuál es la mejor hora para entrar hoy?',
-  'Dame un resumen del puerto',
-  '¿Qué zonas debo evitar?',
-  '¿Cuánto tiempo se estima para entrar?',
+  '¿Qué vacantes hay para mí?',
+  'Busco un ejecutivo de tráfico',
+  '¿Cómo publico una vacante?',
+  'Dame el resumen informativo de hoy',
+  '¿Qué empresas están contratando?',
+  '¿Cómo mejoro mi perfil profesional?',
 ]
+
+function fallbackAnswer(question) {
+  const text = question.toLowerCase()
+  if (text.includes('empresa') || text.includes('proveedor')) return 'Puedes consultar empresas y proveedores en **Directorio**: /directorio-empresarial. Usa los filtros para encontrar la categoría adecuada.'
+  if (text.includes('flete') || text.includes('carga')) return 'La bolsa de cargas y unidades está en **Fletes**: /fletes. Faro solo mostrará publicaciones guardadas en la plataforma.'
+  if (text.includes('vacante') || text.includes('empleo') || text.includes('trabajo')) return 'Consulta oportunidades en **Empleos**: /vacantes. También puedes completar tu perfil desde Mi cuenta.'
+  if (text.includes('curso') || text.includes('capacita')) return 'Los cursos y certificaciones se organizan en **Capacitación**: /capacitacion.'
+  if (text.includes('documento') || text.includes('formato')) return 'La biblioteca de formatos está en /documentos. Verifica siempre requisitos legales o aduanales con la autoridad o un profesional.'
+  return 'Puedo orientarte para encontrar empresas, fletes, vacantes, capacitación y documentos dentro de Faro Portuario. También puedes usar el buscador de la página principal.'
+}
 
 function MarkdownText({ text }) {
   // Render básico de negritas y bullets
@@ -77,23 +85,11 @@ export default function ChatIA() {
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
 
-  // Perfil de reputación del usuario para contexto
-  const { data: repProfile } = useQuery({
-    queryKey: ['rep-profile', user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data } = await supabase.from('profiles')
-        .select('puntos, nivel, total_reportes').eq('id', user.id).single()
-      return data
-    },
-    staleTime: 60_000,
-  })
-
   useEffect(() => {
     if (open && messages.length === 0) {
       setMessages([{
         role: 'assistant',
-        content: `¡Hola${user ? `, ${profile?.username || ''}` : ''}! 👋 Soy el asistente de ConectManzanillo.\n\nPuedo decirte el estado actual del puerto, qué zonas están libres, alertas activas y más. ¿En qué te ayudo?`,
+        content: `¡Hola${user ? `, ${profile?.username || ''}` : ''}! 👋 Soy el asistente de Faro Portuario.\n\nPuedo ayudarte a encontrar empleos, talento, empresas y la información relevante del sector logístico de Manzanillo. ¿Qué necesitas?`,
       }])
     }
   }, [open])
@@ -125,7 +121,6 @@ export default function ChatIA() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: newMessages.map(m => ({ role: m.role, content: m.content })),
-          userContext: repProfile || null,
         }),
       })
 
@@ -174,7 +169,7 @@ export default function ChatIA() {
         const updated = [...prev]
         updated[assistantIdx] = {
           role: 'assistant',
-          content: `Lo siento, tuve un problema. Intenta de nuevo en un momento.\n\n_${err.message}_`,
+          content: `${fallbackAnswer(userText)}\n\nEl servicio de respuestas avanzadas no está disponible en este momento.`,
           streaming: false,
         }
         return updated
@@ -200,7 +195,7 @@ export default function ChatIA() {
             <Sparkles size={18} />
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-green-400 rounded-full border-2 border-white" />
           </div>
-          <span className="hidden sm:inline">IA Portuaria</span>
+          <span className="hidden sm:inline">Asistente Faro</span>
         </button>
       )}
 
@@ -228,10 +223,10 @@ export default function ChatIA() {
               <span className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-400 rounded-full border-2 border-blue-800" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-white font-black text-sm leading-none">IA Portuaria</p>
+              <p className="text-white font-black text-sm leading-none">Asistente Faro</p>
               <p className="text-blue-200 text-[10px] mt-0.5 flex items-center gap-1">
                 <Zap size={8} className="text-green-300" />
-                ConectManzanillo · En línea
+                Orientación dentro de la plataforma
               </p>
             </div>
             <button onClick={() => setMinimized(m => !m)}
@@ -279,7 +274,7 @@ export default function ChatIA() {
                         sendMessage()
                       }
                     }}
-                    placeholder="Pregunta sobre el puerto…"
+                    placeholder="¿Qué quieres encontrar?"
                     rows={1}
                     disabled={loading}
                     className="flex-1 resize-none rounded-xl px-3 py-2.5 text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder-slate-400 disabled:opacity-50"
@@ -297,7 +292,7 @@ export default function ChatIA() {
                   </button>
                 </div>
                 <p className="text-[9px] text-slate-300 text-center mt-1.5">
-                  Responde con datos en tiempo real del puerto · ConectManzanillo IA
+                  Información orientativa; no sustituye asesoría profesional ni fuentes oficiales.
                 </p>
               </div>
             </>

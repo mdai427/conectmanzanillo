@@ -1,6 +1,7 @@
 import express from 'express'
 import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
+import { requireAuth } from '../middleware/auth.js'
 
 const router = express.Router()
 
@@ -20,7 +21,7 @@ function getSupabase() {
   if (!_supabase) {
     _supabase = createClient(
       process.env.SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_KEY
+      process.env.SUPABASE_SERVICE_ROLE_KEY
     )
   }
   return _supabase
@@ -57,7 +58,7 @@ const PAQUETES = {
 
 // POST /api/pagos/checkout
 // Body: { paquete: 'basico' | 'zona' | 'principal' | 'reporte', empresa_nombre, empresa_whatsapp }
-router.post('/checkout', async (req, res) => {
+router.post('/checkout', requireAuth, async (req, res) => {
   try {
     const { paquete, empresa_nombre = '', empresa_whatsapp = '' } = req.body
 
@@ -72,13 +73,14 @@ router.post('/checkout', async (req, res) => {
       success_url: `${baseUrl}/anunciate?success=true&paquete=${paquete}`,
       cancel_url:  `${baseUrl}/anunciate?canceled=true`,
       metadata: {
+        user_id: req.user.id,
         paquete,
         empresa_nombre,
         empresa_whatsapp,
         zona: plan.zona,
       },
       subscription_data: {
-        metadata: { paquete, zona: plan.zona },
+        metadata: { paquete, zona: plan.zona, user_id: req.user.id },
       },
       allow_promotion_codes: true,
       billing_address_collection: 'auto',
@@ -97,6 +99,7 @@ router.post('/checkout', async (req, res) => {
 router.post('/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const sig = req.headers['stripe-signature']
   const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!webhookSecret) return res.status(503).json({ error: 'Webhook de pagos no configurado' })
 
   let event
   try {

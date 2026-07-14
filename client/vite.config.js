@@ -8,16 +8,15 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'ConectManzanillo',
-        short_name: 'ConectMZT',
-        description: 'Estado del puerto de Manzanillo en tiempo real',
-        theme_color: '#0D1117',
-        background_color: '#0D1117',
+        name: 'Faro Portuario',
+        short_name: 'Faro',
+        description: 'Empleo, talento y actualidad logística en Manzanillo',
+        theme_color: '#082F35',
+        background_color: '#F8FAFC',
         display: 'standalone',
         start_url: '/',
         icons: [
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any maskable' },
+          { src: '/brand-mark.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any maskable' },
         ],
       },
     }),

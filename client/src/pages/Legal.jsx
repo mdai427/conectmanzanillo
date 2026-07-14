@@ -16,7 +16,7 @@ export default function Legal() {
       <div className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-6">
           <h1 className="text-2xl font-black text-slate-800 mb-1">Información Legal</h1>
-          <p className="text-sm text-slate-500">ConectManzanillo · Puerto de Manzanillo, Colima, México</p>
+          <p className="text-sm text-slate-500">Faro Portuario · Puerto de Manzanillo, Colima, México</p>
         </div>
         <div className="max-w-3xl mx-auto px-4 flex overflow-x-auto scrollbar-none gap-1 pb-0">
           {TABS.map(({ id, label, icon: Icon }) => (
@@ -37,8 +37,8 @@ export default function Legal() {
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 mb-6 flex items-start gap-3">
           <AlertTriangle size={16} className="text-amber-500 mt-0.5 shrink-0" />
           <p className="text-xs text-amber-800 leading-relaxed">
-            <strong>Importante:</strong> La información mostrada en ConectManzanillo es colaborativa, referencial y puede variar.
-            ConectManzanillo no sustituye instrucciones oficiales de autoridades, terminales, patios, aduanas,
+            <strong>Importante:</strong> La información mostrada en Faro Portuario es colaborativa, referencial y puede variar.
+            Faro Portuario no sustituye instrucciones oficiales de autoridades, terminales, patios, aduanas,
             dependencias del gobierno ni de ninguna entidad del Puerto de Manzanillo.
           </p>
         </div>
@@ -53,7 +53,7 @@ export default function Legal() {
             {[
               {
                 titulo: '1. Responsable del tratamiento de datos',
-                contenido: 'ConectManzanillo es una plataforma de monitoreo colaborativo del Puerto de Manzanillo, Colima, México. El responsable del tratamiento de datos personales es el operador de la plataforma (en adelante "ConectManzanillo" o "nosotros").',
+                contenido: 'Faro Portuario es una plataforma de monitoreo colaborativo del Puerto de Manzanillo, Colima, México. El responsable del tratamiento de datos personales es el operador de la plataforma (en adelante "Faro Portuario" o "nosotros").',
               },
               {
                 titulo: '2. Datos personales que recopilamos',
@@ -98,7 +98,7 @@ export default function Legal() {
             {[
               {
                 titulo: '1. Naturaleza del servicio',
-                contenido: 'ConectManzanillo es una plataforma colaborativa de monitoreo del Puerto de Manzanillo. La información generada por los usuarios es de carácter orientativo y no constituye una fuente oficial de información portuaria.',
+                contenido: 'Faro Portuario es una plataforma colaborativa de monitoreo del Puerto de Manzanillo. La información generada por los usuarios es de carácter orientativo y no constituye una fuente oficial de información portuaria.',
               },
               {
                 titulo: '2. Uso del servicio',
@@ -106,23 +106,23 @@ export default function Legal() {
               },
               {
                 titulo: '3. Exención de responsabilidad',
-                contenido: 'ConectManzanillo no garantiza la exactitud, completitud ni vigencia de la información publicada por los usuarios. El uso de la información es bajo la responsabilidad exclusiva del usuario. ConectManzanillo no es responsable por decisiones operativas tomadas con base en la información de la plataforma.',
+                contenido: 'Faro Portuario no garantiza la exactitud, completitud ni vigencia de la información publicada por los usuarios. El uso de la información es bajo la responsabilidad exclusiva del usuario. Faro Portuario no es responsable por decisiones operativas tomadas con base en la información de la plataforma.',
               },
               {
                 titulo: '4. Contenido de usuarios',
-                contenido: 'Los reportes, comentarios e información publicada por los usuarios son responsabilidad de cada usuario. ConectManzanillo se reserva el derecho de eliminar contenido que viole estos términos o sea reportado por la comunidad como falso.',
+                contenido: 'Los reportes, comentarios e información publicada por los usuarios son responsabilidad de cada usuario. Faro Portuario se reserva el derecho de eliminar contenido que viole estos términos o sea reportado por la comunidad como falso.',
               },
               {
                 titulo: '5. Propiedad intelectual',
-                contenido: 'La plataforma, su diseño, código y contenido editorial son propiedad de ConectManzanillo. Los reportes enviados por usuarios pertenecen a la comunidad y pueden ser utilizados para mejorar el servicio de forma anónima y agregada.',
+                contenido: 'La plataforma, su diseño, código y contenido editorial son propiedad del operador de Faro Portuario. Los reportes enviados por usuarios pueden ser utilizados para mejorar el servicio de forma anónima y agregada.',
               },
               {
                 titulo: '6. Planes y pagos',
-                contenido: 'Los planes de pago se cobran mensualmente. No hay contratos anuales obligatorios. Los pagos no son reembolsables salvo en casos de error de facturación comprobable. ConectManzanillo puede modificar los precios con 30 días de anticipación.',
+                contenido: 'Los planes de pago se cobran mensualmente. No hay contratos anuales obligatorios. Los pagos no son reembolsables salvo en casos de error de facturación comprobable. Faro Portuario puede modificar los precios con 30 días de anticipación.',
               },
               {
                 titulo: '7. Modificaciones',
-                contenido: 'ConectManzanillo puede modificar estos términos en cualquier momento. Los cambios entrarán en vigor al ser publicados en la plataforma. El uso continuado del servicio implica aceptación de los nuevos términos.',
+                contenido: 'Faro Portuario puede modificar estos términos en cualquier momento. Los cambios entrarán en vigor al ser publicados en la plataforma. El uso continuado del servicio implica aceptación de los nuevos términos.',
               },
               {
                 titulo: '8. Legislación aplicable',
@@ -141,13 +141,13 @@ export default function Legal() {
           <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
             <div>
               <h2 className="text-lg font-black text-slate-800 mb-1">Política de Reportes</h2>
-              <p className="text-xs text-slate-400">Comunidad ConectManzanillo</p>
+              <p className="text-xs text-slate-400">Comunidad Faro Portuario</p>
             </div>
 
             {[
               {
                 titulo: '¿Qué puedo reportar?',
-                contenido: 'Estado de flujo vehicular en zonas del puerto, filas en terminales o patios, cierres temporales, operativos de revisión, accidentes, saturación detectada, reapertura de zonas.',
+                contenido: 'Vacantes, perfiles profesionales, comunicados, noticias del sector, empresas, servicios, capacitaciones y oportunidades relevantes para la comunidad logística.',
                 icon: '✅',
               },
               {
@@ -162,7 +162,7 @@ export default function Legal() {
               },
               {
                 titulo: 'Moderación',
-                contenido: 'ConectManzanillo puede eliminar reportes que sean: claramente falsos, ofensivos, irrelevantes o que violen los términos de uso. Los usuarios con historial de reportes falsos pueden ver su cuenta suspendida.',
+                contenido: 'Faro Portuario puede eliminar reportes que sean: claramente falsos, ofensivos, irrelevantes o que violen los términos de uso. Los usuarios con historial de reportes falsos pueden ver su cuenta suspendida.',
                 icon: '🛡️',
               },
               {
@@ -196,29 +196,29 @@ export default function Legal() {
                   {
                     tipo: 'Soporte y dudas generales',
                     desc: 'Para preguntas sobre la plataforma, reportes o tu cuenta.',
-                    cta: 'Contactar por WhatsApp',
-                    href: 'https://wa.me/525566834948?text=Hola, tengo una duda sobre ConectManzanillo',
-                    color: '#25D366',
+                    cta: 'Ir a mi perfil',
+                    href: '/perfil',
+                    color: '#0f766e',
                   },
                   {
                     tipo: 'Planes y facturación',
                     desc: 'Para solicitar plan empresa, cotizaciones o temas de pago.',
-                    cta: 'Solicitar por WhatsApp',
-                    href: 'https://wa.me/525566834948?text=Hola, quiero información sobre planes de ConectManzanillo',
-                    color: '#1d4ed8',
+                    cta: 'Ver soluciones',
+                    href: '/empresa',
+                    color: '#0f766e',
                   },
                   {
                     tipo: 'Publicidad',
-                    desc: 'Para anunciar tu empresa en ConectManzanillo.',
+                    desc: 'Para anunciar tu empresa en Faro Portuario.',
                     cta: 'Solicitar información',
-                    href: 'https://wa.me/525566834948?text=Hola, quiero anunciarme en ConectManzanillo',
+                    href: '/anunciate',
                     color: '#d97706',
                   },
                   {
                     tipo: 'Reportar contenido',
                     desc: 'Si encontraste contenido falso, inapropiado o que viola nuestros términos.',
-                    cta: 'Reportar por WhatsApp',
-                    href: 'https://wa.me/525566834948?text=Hola, quiero reportar contenido inadecuado en ConectManzanillo',
+                    cta: 'Revisar política',
+                    href: '/legal',
                     color: '#dc2626',
                   },
                 ].map(({ tipo, desc, cta, href, color }) => (
@@ -227,7 +227,7 @@ export default function Legal() {
                       <p className="text-sm font-bold text-slate-800">{tipo}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{desc}</p>
                     </div>
-                    <a href={href} target="_blank" rel="noopener noreferrer"
+                    <a href={href}
                        className="shrink-0 px-3 py-1.5 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
                        style={{ background: color }}>
                       {cta}
@@ -239,7 +239,7 @@ export default function Legal() {
 
             <div className="bg-slate-100 rounded-2xl p-4 text-center">
               <p className="text-xs text-slate-500">
-                ConectManzanillo · Puerto de Manzanillo, Colima, México<br />
+                Faro Portuario · Puerto de Manzanillo, Colima, México<br />
                 Plataforma de monitoreo colaborativo portuario
               </p>
             </div>

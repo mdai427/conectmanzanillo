@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { Building2, Search, ChevronDown, MapPin, Clock, BadgeCheck, Sparkles, Lock, CheckCircle2, Upload, AlertCircle } from 'lucide-react'
-import { supabase } from '../lib/supabase.js'
+import { supabase, isDemoMode } from '../lib/supabase.js'
 import { useAuthStore } from '../stores/authStore.js'
 import BannerRotativo from '../components/ui/BannerRotativo.jsx'
 
@@ -57,6 +57,15 @@ const inputCls = 'w-full rounded-xl px-4 py-3 text-slate-800 text-sm bg-slate-50
 const selectCls = inputCls + ' appearance-none cursor-pointer'
 const labelCls = 'block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5'
 
+const DEMO_VACANTES = [
+  { id:'demo-v1', puesto:'Ejecutivo de tráfico', empresa:'Logística Costera', ciudad:'Manzanillo, Colima', tipo_licencia:'cualquiera', tipo_maniobra:'cualquiera', labora:'local', tipo_contrato:'indefinido', sueldo_min:18000, sueldo_max:23000, antiguedad_min:2, descripcion:'Monitoreo GPS, despacho de unidades, citas, evidencias y atención a clientes.', beneficios:'Prestaciones de ley · Bono por resultados', estatus:'activa', is_active:true, expires_at:new Date(Date.now()+20*86400000).toISOString(), created_at:new Date().toISOString() },
+  { id:'demo-v2', puesto:'Operador quinta rueda · Federal E', empresa:'Transmar Pacífico', ciudad:'Manzanillo, Colima', tipo_licencia:'federal-e', tipo_maniobra:'full', labora:'ambos', tipo_contrato:'indefinido', sueldo_min:28000, sueldo_max:35000, antiguedad_min:3, descripcion:'Viajes corredor Manzanillo–Bajío, experiencia en full y operación portuaria.', beneficios:'IMSS · Viáticos · Bono de seguridad', estatus:'activa', is_active:true, expires_at:new Date(Date.now()+25*86400000).toISOString(), created_at:new Date(Date.now()-3600000).toISOString() },
+  { id:'demo-v3', puesto:'Documentador aduanal', empresa:'Grupo Aduanal MX', ciudad:'Zona Puerto, Manzanillo', tipo_licencia:'cualquiera', tipo_maniobra:'cualquiera', labora:'local', tipo_contrato:'indefinido', sueldo_min:16000, sueldo_max:20000, antiguedad_min:1, descripcion:'Captura, glosa, VUCEM, seguimiento de pedimentos y coordinación documental.', beneficios:'Capacitación · Fondo de ahorro', estatus:'activa', is_active:true, expires_at:new Date(Date.now()+18*86400000).toISOString(), created_at:new Date(Date.now()-7200000).toISOString() },
+  { id:'demo-v4', puesto:'Coordinador de patio', empresa:'Servicios Portuarios del Pacífico', ciudad:'Manzanillo, Colima', tipo_licencia:'cualquiera', tipo_maniobra:'cualquiera', labora:'local', tipo_contrato:'indefinido', sueldo_min:22000, sueldo_max:27000, antiguedad_min:3, descripcion:'Control de inventario, asignación de maniobras, seguridad y supervisión de turno.', beneficios:'Vales · Transporte · Uniformes', estatus:'activa', is_active:true, expires_at:new Date(Date.now()+22*86400000).toISOString(), created_at:new Date(Date.now()-10800000).toISOString() },
+  { id:'demo-v5', puesto:'Auxiliar de facturación', empresa:'Agencia Logística Faro', ciudad:'Manzanillo, Colima', tipo_licencia:'cualquiera', tipo_maniobra:'cualquiera', labora:'local', tipo_contrato:'indefinido', sueldo_min:12000, sueldo_max:15000, antiguedad_min:1, descripcion:'Facturación, complementos carta porte, cobranza y archivo de evidencias.', beneficios:'Horario de oficina · Prestaciones', estatus:'activa', is_active:true, expires_at:new Date(Date.now()+15*86400000).toISOString(), created_at:new Date(Date.now()-14400000).toISOString() },
+  { id:'demo-v6', puesto:'Supervisor de seguridad', empresa:'Terminal del Pacífico', ciudad:'Manzanillo, Colima', tipo_licencia:'cualquiera', tipo_maniobra:'cualquiera', labora:'local', tipo_contrato:'temporal', sueldo_min:19000, sueldo_max:24000, antiguedad_min:2, descripcion:'Recorridos, permisos de trabajo, investigación de incidentes y reportes de seguridad.', beneficios:'Seguro de vida · Comedor', estatus:'activa', is_active:true, expires_at:new Date(Date.now()+17*86400000).toISOString(), created_at:new Date(Date.now()-18000000).toISOString() },
+]
+
 // ─── Calcular compatibilidad ─────────────────────────────────────────────────
 function calcularMatch(vacante, perfil) {
   let score = 0
@@ -109,9 +118,11 @@ function VacanteCard({ v, perfil, destacada }) {
         </span>
       </div>
       <div className="flex flex-wrap gap-1.5 mb-3">
-        <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
-          🪪 {licLabel}
-        </span>
+        {v.tipo_licencia && v.tipo_licencia !== 'cualquiera' && (
+          <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+            🪪 {licLabel}
+          </span>
+        )}
         {v.tipo_maniobra && v.tipo_maniobra !== 'cualquiera' && (
           <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-slate-50 text-slate-600 border border-slate-200">
             🚛 {MANIOBRAS.find(m => m.value === v.tipo_maniobra)?.label}
@@ -148,7 +159,7 @@ function VacanteCard({ v, perfil, destacada }) {
           <span className="flex items-center gap-1"><Clock size={9} />{diasRestantes}d restantes</span>
         </div>
         {v.contacto_wa ? (
-          <a href={`https://wa.me/52${v.contacto_wa.replace(/\D/g,'')}?text=Hola%2C%20vi%20la%20vacante%20de%20${encodeURIComponent(v.puesto)}%20en%20ConectManzanillo%20y%20me%20interesa.`}
+          <a href={`https://wa.me/52${v.contacto_wa.replace(/\D/g,'')}?text=Hola%2C%20vi%20la%20vacante%20de%20${encodeURIComponent(v.puesto)}%20en%20Faro%20Portuario%20y%20me%20interesa.`}
              target="_blank" rel="noopener noreferrer"
              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold text-white transition-all hover:opacity-90"
              style={{ background: '#25D366' }}>
@@ -194,12 +205,7 @@ function PagoSuscripcion({ suscripcion, onPago }) {
               <p className="text-sm font-mono text-slate-700">{suscripcion.referencia_pago}</p>
             </div>
           )}
-          <p className="text-xs text-slate-400">
-            ¿Dudas? Escríbenos al WhatsApp{' '}
-            <a href="https://wa.me/525566834948" className="text-green-600 font-bold" target="_blank" rel="noopener noreferrer">
-              55 6683 4948
-            </a>
-          </p>
+          <p className="text-xs text-slate-400">Puedes consultar el estado de la solicitud desde esta misma sección.</p>
         </div>
       </div>
     )
@@ -253,7 +259,7 @@ function PagoSuscripcion({ suscripcion, onPago }) {
           <Lock size={28} className="text-white" />
         </div>
         <h2 className="text-2xl font-black text-slate-800 mb-2">Publica vacantes ilimitadas</h2>
-        <p className="text-slate-500 text-sm">Conecta con cientos de operadores calificados del Puerto de Manzanillo.</p>
+        <p className="text-slate-500 text-sm">Publica oportunidades para profesionales del ecosistema logístico de Manzanillo.</p>
       </div>
 
       {/* Precio */}
@@ -316,7 +322,7 @@ function PagoSuscripcion({ suscripcion, onPago }) {
               </div>
               <div className="col-span-2">
                 <p className="text-[10px] text-slate-400 font-bold uppercase">Beneficiario</p>
-                <p className="font-bold text-slate-800">ConectManzanillo</p>
+                <p className="font-bold text-slate-800">Faro Portuario</p>
               </div>
             </div>
           </div>
@@ -606,6 +612,7 @@ export default function Vacantes() {
   const { data: vacantes = [], isLoading } = useQuery({
     queryKey: ['vacantes'],
     queryFn: async () => {
+      if (isDemoMode) return DEMO_VACANTES
       const { data, error } = await supabase.from('vacantes').select('*')
         .eq('is_active', true).eq('estatus', 'activa')
         .order('created_at', { ascending: false })
@@ -649,7 +656,7 @@ export default function Vacantes() {
               <Building2 size={18} className="text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-black text-slate-800">Vacantes</h1>
+              <h1 className="text-xl font-black text-slate-800">Empleos en logística y puerto</h1>
               <p className="text-slate-500 text-sm">
                 {vacantes.length} vacante{vacantes.length !== 1 ? 's' : ''} activa{vacantes.length !== 1 ? 's' : ''}
                 {miPerfil && recomendadas.length > 0 && (
@@ -699,7 +706,7 @@ export default function Vacantes() {
               <div className="mb-5 p-4 rounded-2xl border border-blue-100 bg-blue-50 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-bold text-blue-800">¿Buscas trabajo?</p>
-                  <p className="text-xs text-blue-600">Crea tu perfil en Posturas y te mostraremos vacantes compatibles.</p>
+                  <p className="text-xs text-blue-600">Crea tu perfil profesional y te mostraremos vacantes compatibles.</p>
                 </div>
                 <a href="/posturas" className="shrink-0 px-4 py-2 rounded-xl text-xs font-black text-white"
                    style={{ background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)' }}>
@@ -716,7 +723,7 @@ export default function Vacantes() {
                   placeholder="Buscar empresa, puesto, descripción…"
                   className="w-full pl-9 pr-4 py-3 rounded-xl text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <select value={filtroLabora} onChange={e => setFiltroLabora(e.target.value)} className={selectFiltro}>
                   <option value="todos">Local / Foráneo</option>
                   <option value="local">📍 Local</option>

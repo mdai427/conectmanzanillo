@@ -1,413 +1,63 @@
-import { useState, useEffect } from 'react'
-import { useSearchParams } from 'react-router-dom'
-import {
-  BarChart2, Users, Megaphone, CheckCircle2, Star, Zap, Eye,
-  ShoppingCart, Shield, CreditCard, X, CheckCircle,
-} from 'lucide-react'
+import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { ArrowRight, BarChart3, Check, Megaphone, ShieldCheck, Target, X } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import { supabase } from '../lib/supabase.js'
 
 const API = import.meta.env.VITE_API_URL || ''
 
-const PAQUETES = [
-  {
-    id: 'basico',
-    nombre: 'Banner Básico',
-    precio: 500,
-    periodo: '/mes',
-    color: '#3b82f6',
-    bg: '#eff6ff',
-    border: '#bfdbfe',
-    features: [
-      'Banner en página principal',
-      'Visible en desktop y mobile',
-      '~500 impresiones estimadas/mes',
-      'Enlace a tu sitio web o WhatsApp',
-      'Diseño incluido',
-    ],
-    desc: 'Ideal para talleres, refaccionarias y servicios al transporte.',
-  },
-  {
-    id: 'zona',
-    nombre: 'Patrocinador de Zona',
-    precio: 1500,
-    periodo: '/mes',
-    color: '#7c3aed',
-    bg: '#f5f3ff',
-    border: '#ddd6fe',
-    features: [
-      'Banner exclusivo en Directorio Empresarial',
-      'Mención en el canal de WhatsApp',
-      '~2,000 impresiones estimadas/mes',
-      'Logo en reportes de la zona',
-      'Reporte de métricas mensual',
-    ],
-    desc: 'Para agencias aduanales, importadores y transportistas especializados.',
-    destacado: true,
-  },
-  {
-    id: 'principal',
-    nombre: 'Patrocinador Principal',
-    precio: 3500,
-    periodo: '/mes',
-    color: '#d97706',
-    bg: '#fffbeb',
-    border: '#fde68a',
-    features: [
-      'Banner premium en posición #1',
-      'Presencia en TODAS las páginas',
-      'Mención diaria en canal WhatsApp',
-      '~8,000 impresiones estimadas/mes',
-      'Reporte semanal de métricas',
-    ],
-    desc: 'Para navieras, terminales, grupos logísticos y empresas con presencia fuerte en el puerto.',
-  },
-  {
-    id: 'reporte',
-    nombre: 'Reporte WA Patrocinado',
-    precio: 5000,
-    periodo: '/mes',
-    color: '#059669',
-    bg: '#f0fdf4',
-    border: '#bbf7d0',
-    features: [
-      'Tu empresa al inicio del reporte matutino',
-      'Mensaje patrocinado en cada reporte WA',
-      'Exposición directa a todos los suscriptores',
-      '10,000+ impresiones estimadas/mes',
-      'Creatividad y copy incluidos',
-      'Reportes quincenales de alcance',
-    ],
-    desc: 'Máxima visibilidad. Tu marca en el reporte que cientos de operadores leen cada mañana.',
-  },
-]
-
-const UBICACIONES = [
-  { nombre: 'Dashboard principal',       donde: 'Arriba del mapa del puerto',              impresiones: '~1,200/mes', tipo: 'Banner horizontal' },
-  { nombre: 'Directorio Empresarial',    donde: 'Listado de empresas del puerto',           impresiones: '~800/mes',   tipo: 'Banner rotativo' },
-  { nombre: 'Sección de noticias',       donde: 'Entre las noticias del puerto',            impresiones: '~600/mes',   tipo: 'Banner nativo' },
-  { nombre: 'Bolsa de trabajo',          donde: 'Página de vacantes activas',               impresiones: '~400/mes',   tipo: 'Banner contextual' },
-  { nombre: 'Reporte WhatsApp',          donde: 'Canal de WhatsApp ConectManzanillo',       impresiones: '~5,000/mes', tipo: 'Mensaje patrocinado' },
-  { nombre: 'Global (todas las páginas)',donde: 'Aparece en todas las secciones',           impresiones: '~3,000/mes', tipo: 'Banner global' },
-]
-
-function ModalCheckout({ paquete, onClose }) {
-  const [empresa, setEmpresa] = useState('')
-  const [whatsapp, setWhatsapp] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
-
-  const handleComprar = async () => {
-    if (!empresa.trim()) { setError('Escribe el nombre de tu empresa'); return }
-    setError('')
-    setLoading(true)
-    try {
-      const res = await fetch(`${API}/api/pagos/checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paquete: paquete.id, empresa_nombre: empresa, empresa_whatsapp: whatsapp }),
-      })
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      } else {
-        setError(data.error || 'Error al iniciar el pago')
-        setLoading(false)
-      }
-    } catch {
-      setError('Error de conexión. Intenta de nuevo.')
-      setLoading(false)
-    }
-  }
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-        {/* Header */}
-        <div className="px-5 py-4 flex items-center justify-between border-b border-gray-100"
-             style={{ background: paquete.bg }}>
-          <div>
-            <p className="text-xs font-semibold text-gray-500">Comprando</p>
-            <p className="font-black text-gray-900">{paquete.nombre}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <p className="text-xl font-black" style={{ color: paquete.color }}>
-              ${paquete.precio.toLocaleString()}<span className="text-sm font-semibold text-gray-400">/mes</span>
-            </p>
-            <button onClick={onClose} className="p-1.5 rounded-lg text-gray-400 hover:bg-gray-100 transition-colors">
-              <X size={16} />
-            </button>
-          </div>
-        </div>
-
-        {/* Form */}
-        <div className="p-5 space-y-4">
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1.5">Nombre de tu empresa *</label>
-            <input
-              value={empresa}
-              onChange={e => setEmpresa(e.target.value)}
-              placeholder="Ej. Transportes del Puerto S.A."
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-blue-400 transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-gray-700 mb-1.5">WhatsApp de contacto <span className="font-normal text-gray-400">(opcional)</span></label>
-            <input
-              value={whatsapp}
-              onChange={e => setWhatsapp(e.target.value)}
-              placeholder="5231400000"
-              className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:outline-none focus:border-blue-400 transition-colors"
-            />
-          </div>
-
-          {error && (
-            <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-xl">{error}</p>
-          )}
-
-          <button
-            onClick={handleComprar}
-            disabled={loading}
-            className="w-full py-3.5 rounded-2xl font-black text-sm text-white transition-all hover:opacity-90 active:scale-95 disabled:opacity-60 flex items-center justify-center gap-2"
-            style={{ background: loading ? '#9ca3af' : paquete.color }}>
-            {loading ? (
-              <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                Redirigiendo a Stripe...
-              </>
-            ) : (
-              <>
-                <CreditCard size={15} />
-                Pagar ${paquete.precio.toLocaleString()}/mes
-              </>
-            )}
-          </button>
-
-          {/* Stripe badge */}
-          <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-            <Shield size={11} />
-            <span>Pago seguro con</span>
-            <span className="font-black text-gray-600">Stripe</span>
-            <span>· Cancela cuando quieras</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
+async function fetchPlans() {
+  const response = await fetch(`${API}/api/publicidad/planes`)
+  if (!response.ok) return []
+  return response.json()
 }
 
 export default function Anunciate() {
-  const [searchParams] = useSearchParams()
-  const [modalPaquete, setModalPaquete] = useState(null)
-
-  const success  = searchParams.get('success') === 'true'
-  const canceled = searchParams.get('canceled') === 'true'
+  const [selected, setSelected] = useState(null)
+  const { data: plans = [], isLoading } = useQuery({ queryKey: ['advertising-plans'], queryFn: fetchPlans, staleTime: 300_000, retry: 1 })
 
   return (
-    <div className="min-h-screen bg-slate-50">
-
-      {/* Toast de éxito */}
-      {success && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-green-600 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-bold">
-          <CheckCircle size={18} /> ¡Pago exitoso! Tu campaña será activada en breve.
+    <main className="min-h-screen bg-white text-slate-950">
+      <header className="border-b border-slate-100">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:py-24">
+          <div className="max-w-4xl"><div className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-3 py-1.5 text-[11px] font-extrabold text-slate-600"><Megaphone size={13} /> Publicidad para el sector logístico</div><h1 className="mt-7 text-4xl font-black tracking-[-.05em] text-[#081f2c] sm:text-6xl">Haz visible tu empresa ante una audiencia especializada.</h1><p className="mt-6 max-w-3xl text-base leading-7 text-slate-500 sm:text-lg">Crea una presencia profesional dentro de Faro Portuario. Las campañas se revisan, programan y miden según el formato contratado y el tráfico real del periodo.</p><div className="mt-8 flex flex-col gap-3 sm:flex-row"><a href="#planes" className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#0d4f4b] px-5 text-sm font-extrabold text-white">Conocer opciones <ArrowRight size={15} /></a><Link to="/register" className="inline-flex min-h-12 items-center justify-center rounded-xl border border-slate-200 px-5 text-sm font-extrabold text-slate-700">Registrar mi empresa</Link></div></div>
         </div>
-      )}
-      {canceled && (
-        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-gray-700 text-white px-5 py-3 rounded-2xl shadow-xl text-sm font-bold">
-          <X size={16} /> Pago cancelado. Puedes intentarlo de nuevo cuando quieras.
-        </div>
-      )}
+      </header>
 
-      {/* Hero */}
-      <div className="relative overflow-hidden"
-           style={{ background: 'linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 60%, #2563eb 100%)' }}>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-20">
-          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full"
-               style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.3), transparent 70%)' }} />
-        </div>
-        <div className="relative max-w-4xl mx-auto px-4 py-12 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full mb-5"
-               style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.25)' }}>
-            <Megaphone size={12} className="text-blue-200" />
-            <span className="text-[10px] font-black text-white uppercase tracking-widest">Publicidad</span>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-black text-white mb-3 leading-tight">
-            Llega a quienes<br />
-            <span style={{ background: 'linear-gradient(90deg, #fde047, #fb923c)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-              mueven el puerto.
-            </span>
-          </h1>
-          <p className="text-blue-200 text-base mb-8 max-w-lg mx-auto">
-            Tu empresa frente a cientos de operadores, transportistas, importadores y agentes aduanales
-            que usan ConectManzanillo cada día.
-          </p>
-          <div className="grid grid-cols-3 gap-3 max-w-md mx-auto mb-8">
-            {[
-              { val: '+500', label: 'Operadores activos' },
-              { val: 'Diario', label: 'Alcance canal WA' },
-              { val: '100%', label: 'Puerto Manzanillo' },
-            ].map(({ val, label }) => (
-              <div key={label} className="rounded-xl p-3 text-center"
-                   style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
-                <p className="text-lg font-black text-white">{val}</p>
-                <p className="text-[10px] text-blue-200">{label}</p>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => document.getElementById('paquetes').scrollIntoView({ behavior: 'smooth' })}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm bg-white text-blue-700 shadow-xl hover:scale-105 active:scale-95 transition-all">
-            <ShoppingCart size={16} /> Ver paquetes y precios
-          </button>
-        </div>
-      </div>
+      <section className="border-b border-slate-100 py-14 sm:py-20"><div className="mx-auto grid max-w-7xl gap-8 px-4 sm:grid-cols-3">{[
+        [Target, 'Audiencia especializada', 'Presencia dentro de un ecosistema enfocado en logística, transporte y comercio exterior.'],
+        [BarChart3, 'Métricas según formato', 'Impresiones y clics se reportan cuando el formato contratado permite su medición.'],
+        [ShieldCheck, 'Revisión antes de publicar', 'Cada creatividad se valida antes de programarse para proteger la confianza de la comunidad.'],
+      ].map(([Icon, title, text]) => <article key={title} className="border-t border-slate-200 pt-6"><Icon size={22} className="text-teal-800" /><h2 className="mt-5 font-black">{title}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{text}</p></article>)}</div></section>
 
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <section id="planes" className="border-b border-slate-100 py-16 sm:py-20"><div className="mx-auto max-w-7xl px-4"><div className="max-w-3xl"><p className="text-[10px] font-black uppercase tracking-[.2em] text-teal-700">Opciones administrables</p><h2 className="mt-3 text-3xl font-black tracking-[-.04em] text-[#081f2c] sm:text-4xl">Elige el nivel de presencia</h2><p className="mt-3 text-sm leading-6 text-slate-500">La disponibilidad, precio y duración se confirman antes de contratar.</p></div>
+        {isLoading ? <div className="mt-9 grid gap-4 md:grid-cols-2"><div className="h-72 animate-pulse rounded-2xl bg-slate-100" /><div className="h-72 animate-pulse rounded-2xl bg-slate-100" /></div> : plans.length ? <div className="mt-9 grid gap-4 md:grid-cols-2">{plans.map((plan) => <article key={plan.code} className="flex flex-col rounded-2xl border border-slate-200 p-6 shadow-[0_8px_30px_rgba(8,31,44,.04)]"><h3 className="text-xl font-black">{plan.name}</h3><p className="mt-2 text-sm leading-6 text-slate-500">{plan.description}</p><p className="mt-5 text-sm font-extrabold text-teal-800">{plan.monthly_price == null || plan.requires_quote ? 'Precio por cotización' : `$${Number(plan.monthly_price).toLocaleString('es-MX')} ${plan.currency} / mes`}</p><ul className="mt-6 space-y-3">{(plan.features || []).map((feature) => <li key={feature} className="flex gap-2 text-sm text-slate-600"><Check size={16} className="mt-0.5 shrink-0 text-teal-700" />{feature}</li>)}</ul><button onClick={() => setSelected(plan)} className="mt-7 min-h-11 rounded-xl bg-[#0d4f4b] px-5 text-sm font-extrabold text-white">Solicitar contratación</button></article>)}</div> : <div className="mt-9 rounded-2xl border border-slate-200 p-8 text-center"><p className="font-black">No hay paquetes disponibles en este momento</p><p className="mt-2 text-sm text-slate-500">Puedes registrar tu empresa y volver cuando se publiquen nuevas opciones.</p><Link to="/register" className="mt-5 inline-flex rounded-xl border border-slate-200 px-4 py-3 text-xs font-extrabold">Registrar empresa</Link></div>}
+      </div></section>
 
-        {/* Por qué anunciarse */}
-        <div>
-          <p className="text-xs font-black text-blue-600 uppercase tracking-widest mb-1 text-center">Por qué elegir ConectManzanillo</p>
-          <h2 className="text-xl font-black text-slate-800 text-center mb-5">Audiencia 100% portuaria</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {[
-              { icon: Users,    color: '#3b82f6', title: 'Audiencia específica',  desc: 'Solo personas del ecosistema portuario de Manzanillo. Sin ruido.' },
-              { icon: Eye,      color: '#10b981', title: 'Alta frecuencia',       desc: 'Los operadores consultan la plataforma varias veces al día.' },
-              { icon: Zap,      color: '#f59e0b', title: 'Contexto relevante',    desc: 'Tu anuncio aparece cuando el usuario está pensando en el puerto.' },
-              { icon: Megaphone,color: '#8b5cf6', title: 'Canal WhatsApp',        desc: 'Mención en el canal que cientos de operadores leen cada mañana.' },
-              { icon: BarChart2,color: '#dc2626', title: 'Métricas reales',       desc: 'Dashboard con impresiones, clics y estadísticas en tiempo real.' },
-              { icon: Star,     color: '#d97706', title: 'Activación inmediata',  desc: 'Tu campaña queda activa al instante después del pago.' },
-            ].map(({ icon: Icon, color, title, desc }) => (
-              <div key={title} className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center mb-2"
-                     style={{ background: `${color}18` }}>
-                  <Icon size={15} style={{ color }} />
-                </div>
-                <p className="text-xs font-black text-slate-800 mb-1">{title}</p>
-                <p className="text-[11px] text-slate-500 leading-snug">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+      <section className="py-16 sm:py-20"><div className="mx-auto max-w-5xl px-4"><div className="grid gap-10 lg:grid-cols-[.7fr_1.3fr]"><div><p className="text-[10px] font-black uppercase tracking-[.2em] text-teal-700">Proceso</p><h2 className="mt-3 text-3xl font-black tracking-tight">De la solicitud a la publicación</h2></div><ol className="grid gap-4 sm:grid-cols-2">{['Elige una opción y registra tu empresa.','Comparte objetivo, creatividad y enlace.','El equipo revisa disponibilidad y contenido.','Se confirma cotización o pago seguro.','La campaña se programa después de aprobarse.','Consulta métricas disponibles al finalizar.'].map((step, index) => <li key={step} className="flex gap-3 border-t border-slate-200 pt-4"><span className="text-xs font-black text-teal-700">{String(index + 1).padStart(2, '0')}</span><p className="text-sm leading-6 text-slate-600">{step}</p></li>)}</ol></div></div></section>
 
-        {/* Paquetes */}
-        <div id="paquetes">
-          <p className="text-xs font-black text-blue-600 uppercase tracking-widest mb-1 text-center">Paquetes de publicidad</p>
-          <h2 className="text-xl font-black text-slate-800 text-center mb-2">Elige tu nivel de visibilidad</h2>
-          <p className="text-center text-sm text-slate-500 mb-5">Suscripción mensual · Cancela cuando quieras · Pago seguro con Stripe</p>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {PAQUETES.map(paq => (
-              <div key={paq.id}
-                   className={`rounded-2xl p-5 border-2 flex flex-col ${paq.destacado ? 'ring-2 ring-purple-300 shadow-lg' : ''}`}
-                   style={{ background: paq.bg, borderColor: paq.border }}>
-                {paq.destacado && (
-                  <div className="flex items-center gap-1 mb-2">
-                    <Star size={10} className="text-purple-500 fill-purple-500" />
-                    <span className="text-[9px] font-black text-purple-600 uppercase tracking-widest">Más vendido</span>
-                  </div>
-                )}
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <p className="text-sm font-black" style={{ color: paq.color }}>{paq.nombre}</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">{paq.desc}</p>
-                  </div>
-                  <div className="text-right shrink-0 ml-2">
-                    <p className="text-xl font-black text-slate-800">${paq.precio.toLocaleString()}</p>
-                    <p className="text-[10px] text-slate-400">{paq.periodo}</p>
-                  </div>
-                </div>
-                <ul className="space-y-1.5 mb-4 flex-1">
-                  {paq.features.map(f => (
-                    <li key={f} className="flex items-start gap-2 text-[11px] text-slate-600">
-                      <CheckCircle2 size={11} className="shrink-0 mt-0.5" style={{ color: paq.color }} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => setModalPaquete(paq)}
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl font-bold text-xs text-white transition-all hover:opacity-90 active:scale-95 mt-auto"
-                  style={{ background: paq.color }}>
-                  <ShoppingCart size={13} /> Comprar ahora
-                </button>
-              </div>
-            ))}
-          </div>
-          {/* Stripe trust badge */}
-          <div className="flex items-center justify-center gap-2 mt-4 text-xs text-slate-400">
-            <Shield size={12} />
-            <span>Pago seguro y encriptado con</span>
-            <span className="font-black text-slate-600">Stripe</span>
-            <span>· No guardamos datos de tarjeta</span>
-          </div>
-        </div>
-
-        {/* Ubicaciones */}
-        <div className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-slate-100">
-            <p className="text-sm font-black text-slate-800">Dónde aparece tu anuncio</p>
-            <p className="text-xs text-slate-400">Zonas disponibles en la plataforma</p>
-          </div>
-          <div className="divide-y divide-slate-50">
-            {UBICACIONES.map(u => (
-              <div key={u.nombre} className="px-5 py-3.5 flex items-center gap-3">
-                <div>
-                  <p className="text-sm font-bold text-slate-800">{u.nombre}</p>
-                  <p className="text-[11px] text-slate-500">{u.donde}</p>
-                </div>
-                <div className="ml-auto text-right shrink-0">
-                  <p className="text-xs font-black text-slate-700">{u.impresiones}</p>
-                  <p className="text-[9px] text-slate-400">{u.tipo}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Proceso */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-          <p className="text-sm font-black text-slate-800 mb-4">¿Cómo funciona?</p>
-          <div className="space-y-3">
-            {[
-              { paso: '01', label: 'Elige tu paquete',         desc: 'Selecciona el plan que mejor se adapte a tu presupuesto y objetivo.' },
-              { paso: '02', label: 'Pago seguro con Stripe',   desc: 'Ingresa los datos de tu tarjeta en la plataforma segura de Stripe.' },
-              { paso: '03', label: 'Campaña activa al instante',desc: 'Tu banner queda visible en la plataforma inmediatamente.' },
-              { paso: '04', label: 'Métricas en tiempo real',  desc: 'Seguimiento de impresiones, clics y estadísticas de tu campaña.' },
-            ].map(({ paso, label, desc }) => (
-              <div key={paso} className="flex items-start gap-4">
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 text-xs font-black text-white"
-                     style={{ background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)' }}>
-                  {paso}
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-800">{label}</p>
-                  <p className="text-xs text-slate-500">{desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* CTA final */}
-        <div className="rounded-2xl p-6 text-center"
-             style={{ background: 'linear-gradient(135deg, #1e3a8a, #1d4ed8)', border: '1px solid rgba(96,165,250,0.3)' }}>
-          <p className="text-white font-black text-lg mb-1">¿Listo para anunciarte?</p>
-          <p className="text-blue-200 text-sm mb-5">
-            Elige tu paquete y ten tu anuncio activo al instante.
-          </p>
-          <button
-            onClick={() => document.getElementById('paquetes').scrollIntoView({ behavior: 'smooth' })}
-            className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl font-black text-sm bg-white text-blue-700 shadow-xl hover:scale-105 active:scale-95 transition-all">
-            <ShoppingCart size={16} /> Elegir paquete
-          </button>
-          <p className="text-[11px] text-blue-300 mt-3">Suscripción mensual · Cancela cuando quieras</p>
-        </div>
-      </div>
-
-      {/* Modal checkout */}
-      {modalPaquete && (
-        <ModalCheckout
-          paquete={modalPaquete}
-          onClose={() => setModalPaquete(null)}
-        />
-      )}
-    </div>
+      {selected && <LeadModal plan={selected} onClose={() => setSelected(null)} />}
+    </main>
   )
 }
+
+function LeadModal({ plan, onClose }) {
+  const [form, setForm] = useState({ contact_name: '', email: '', phone: '', message: '' })
+  const [loading, setLoading] = useState(false)
+  const submit = async (event) => {
+    event.preventDefault()
+    setLoading(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) throw new Error('Inicia sesión y completa el registro de tu empresa para enviar la solicitud.')
+      const response = await fetch(`${API}/api/publicidad/solicitudes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ ...form, plan_code: plan.code }) })
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) throw new Error(data.error || 'No fue posible enviar la solicitud')
+      toast.success('Solicitud registrada. El equipo comercial podrá darle seguimiento.')
+      onClose()
+    } catch (error) { toast.error(error.message) } finally { setLoading(false) }
+  }
+  return <div role="dialog" aria-modal="true" aria-labelledby="lead-title" className="fixed inset-0 z-50 grid place-items-center bg-slate-950/60 p-4 backdrop-blur-sm"><div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"><div className="flex items-start justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.18em] text-teal-700">Solicitud comercial</p><h2 id="lead-title" className="mt-2 text-xl font-black">{plan.name}</h2></div><button onClick={onClose} aria-label="Cerrar" className="grid h-9 w-9 place-items-center rounded-full border border-slate-200"><X size={16} /></button></div><form onSubmit={submit} className="mt-6 space-y-4"><Input label="Nombre del responsable" value={form.contact_name} onChange={(value) => setForm({ ...form, contact_name: value })} required /><Input label="Correo empresarial" type="email" value={form.email} onChange={(value) => setForm({ ...form, email: value })} required /><Input label="Teléfono" value={form.phone} onChange={(value) => setForm({ ...form, phone: value })} /><label className="block"><span className="mb-2 block text-xs font-extrabold">¿Qué quieres lograr?</span><textarea value={form.message} onChange={(event) => setForm({ ...form, message: event.target.value })} maxLength={1500} rows="4" className="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm outline-none focus:border-teal-700" /></label><button disabled={loading} className="min-h-12 w-full rounded-xl bg-[#0d4f4b] text-sm font-extrabold text-white disabled:opacity-50">{loading ? 'Enviando…' : 'Enviar solicitud'}</button><p className="text-[10px] leading-5 text-slate-400">La solicitud no activa una campaña ni genera un cobro. El precio y la disponibilidad se confirman posteriormente.</p></form></div></div>
+}
+function Input({ label, value, onChange, type = 'text', required }) { return <label className="block"><span className="mb-2 block text-xs font-extrabold">{label}</span><input type={type} required={required} value={value} onChange={(event) => onChange(event.target.value)} className="h-12 w-full rounded-xl border border-slate-200 px-3 text-sm outline-none focus:border-teal-700" /></label> }

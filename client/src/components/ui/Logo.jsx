@@ -1,33 +1,26 @@
-export default function Logo({ size = 'md' }) {
-  const sizes = { sm: 'h-8', md: 'h-10', lg: 'h-14' }
+export default function Logo({ size = 'md', dark = false, showDescriptor = false }) {
+  const iconSizes = { sm: 'w-8 h-8', md: 'w-10 h-10', lg: 'w-14 h-14', xl: 'w-20 h-20' }
+  const titleSizes = { sm: 'text-sm', md: 'text-base', lg: 'text-xl', xl: 'text-3xl' }
+  const subtitleSizes = { sm: 'text-[7px]', md: 'text-[8px]', lg: 'text-[9px]', xl: 'text-[10px]' }
   return (
-    <div className={`flex items-center gap-3 ${sizes[size]}`}>
-      {/* Ícono */}
+    <div className="flex items-center gap-3 shrink-0" aria-label="Faro Portuario">
       <div className="relative flex-shrink-0">
-        <svg viewBox="0 0 48 48" className={size === 'lg' ? 'w-14 h-14' : size === 'sm' ? 'w-8 h-8' : 'w-10 h-10'} fill="none">
-          {/* Círculo de fondo */}
-          <circle cx="24" cy="24" r="23" fill="#0F2547" stroke="#0099E6" strokeWidth="1.5"/>
-          {/* Velero/pez estilizado */}
-          <path d="M24 8 L36 28 L24 24 L12 28 Z" fill="#0099E6" opacity="0.9"/>
-          <path d="M24 24 L36 28 L24 38 L12 28 Z" fill="#00C2FF" opacity="0.6"/>
-          {/* Ola */}
-          <path d="M10 34 Q14 30 18 34 Q22 38 26 34 Q30 30 34 34 Q38 38 40 35"
-                stroke="#00C2FF" strokeWidth="1.5" fill="none" strokeLinecap="round"/>
-          {/* Camión pequeño */}
-          <rect x="15" y="29" width="8" height="5" rx="1" fill="white" opacity="0.9"/>
-          <rect x="23" y="30" width="4" height="4" rx="0.5" fill="#0099E6"/>
-          <circle cx="17" cy="34.5" r="1" fill="#0A1628"/>
-          <circle cx="24" cy="34.5" r="1" fill="#0A1628"/>
+        <svg viewBox="0 0 56 56" className={iconSizes[size]} fill="none" aria-hidden="true">
+          <rect x="1" y="1" width="54" height="54" rx="17" fill="#082F35" stroke="#2DD4BF" strokeWidth="2"/>
+          <path d="M28 10L36 39H20L28 10Z" fill="#F8FAFC"/>
+          <path d="M25 22H31M23.5 28H32.5M22 34H34" stroke="#082F35" strokeWidth="2" strokeLinecap="round"/>
+          <path d="M11 18C15 14 19 12 23 12" stroke="#F6B73C" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M45 18C41 14 37 12 33 12" stroke="#F6B73C" strokeWidth="2.5" strokeLinecap="round"/>
+          <path d="M9 43C14 39.5 18 46.5 23 43C28 39.5 32 46.5 37 43C41 40.2 44 44 47 43" stroke="#2DD4BF" strokeWidth="2.5" strokeLinecap="round"/>
+          <circle cx="28" cy="14" r="3" fill="#F6B73C"/>
         </svg>
       </div>
-      {/* Texto */}
       <div className="flex flex-col leading-none">
-        <span className={`font-black text-white tracking-tight ${size === 'lg' ? 'text-2xl' : size === 'sm' ? 'text-sm' : 'text-base'}`}>
-          CONECT
+        <span className={`font-black tracking-[-0.04em] ${titleSizes[size]} ${dark ? 'text-white' : 'text-slate-900'}`}>
+          FARO <span className="text-teal-500">PORTUARIO</span>
         </span>
-        <span className={`font-black tracking-tight ${size === 'lg' ? 'text-2xl' : size === 'sm' ? 'text-sm' : 'text-base'}`}
-              style={{ color: '#0099E6' }}>
-          MANZANILLO
+        <span className={`mt-1 font-bold uppercase tracking-[0.2em] ${subtitleSizes[size]} ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+          {showDescriptor ? 'Talento · Empresas · Actualidad' : 'Manzanillo · Colima'}
         </span>
       </div>
     </div>

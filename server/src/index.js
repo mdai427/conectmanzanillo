@@ -21,6 +21,7 @@ import rankingsRouter     from './routes/rankings.js'
 import directorioRouter   from './routes/directorio.js'
 import publicidadRouter   from './routes/publicidad.js'
 import pagosRouter        from './routes/pagos.js'
+import foundationsRouter  from './routes/foundations.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
 import { initWorkers } from './services/workers.js'
@@ -68,6 +69,7 @@ app.use('/api/admin',     noCache,        adminRouter)
 app.use('/api/directorio', cacheFor(60),  directorioRouter)
 app.use('/api/publicidad', cacheFor(120), publicidadRouter)
 app.use('/api/pagos',      noCache,        pagosRouter)
+app.use('/api/foundations', noCache,       foundationsRouter)
 
 // Semi-estático: cache corto + stale-while-revalidate
 app.use('/api/sections',  cacheFor(30),   sectionsRouter)   // 30s  — zonas cambian seguido
@@ -86,6 +88,10 @@ app.get('/api/health', (_req, res) => {
       maintenance: maintenanceQueue.stats(),
     },
   })
+})
+
+app.get('/health', (_req, res) => {
+  res.status(200).json({ status: 'ok', service: 'faro-portuario' })
 })
 
 // Servir cliente React (build estático)
@@ -112,5 +118,5 @@ startScheduler()
 
 const PORT = process.env.PORT || 3000
 httpServer.listen(PORT, () => {
-  console.log(`ConectManzanillo server corriendo en puerto ${PORT}`)
+  console.log(`Faro Portuario server corriendo en puerto ${PORT}`)
 })

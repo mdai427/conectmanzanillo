@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import rateLimit from 'express-rate-limit'
 import { predQueue } from '../services/queue.js'
+import { requireAuth, requirePermission } from '../middleware/auth.js'
 import { getPredCache, setPredCache, PRED_TTL } from '../services/workers.js'
 
 const router = Router()
@@ -40,7 +41,7 @@ router.get('/', predictLimit, async (_req, res) => {
 })
 
 // POST /api/predictions/invalidate (admin)
-router.post('/invalidate', (_req, res) => {
+router.post('/invalidate', requireAuth, requirePermission('admin.analytics'), (_req, res) => {
   setPredCache(null)
   predQueue.add('refresh_predictions', {}, { retries: 1 })
   res.json({ ok: true, message: 'Cache invalidado, refresh encolado' })

@@ -56,10 +56,10 @@ export default function Login() {
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-2 mb-4">
             <span className="w-2 h-2 rounded-full bg-[#00C2FF] animate-pulse" />
-            <span className="font-bold text-white">ConectManzanillo</span>
+            <span className="font-bold text-white">Faro Portuario</span>
           </div>
           <h1 className="text-2xl font-bold text-white">Iniciar sesión</h1>
-          <p className="text-[#8B949E] text-sm mt-2">Accede para reportar el estado del puerto</p>
+          <p className="text-[#8B949E] text-sm mt-2">Accede a empleos, perfiles y herramientas para empresas</p>
         </div>
 
         <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-6 space-y-5">

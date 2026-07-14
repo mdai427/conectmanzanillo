@@ -4,32 +4,19 @@ import BottomNav from './BottomNav.jsx'
 import EmergencyBanner from '../ui/EmergencyBanner.jsx'
 import NewsTicker from '../ui/NewsTicker.jsx'
 import ChatIA from '../ui/ChatIA.jsx'
-
-const SOCIAL_LINKS = [
-  { href: 'https://www.facebook.com/conectmanzanillooficial/', label: 'FB Oficial' },
-  { href: 'https://www.facebook.com/groups/conectmanzanillo/', label: 'Grupo FB' },
-  { href: 'https://whatsapp.com/channel/0029VbBN73rId7nJ3RTSsq3s', label: 'Canal WA' },
-  { href: 'https://chat.whatsapp.com/HbR3pQLSjrkFHjINylqDjW', label: 'Comunidad WA' },
-  { href: 'https://www.instagram.com/conectmanzanillo/', label: 'Instagram' },
-  { href: 'https://www.tiktok.com/@conectmanzanilloo/', label: 'TikTok' },
-]
+import { isDemoMode } from '../../lib/supabase.js'
 
 function Footer() {
   return (
-    <footer className="hidden sm:block bg-white border-t border-slate-100 py-4 px-4 mt-auto">
+    <footer className="hidden sm:block bg-white border-t border-slate-100 py-8 px-4 mt-auto">
       <div className="max-w-7xl mx-auto space-y-2">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 justify-between">
           <p className="text-[10px] text-slate-400 max-w-xl leading-relaxed">
-            <strong className="text-slate-500">Aviso:</strong> La información es colaborativa, referencial y puede variar.
-            ConectManzanillo no sustituye instrucciones oficiales de autoridades, terminales, patios, aduanas ni dependencias del Puerto de Manzanillo.
+            <strong className="text-slate-500">Aviso:</strong> Las vacantes, perfiles y contenidos son publicados por la comunidad y las empresas participantes.
+            Verifica siempre las condiciones de una oportunidad antes de compartir documentos o aceptar una oferta.
           </p>
-          <div className="flex flex-wrap items-center gap-2">
-            {SOCIAL_LINKS.map(({ href, label }) => (
-              <a key={href} href={href} target="_blank" rel="noopener noreferrer"
-                 className="text-[10px] text-slate-400 hover:text-blue-500 font-medium transition-colors">
-                {label}
-              </a>
-            ))}
+          <div className="flex items-center gap-2 text-[10px] font-semibold text-teal-700">
+            Ecosistema · Empresas · Operaciones · Comunidad
           </div>
         </div>
         <div className="flex items-center gap-3 text-[10px] text-slate-300">
@@ -39,7 +26,7 @@ function Footer() {
           <span>·</span>
           <Link to="/anunciate" className="hover:text-blue-500 transition-colors text-slate-400">Publicidad</Link>
           <span>·</span>
-          <span>© 2025 ConectManzanillo</span>
+          <span>© 2026 Faro Portuario</span>
         </div>
       </div>
     </footer>
@@ -48,7 +35,12 @@ function Footer() {
 
 export default function Layout() {
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
+      {isDemoMode && (
+        <div className="bg-white border-b border-slate-100 px-4 py-2 text-center text-[10px] font-semibold text-slate-500">
+          Vista de producto · Los módulos que requieren datos muestran su estado de conexión
+        </div>
+      )}
       <EmergencyBanner />
       <Navbar />
       <NewsTicker />

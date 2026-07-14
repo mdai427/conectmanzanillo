@@ -843,7 +843,7 @@ export default function Analitica() {
             {rankingTab === 'niveles' && (
               <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
                 <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-1.5">
-                  <Star size={11} /> Sistema de niveles — ConectManzanillo
+                  <Star size={11} /> Sistema de niveles — Faro Portuario
                 </p>
                 <div className="space-y-3">
                   {Object.entries(NIVELES).map(([key, cfg]) => {

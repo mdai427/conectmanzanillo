@@ -4,15 +4,15 @@
 @tailwind utilities;
 
 :root {
-  --bg:      #0A1628;
-  --surface: #0F1F3D;
-  --surface2: #162B52;
-  --border:  #1E3A6E;
-  --accent:  #0099E6;
-  --accent2: #00C2FF;
-  --text:    #F0F6FC;
-  --muted:   #8BA4C4;
-  --faint:   #3D5A80;
+  --bg:      #FFFFFF;
+  --surface: #FFFFFF;
+  --surface2: #11545B;
+  --border:  #1D6970;
+  --accent:  #0F766E;
+  --accent2: #2DD4BF;
+  --text:    #081F2C;
+  --muted:   #9CB8B7;
+  --faint:   #527D7C;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -30,18 +30,13 @@ body {
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-.safe-bottom { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+::selection { background: #99f6e4; color: #134e4a; }
 
-/* Gradiente de fondo marino */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 80% 40% at 50% 0%, rgba(0,153,230,0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 60% 30% at 100% 100%, rgba(0,194,255,0.06) 0%, transparent 60%);
-  pointer-events: none;
-  z-index: 0;
+:focus-visible {
+  outline: 3px solid rgba(20, 184, 166, 0.45);
+  outline-offset: 2px;
 }
 
-#root { position: relative; z-index: 1; }
+.safe-bottom { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
+
+#root { min-height: 100vh; }
