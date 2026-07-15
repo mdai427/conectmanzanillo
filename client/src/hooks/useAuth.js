@@ -2,38 +2,49 @@ import { supabase } from '../lib/supabase.js'
 
 const API = import.meta.env.VITE_API_URL || ''
 
-// ── Phone OTP (flujo principal) ──────────────────────────────────────────────
+function normalizePhone(phone) {
+  const digits = String(phone || '').replace(/\D/g, '')
+  const local = digits.length === 12 && digits.startsWith('52') ? digits.slice(2) : digits
+  if (local.length !== 10) throw new Error('Ingresa un número mexicano válido de 10 dígitos')
+  return `+52${local}`
+}
 
-export async function sendOtp(phone) {
-  const res = await fetch(`${API}/api/phone-auth/send`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ phone }),
+function phoneToAuthEmail(phone) {
+  return `${normalizePhone(phone).slice(1)}@phone.faroportuario.app`
+}
+
+async function post(path, body) {
+  const response = await fetch(`${API}/api/phone-auth${path}`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
   })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.error || 'Error al enviar SMS')
+  const data = await response.json().catch(() => ({}))
+  if (!response.ok) throw new Error(data.error || 'No fue posible completar la operación')
   return data
 }
 
-export async function verifyOtp({ phone, code, fullName, accountKind, accountType }) {
-  const res = await fetch(`${API}/api/phone-auth/verify`, {
-    method:  'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify({ phone, code, fullName, accountKind, accountType }),
-  })
-  const data = await res.json()
-  if (!res.ok) throw new Error(data.error || 'Código incorrecto')
+export async function sendOtp(phone, purpose = 'register') {
+  return post('/send', { phone, purpose })
+}
 
-  // Usar token_hash para crear sesión en Supabase
-  const { data: session, error } = await supabase.auth.verifyOtp({
-    token_hash: data.token_hash,
-    type:       'email',
-  })
+export async function verifyOtp({ phone, code, fullName, accountKind, accountType, password, smsNotificationsEnabled }) {
+  const data = await post('/verify', { phone, code, fullName, accountKind, accountType, password, smsNotificationsEnabled })
+  const { data: session, error } = await supabase.auth.verifyOtp({ token_hash: data.token_hash, type: 'email' })
   if (error) throw new Error(error.message)
   return { session, isNew: data.isNew }
 }
 
-// ── Email/password (legacy — mantener por si acaso) ──────────────────────────
+export async function signInWithPhonePassword(phone, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email: phoneToAuthEmail(phone), password })
+  if (error) {
+    if (/invalid login credentials/i.test(error.message)) throw new Error('Número o contraseña incorrectos')
+    throw new Error(error.message)
+  }
+  return data
+}
+
+export async function resetPasswordWithOtp({ phone, code, password }) {
+  return post('/reset-password', { phone, code, password })
+}
 
 export async function signIn(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password })
@@ -44,15 +55,8 @@ export async function signIn(email, password) {
 export async function signUp(email, password, fullName, tipo = 'otro') {
   const roleMap = { operador: 'operator_free', empresa: 'company', otro: 'operator_free' }
   const { data, error } = await supabase.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        full_name:    fullName,
-        tipo_usuario: tipo,
-        role:         roleMap[tipo] || 'operator_free',
-      },
-    },
+    email, password,
+    options: { data: { full_name: fullName, tipo_usuario: tipo, role: roleMap[tipo] || 'operator_free' } },
   })
   if (error) throw new Error(error.message)
   return data

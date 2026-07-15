@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { ArrowLeft, ArrowRight, Building2, Check, KeyRound, Phone, UserRound } from 'lucide-react'
+import { ArrowLeft, ArrowRight, Building2, Check, Eye, EyeOff, KeyRound, Phone, UserRound } from 'lucide-react'
 import { sendOtp, verifyOtp } from '../hooks/useAuth.js'
 
 const PERSON_TYPES = [
@@ -32,6 +32,10 @@ export default function Register() {
   const [phone, setPhone] = useState('')
   const [sentPhone, setSentPhone] = useState('')
   const [code, setCode] = useState('')
+  const [password, setPassword] = useState('')
+  const [passwordConfirmation, setPasswordConfirmation] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [smsNotificationsEnabled, setSmsNotificationsEnabled] = useState(false)
   const [loading, setLoading] = useState(false)
   const types = useMemo(() => accountKind === 'company' ? COMPANY_TYPES : PERSON_TYPES, [accountKind])
 
@@ -48,9 +52,11 @@ export default function Register() {
   const handleSend = async () => {
     if (!fullName.trim()) return toast.error(accountKind === 'company' ? 'Ingresa el nombre del responsable' : 'Ingresa tu nombre')
     if (phone.replace(/\D/g, '').length !== 10) return toast.error('Ingresa un número de 10 dígitos')
+    if (password.length < 8 || !/[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(password) || !/\d/.test(password)) return toast.error('La contraseña debe tener 8 caracteres, con letras y números')
+    if (password !== passwordConfirmation) return toast.error('Las contraseñas no coinciden')
     setLoading(true)
     try {
-      const response = await sendOtp(phone)
+      const response = await sendOtp(phone, 'register')
       setSentPhone(response.phone)
       setStep(3)
       toast.success('Código enviado')
@@ -65,7 +71,7 @@ export default function Register() {
     if (code.length < 4) return toast.error('Ingresa el código completo')
     setLoading(true)
     try {
-      await verifyOtp({ phone: sentPhone, code, fullName, accountKind, accountType })
+      await verifyOtp({ phone: sentPhone, code, fullName, accountKind, accountType, password, smsNotificationsEnabled })
       toast.success('Cuenta validada. Continuemos con tu perfil.')
       navigate(accountKind === 'company' ? '/empresa/onboarding' : '/perfil?onboarding=1')
     } catch (error) {
@@ -93,7 +99,7 @@ export default function Register() {
               <p className="mt-1 text-xs text-slate-500">Selecciona un grupo y después tu actividad principal.</p>
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <AccountKind selected={accountKind === 'person'} icon={UserRound} title="Persona" text="Busco empleo, quiero mostrar mi experiencia o participar como profesional." onClick={() => chooseKind('person')} />
-                <AccountKind selected={accountKind === 'company'} icon={Building2} title="Empresa" text="Quiero contratar, publicar servicios, operar fletes o anunciar mi negocio." onClick={() => chooseKind('company')} />
+                <AccountKind selected={accountKind === 'company'} icon={Building2} title="Empresa o persona física" text="Tengo actividad empresarial y quiero publicar o solicitar fletes, contratar o anunciarme." onClick={() => chooseKind('company')} />
               </div>
               {accountKind && <label className="mt-6 block"><span className="mb-2 block text-xs font-extrabold text-slate-700">Actividad principal</span><select value={accountType} onChange={(event) => setAccountType(event.target.value)} className="h-12 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-teal-700"><option value="">Selecciona una opción</option>{types.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>}
               <button onClick={goToDetails} disabled={!accountType} className="mt-7 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0d4f4b] px-5 text-sm font-extrabold text-white disabled:cursor-not-allowed disabled:opacity-40">Continuar <ArrowRight size={16} /></button>
@@ -108,6 +114,10 @@ export default function Register() {
               <div className="mt-6 space-y-5">
                 <label className="block"><span className="mb-2 block text-xs font-extrabold text-slate-700">{accountKind === 'company' ? 'Nombre del responsable' : 'Nombre completo'}</span><input value={fullName} onChange={(event) => setFullName(event.target.value)} maxLength={80} autoComplete="name" className="h-12 w-full rounded-xl border border-slate-200 px-4 text-sm outline-none focus:border-teal-700" /></label>
                 <label className="block"><span className="mb-2 block text-xs font-extrabold text-slate-700">Celular</span><div className="flex h-12 overflow-hidden rounded-xl border border-slate-200 focus-within:border-teal-700"><span className="flex items-center border-r border-slate-200 px-3 text-sm text-slate-500">+52</span><input value={phone} onChange={(event) => setPhone(event.target.value.replace(/\D/g, '').slice(0, 10))} inputMode="numeric" autoComplete="tel" placeholder="10 dígitos" className="min-w-0 flex-1 px-3 text-sm outline-none" /></div></label>
+                <RegisterPassword label="Contraseña" value={password} setValue={setPassword} show={showPassword} setShow={setShowPassword} />
+                <RegisterPassword label="Confirmar contraseña" value={passwordConfirmation} setValue={setPasswordConfirmation} show={showPassword} setShow={setShowPassword} />
+                <p className="text-[10px] leading-5 text-slate-400">Usa al menos 8 caracteres, incluyendo letras y números.</p>
+                <label className="flex items-start gap-3 rounded-xl bg-slate-50 p-4 text-xs leading-5 text-slate-600"><input type="checkbox" checked={smsNotificationsEnabled} onChange={event=>setSmsNotificationsEnabled(event.target.checked)} className="mt-1 accent-teal-700"/><span><b className="text-slate-800">Quiero recibir alertas operativas importantes.</b><br/>Podremos enviarlas por SMS o WhatsApp. No autoriza publicidad y podrás desactivarlas.</span></label>
               </div>
               <button onClick={handleSend} disabled={loading} className="mt-7 flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0d4f4b] text-sm font-extrabold text-white disabled:opacity-50"><Phone size={16} />{loading ? 'Enviando…' : 'Validar teléfono'}</button>
             </div>
@@ -134,3 +144,5 @@ export default function Register() {
 function AccountKind({ selected, icon: Icon, title, text, onClick }) {
   return <button type="button" aria-pressed={selected} onClick={onClick} className={`relative rounded-2xl border p-5 text-left transition ${selected ? 'border-teal-700 ring-4 ring-teal-50' : 'border-slate-200 hover:border-slate-400'}`}><div className={`flex h-10 w-10 items-center justify-center rounded-xl ${selected ? 'bg-teal-700 text-white' : 'bg-slate-50 text-slate-600'}`}><Icon size={19} /></div><h3 className="mt-5 font-black">{title}</h3><p className="mt-2 text-xs leading-5 text-slate-500">{text}</p>{selected && <Check className="absolute right-4 top-4 text-teal-700" size={17} />}</button>
 }
+
+function RegisterPassword({label,value,setValue,show,setShow}){return <label className="block"><span className="mb-2 block text-xs font-extrabold text-slate-700">{label}</span><div className="flex h-12 rounded-xl border border-slate-200 focus-within:border-teal-700"><input value={value} onChange={event=>setValue(event.target.value)} type={show?'text':'password'} autoComplete="new-password" className="min-w-0 flex-1 rounded-l-xl px-4 text-sm outline-none"/><button type="button" onClick={()=>setShow(!show)} aria-label={show?'Ocultar contraseña':'Mostrar contraseña'} className="grid w-12 place-items-center text-slate-400">{show?<EyeOff size={17}/>:<Eye size={17}/>}</button></div></label>}

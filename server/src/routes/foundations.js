@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import { supabaseAdmin } from '../config/supabase.js'
-import { requireAuth, requireCompanyAccess } from '../middleware/auth.js'
+import { requireAuth, requireCompanyAccess, requirePermission } from '../middleware/auth.js'
 import { ACCOUNT_KINDS, isValidAccountSelection } from '../security/catalog.js'
 import { randomUUID } from 'crypto'
 
@@ -64,12 +64,13 @@ router.post('/companies', requireAuth, async (req, res) => {
 })
 
 router.patch('/companies/:companyId', requireAuth, requireCompanyAccess('company.manage_profile'), async (req, res) => {
-  const allowed = ['legal_name', 'trade_name', 'tax_id', 'tax_regime', 'fiscal_address', 'founded_year', 'responsible_name', 'responsible_title', 'business_email', 'phone', 'whatsapp', 'website', 'description', 'services', 'coverage', 'ports_served', 'states_served', 'business_hours']
+  const allowed = ['legal_name', 'trade_name', 'legal_entity_type', 'tax_id', 'tax_regime', 'fiscal_address', 'founded_year', 'responsible_name', 'responsible_title', 'business_email', 'phone', 'whatsapp', 'website', 'description', 'services', 'coverage', 'ports_served', 'states_served', 'business_hours']
   const updates = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowed.includes(key)))
   for (const key of ['tax_id', 'tax_regime', 'fiscal_address', 'responsible_name', 'responsible_title', 'business_email', 'phone', 'whatsapp', 'website', 'description']) {
     if (key in updates) updates[key] = cleanText(updates[key], key === 'description' ? 2000 : 300) || null
   }
   if (updates.tax_id) updates.tax_id = updates.tax_id.slice(0, 13).toUpperCase()
+  if ('legal_entity_type' in updates && !['individual_business', 'legal_entity'].includes(updates.legal_entity_type)) return res.status(400).json({ error: 'Tipo de personalidad jurídica inválido' })
   updates.updated_at = new Date().toISOString()
   const { data, error } = await supabaseAdmin.from('companies').update(updates).eq('id', req.companyId).select().single()
   if (error) return res.status(400).json({ error: error.message })
@@ -77,16 +78,19 @@ router.patch('/companies/:companyId', requireAuth, requireCompanyAccess('company
 })
 
 router.post('/companies/:companyId/submit-verification', requireAuth, requireCompanyAccess('company.manage_profile'), async (req, res) => {
-  const { data: company, error: readError } = await supabaseAdmin.from('companies').select('id, legal_name, trade_name, tax_id, fiscal_address, responsible_name, business_email, status').eq('id', req.companyId).single()
+  const { data: company, error: readError } = await supabaseAdmin.from('companies').select('id, legal_name, trade_name, legal_entity_type, tax_id, fiscal_address, responsible_name, business_email, status').eq('id', req.companyId).single()
   if (readError || !company) return res.status(404).json({ error: 'Empresa no encontrada' })
-  const missing = ['legal_name', 'trade_name', 'tax_id', 'fiscal_address', 'responsible_name', 'business_email'].filter((field) => !company[field])
+  const missing = ['legal_name', 'trade_name', 'legal_entity_type', 'tax_id', 'fiscal_address', 'responsible_name', 'business_email'].filter((field) => !company[field])
   if (missing.length) return res.status(422).json({ error: 'Registro incompleto', missing_fields: missing })
   if (!['draft', 'incomplete', 'corrections_required'].includes(company.status)) return res.status(409).json({ error: 'La empresa no puede enviarse desde su estado actual' })
-  const [{ count: fiscalDocuments }, { count: subscriptions }] = await Promise.all([
-    supabaseAdmin.from('company_documents').select('id', { count: 'exact', head: true }).eq('company_id', req.companyId).eq('document_type', 'tax_certificate').is('deleted_at', null),
+  const requiredDocuments = company.legal_entity_type === 'individual_business' ? ['tax_certificate', 'official_id', 'proof_of_address'] : ['tax_certificate', 'incorporation_deed', 'legal_representative_id', 'proof_of_address']
+  const [{ data: companyDocuments }, { count: subscriptions }] = await Promise.all([
+    supabaseAdmin.from('company_documents').select('document_type').eq('company_id', req.companyId).in('document_type', requiredDocuments).is('deleted_at', null),
     supabaseAdmin.from('subscriptions').select('id', { count: 'exact', head: true }).eq('company_id', req.companyId).in('estatus', ['activa', 'pendiente']),
   ])
-  if (!fiscalDocuments) return res.status(422).json({ error: 'Registro incompleto', missing_fields: ['constancia de situación fiscal'] })
+  const uploadedTypes = new Set((companyDocuments || []).map((document) => document.document_type))
+  const missingDocuments = requiredDocuments.filter((type) => !uploadedTypes.has(type))
+  if (missingDocuments.length) return res.status(422).json({ error: 'Registro incompleto', missing_fields: missingDocuments })
   if (!subscriptions) return res.status(422).json({ error: 'Registro incompleto', missing_fields: ['plan'] })
 
   const { data, error } = await supabaseAdmin.from('companies').update({ status: 'pending_verification', submitted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq('id', req.companyId).select().single()
@@ -150,6 +154,44 @@ router.get('/companies/:companyId/limits', requireAuth, requireCompanyAccess('co
   const { data, error } = await supabaseAdmin.rpc('get_company_entitlements', { p_company_id: req.companyId })
   if (error) return res.status(500).json({ error: error.message })
   res.json(data || [])
+})
+
+router.get('/verification-queue', requireAuth, requirePermission('company.verify'), async (_req, res) => {
+  const { data, error } = await supabaseAdmin.from('companies').select('id,legal_name,trade_name,legal_entity_type,company_type,tax_id,tax_regime,fiscal_address,responsible_name,business_email,phone,status,submitted_at,company_documents(id,document_type,original_name,mime_type,size_bytes,status,created_at),company_verifications(id,level,status,requested_at)').eq('status', 'pending_verification').order('submitted_at')
+  if (error) return res.status(500).json({ error: 'No fue posible cargar la cola de validación' })
+  res.json(data || [])
+})
+
+router.get('/verification-documents/:documentId/download-url', requireAuth, requirePermission('company.verify'), async (req, res) => {
+  const { data: document } = await supabaseAdmin.from('company_documents').select('storage_path,original_name').eq('id', req.params.documentId).is('deleted_at', null).single()
+  if (!document) return res.status(404).json({ error: 'Documento no encontrado' })
+  const { data, error } = await supabaseAdmin.storage.from('company-documents').createSignedUrl(document.storage_path, 300, { download: document.original_name || 'documento' })
+  if (error) return res.status(500).json({ error: 'No fue posible abrir el documento privado' })
+  res.json({ url: data.signedUrl, expires_in: 300 })
+})
+
+router.post('/companies/:companyId/verification-decision', requireAuth, requirePermission('company.verify'), async (req, res) => {
+  const decision = req.body.decision === 'approved' ? 'approved' : req.body.decision === 'rejected' ? 'rejected' : null
+  if (!decision) return res.status(400).json({ error: 'Decisión inválida' })
+  const { data: company } = await supabaseAdmin.from('companies').select('id,status,legal_entity_type').eq('id', req.params.companyId).single()
+  if (!company || company.status !== 'pending_verification') return res.status(409).json({ error: 'La solicitud ya no está pendiente' })
+  const required = company.legal_entity_type === 'individual_business' ? ['tax_certificate','official_id','proof_of_address'] : ['tax_certificate','incorporation_deed','legal_representative_id','proof_of_address']
+  const { data: documents } = await supabaseAdmin.from('company_documents').select('id,document_type').eq('company_id', company.id).in('document_type', required).is('deleted_at', null)
+  const types = new Set((documents || []).map((document) => document.document_type))
+  if (decision === 'approved' && required.some((type) => !types.has(type))) return res.status(422).json({ error: 'No se puede aprobar un expediente incompleto' })
+  const now = new Date().toISOString(), reason = cleanText(req.body.reason, 600) || null
+  if (decision === 'rejected' && !reason) return res.status(422).json({ error: 'Indica qué debe corregir la persona o empresa' })
+  const documentIds = (documents || []).map((document) => document.id)
+  const documentDecision = documentIds.length
+    ? supabaseAdmin.from('company_documents').update({ status: decision === 'approved' ? 'approved' : 'rejected', reviewed_by: req.user.id, reviewed_at: now, rejection_reason: reason }).eq('company_id', company.id).in('id', documentIds)
+    : Promise.resolve({ error: null })
+  await Promise.all([
+    supabaseAdmin.from('companies').update({ status: decision === 'approved' ? 'verified' : 'corrections_required', verified_at: decision === 'approved' ? now : null, updated_at: now }).eq('id', company.id),
+    supabaseAdmin.from('company_verifications').update({ status: decision, reviewed_by: req.user.id, reviewed_at: now, applicant_notes: reason }).eq('company_id', company.id).eq('status', 'pending'),
+    documentDecision,
+    supabaseAdmin.from('audit_logs').insert({ actor_user_id: req.user.id, action: `company.verification.${decision}`, entity_type: 'company', entity_id: company.id, reason }),
+  ])
+  res.json({ id: company.id, status: decision === 'approved' ? 'verified' : 'corrections_required' })
 })
 
 export default router

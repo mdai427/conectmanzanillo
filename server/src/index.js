@@ -23,6 +23,7 @@ import publicidadRouter   from './routes/publicidad.js'
 import pagosRouter        from './routes/pagos.js'
 import foundationsRouter  from './routes/foundations.js'
 import operationsRouter   from './routes/operations.js'
+import freightsRouter     from './routes/freights.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
 import { initWorkers } from './services/workers.js'
@@ -53,6 +54,7 @@ app.use(express.json({ limit: '10kb' }))
 app.use(morgan('combined'))
 
 // Rate limiting
+app.use('/api/phone-auth', rateLimit({ windowMs: 10 * 60 * 1000, max: 8, message: { error: 'Demasiados intentos. Espera unos minutos antes de solicitar otro código.' } }))
 app.use('/api/reports', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Demasiadas solicitudes' }))
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }))
 
@@ -72,6 +74,7 @@ app.use('/api/publicidad', cacheFor(120), publicidadRouter)
 app.use('/api/pagos',      noCache,        pagosRouter)
 app.use('/api/foundations', noCache,       foundationsRouter)
 app.use('/api/operations',  noCache,       operationsRouter)
+app.use('/api/freights',    noCache,        freightsRouter)
 
 // Semi-estático: cache corto + stale-while-revalidate
 app.use('/api/sections',  cacheFor(30),   sectionsRouter)   // 30s  — zonas cambian seguido

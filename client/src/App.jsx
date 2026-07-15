@@ -27,6 +27,8 @@ const SmartRoutes = lazy(() => import('./pages/SmartRoutes.jsx'))
 const CustomsControl = lazy(() => import('./pages/CustomsControl.jsx'))
 const ControlTower = lazy(() => import('./pages/ControlTower.jsx'))
 const Calculators = lazy(() => import('./pages/Calculators.jsx'))
+const Freights = lazy(() => import('./pages/Freights.jsx'))
+const VerificationQueue = lazy(() => import('./pages/VerificationQueue.jsx'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -45,6 +47,11 @@ function PrivateRoute({ children }) {
 function AdminRoute({ children }) {
   const { profile, hasPermission } = useAuthStore()
   return ['admin', 'moderador'].includes(profile?.role) || hasPermission('admin.analytics') || hasPermission('moderation.manage') ? children : <Navigate to="/" replace />
+}
+
+function VerificationRoute({ children }) {
+  const { profile, hasPermission } = useAuthStore()
+  return profile?.role === 'admin' || hasPermission('company.verify') ? children : <Navigate to="/403" replace />
 }
 
 export default function App() {
@@ -75,13 +82,15 @@ export default function App() {
             <Route path="directorio-empresarial" element={<DirectorioEmpresarial />} />
             <Route path="directorio-empresarial/:slug" element={<EmpresaPerfil />} />
             <Route path="calculadoras" element={<Calculators />} />
-            {['marketplace', 'fletes', 'salarios', 'capacitacion', 'documentos', 'comunidad', 'resenas', 'ia-portuaria'].map(path => (
+            <Route path="fletes" element={<Freights />} />
+            {['marketplace', 'salarios', 'capacitacion', 'documentos', 'comunidad', 'resenas', 'ia-portuaria'].map(path => (
               <Route key={path} path={path} element={<EcosystemModule />} />
             ))}
             <Route path="login" element={<Login />} />
             <Route path="register" element={<Register />} />
             <Route path="perfil" element={<PrivateRoute><Profile /></PrivateRoute>} />
             <Route path="admin" element={<PrivateRoute><AdminRoute><Admin /></AdminRoute></PrivateRoute>} />
+            <Route path="admin/verificaciones" element={<PrivateRoute><VerificationRoute><VerificationQueue /></VerificationRoute></PrivateRoute>} />
             <Route path="403" element={<ErrorPage status={403} />} />
             <Route path="500" element={<ErrorPage status={500} />} />
             <Route path="*" element={<ErrorPage status={404} />} />

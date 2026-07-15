@@ -1,151 +1,81 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Phone, KeyRound, ArrowLeft } from 'lucide-react'
-import { sendOtp, verifyOtp } from '../hooks/useAuth.js'
+import { ArrowLeft, Eye, EyeOff, KeyRound, LockKeyhole, Phone, ShieldCheck } from 'lucide-react'
+import { resetPasswordWithOtp, sendOtp, signInWithPhonePassword } from '../hooks/useAuth.js'
 
 export default function Login() {
-  const [step, setStep]     = useState(1)   // 1 = teléfono, 2 = OTP
-  const [phone, setPhone]   = useState('')
-  const [code, setCode]     = useState('')
-  const [loading, setLoading] = useState(false)
-  const [sentPhone, setSentPhone] = useState('')
   const navigate = useNavigate()
+  const [phone, setPhone] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [mode, setMode] = useState('login')
+  const [recoveryStep, setRecoveryStep] = useState(1)
+  const [sentPhone, setSentPhone] = useState('')
+  const [code, setCode] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const handleSend = async () => {
-    if (phone.replace(/\D/g, '').length < 10) return toast.error('Ingresa tu número de 10 dígitos')
+  async function submitLogin(event) {
+    event.preventDefault()
+    if (phone.length !== 10 || !password) return toast.error('Ingresa tu teléfono y contraseña')
     setLoading(true)
     try {
-      const res = await sendOtp(phone)
-      setSentPhone(res.phone)
-      setStep(2)
-      toast.success(`Código enviado al ${res.phone}`)
-    } catch (err) {
-      toast.error(err.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleVerify = async () => {
-    if (code.length < 4) return toast.error('Ingresa el código')
-    setLoading(true)
-    try {
-      // Login — no enviar fullName/tipo (usuario ya existe)
-      await verifyOtp({ phone: sentPhone, code })
-      toast.success('Bienvenido de vuelta')
+      await signInWithPhonePassword(phone, password)
+      toast.success('Bienvenido a Faro Portuario')
       navigate('/')
-    } catch (err) {
-      // Si el usuario no existe, mandarlo a registro
-      if (err.message?.includes('Nombre requerido') || err.message?.includes('needsProfile')) {
-        toast.error('No tienes cuenta. Regístrate primero.')
-        navigate('/register')
-      } else {
-        toast.error(err.message)
-      }
-    } finally {
-      setLoading(false)
-    }
+    } catch (error) { toast.error(error.message) } finally { setLoading(false) }
   }
 
-  return (
-    <div className="min-h-screen bg-[#0D1117] flex items-center justify-center p-4">
-      <div className="w-full max-w-sm">
+  async function sendRecoveryCode() {
+    if (phone.length !== 10) return toast.error('Ingresa tu número de 10 dígitos')
+    setLoading(true)
+    try {
+      const data = await sendOtp(phone, 'reset_password')
+      setSentPhone(data.phone); setRecoveryStep(2)
+      toast.success('Código de seguridad enviado')
+    } catch (error) { toast.error(error.message) } finally { setLoading(false) }
+  }
 
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <span className="w-2 h-2 rounded-full bg-[#00C2FF] animate-pulse" />
-            <span className="font-bold text-white">Faro Portuario</span>
-          </div>
-          <h1 className="text-2xl font-bold text-white">Iniciar sesión</h1>
-          <p className="text-[#8B949E] text-sm mt-2">Accede a empleos, perfiles y herramientas para empresas</p>
-        </div>
+  async function resetPassword(event) {
+    event.preventDefault()
+    if (code.length < 4) return toast.error('Ingresa el código completo')
+    if (newPassword.length < 8 || !/[A-Za-zÁÉÍÓÚáéíóúÑñ]/.test(newPassword) || !/\d/.test(newPassword)) return toast.error('Usa al menos 8 caracteres, con letras y números')
+    setLoading(true)
+    try {
+      await resetPasswordWithOtp({ phone: sentPhone, code, password: newPassword })
+      setPassword(newPassword); setMode('login'); setRecoveryStep(1); setCode(''); setNewPassword('')
+      toast.success('Contraseña actualizada. Ya puedes ingresar.')
+    } catch (error) { toast.error(error.message) } finally { setLoading(false) }
+  }
 
-        <div className="bg-[#161B22] border border-[#30363D] rounded-2xl p-6 space-y-5">
+  return <main className="min-h-screen bg-[#f4f7f6] px-4 py-10 text-slate-950 sm:py-16">
+    <div className="mx-auto grid max-w-5xl overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_24px_80px_rgba(8,31,44,.1)] lg:grid-cols-[.9fr_1.1fr]">
+      <section className="hidden bg-[#082f35] p-10 text-white lg:flex lg:flex-col lg:justify-between">
+        <div><Link to="/" className="text-xs font-black uppercase tracking-[.2em] text-teal-300">Faro Portuario</Link><h1 className="mt-8 text-4xl font-black tracking-[-.05em]">Tu operación logística en un solo lugar.</h1><p className="mt-5 text-sm leading-7 text-slate-300">Accede a fletes, talento, empresas verificadas y herramientas especializadas.</p></div>
+        <div className="space-y-4">{[['Teléfono verificado','Cada cuenta confirma que tiene acceso al número registrado.'],['Acceso protegido','Tu contraseña no se guarda en Faro Portuario; la administra el sistema seguro de autenticación.'],['Alertas bajo tu control','Las notificaciones por SMS o WhatsApp requieren tu consentimiento.']].map(([title,text])=><div key={title} className="flex gap-3"><ShieldCheck size={18} className="mt-0.5 shrink-0 text-teal-300"/><div><p className="text-xs font-black">{title}</p><p className="mt-1 text-xs leading-5 text-slate-400">{text}</p></div></div>)}</div>
+      </section>
 
-          {step === 1 ? (
-            <>
-              <div>
-                <label className="block text-sm font-medium text-[#8B949E] mb-2">Número de celular</label>
-                <div className="flex items-center bg-[#0D1117] border border-[#30363D] rounded-xl overflow-hidden focus-within:border-[#00C2FF] transition-colors">
-                  <div className="flex items-center gap-1.5 px-3 border-r border-[#30363D] shrink-0">
-                    <span className="text-lg">🇲🇽</span>
-                    <span className="text-[#8B949E] text-sm">+52</span>
-                  </div>
-                  <input
-                    type="tel"
-                    value={phone}
-                    onChange={e => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    onKeyDown={e => e.key === 'Enter' && handleSend()}
-                    placeholder="10 dígitos"
-                    className="flex-1 bg-transparent px-3 py-3 text-white text-sm placeholder-[#4B5563] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <button
-                onClick={handleSend}
-                disabled={loading}
-                className="w-full py-4 rounded-xl bg-[#00C2FF] text-[#0D1117] font-bold text-sm disabled:opacity-40 hover:bg-[#33CFFF] active:scale-95 transition-all flex items-center justify-center gap-2 min-h-[48px]"
-              >
-                <Phone size={16} />
-                {loading ? 'Enviando código…' : 'Enviar código SMS'}
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => setStep(1)}
-                className="flex items-center gap-1.5 text-[#8B949E] hover:text-white text-sm transition-colors"
-              >
-                <ArrowLeft size={14} /> Cambiar número
-              </button>
-
-              <div className="text-center py-2">
-                <div className="w-12 h-12 rounded-full bg-[#00C2FF]/10 flex items-center justify-center mx-auto mb-3">
-                  <KeyRound size={22} className="text-[#00C2FF]" />
-                </div>
-                <p className="text-white font-semibold">Ingresa tu código</p>
-                <p className="text-[#8B949E] text-sm mt-1">
-                  Enviamos un SMS a <span className="text-white">{sentPhone}</span>
-                </p>
-              </div>
-
-              <input
-                type="tel"
-                value={code}
-                onChange={e => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                onKeyDown={e => e.key === 'Enter' && handleVerify()}
-                placeholder="000000"
-                maxLength={6}
-                className="w-full bg-[#0D1117] border border-[#30363D] rounded-xl px-4 py-4 text-white text-center text-2xl tracking-[0.5em] font-mono placeholder-[#4B5563] focus:outline-none focus:border-[#00C2FF] transition-colors"
-              />
-
-              <button
-                onClick={handleVerify}
-                disabled={loading || code.length < 4}
-                className="w-full py-4 rounded-xl bg-[#00C2FF] text-[#0D1117] font-bold text-sm disabled:opacity-40 hover:bg-[#33CFFF] active:scale-95 transition-all min-h-[48px]"
-              >
-                {loading ? 'Verificando…' : 'Entrar'}
-              </button>
-
-              <button
-                onClick={handleSend}
-                disabled={loading}
-                className="w-full text-[#8B949E] text-sm hover:text-white transition-colors"
-              >
-                ¿No llegó? Reenviar código
-              </button>
-            </>
-          )}
-        </div>
-
-        <p className="text-center text-sm text-[#8B949E] mt-6">
-          ¿No tienes cuenta?{' '}
-          <Link to="/register" className="text-[#00C2FF] hover:underline">Regístrate</Link>
-        </p>
-      </div>
+      <section className="p-6 sm:p-10 lg:p-12">
+        <Link to="/" className="inline-flex items-center gap-2 text-xs font-bold text-slate-500 lg:hidden"><ArrowLeft size={14}/>Volver</Link>
+        {mode === 'login' ? <>
+          <div><p className="text-xs font-black uppercase tracking-[.16em] text-teal-700">Acceso seguro</p><h2 className="mt-3 text-3xl font-black tracking-tight">Iniciar sesión</h2><p className="mt-2 text-sm text-slate-500">Usa el celular con el que te registraste.</p></div>
+          <form onSubmit={submitLogin} className="mt-8 space-y-5">
+            <PhoneInput phone={phone} setPhone={setPhone}/>
+            <PasswordInput label="Contraseña" value={password} setValue={setPassword} show={showPassword} setShow={setShowPassword} autoComplete="current-password"/>
+            <div className="flex justify-end"><button type="button" onClick={()=>setMode('recovery')} className="text-xs font-extrabold text-teal-800 hover:underline">Olvidé o aún no tengo contraseña</button></div>
+            <button disabled={loading} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0d4f4b] text-sm font-extrabold text-white disabled:opacity-50"><LockKeyhole size={16}/>{loading?'Ingresando…':'Ingresar'}</button>
+          </form>
+          <p className="mt-7 text-center text-xs text-slate-500">¿No tienes cuenta? <Link to="/register" className="font-extrabold text-teal-800">Crear cuenta</Link></p>
+        </> : <>
+          <button onClick={()=>{setMode('login');setRecoveryStep(1)}} className="inline-flex items-center gap-2 text-xs font-bold text-slate-500"><ArrowLeft size={14}/>Volver al acceso</button>
+          <div className="mt-7"><p className="text-xs font-black uppercase tracking-[.16em] text-teal-700">Recuperación segura</p><h2 className="mt-3 text-3xl font-black tracking-tight">{recoveryStep===1?'Crea una nueva contraseña':'Confirma tu número'}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{recoveryStep===1?'Te enviaremos un código SMS al teléfono verificado de tu cuenta.':`Enviamos un código a ${sentPhone}. Expira aproximadamente en 10 minutos.`}</p></div>
+          {recoveryStep===1?<div className="mt-8 space-y-5"><PhoneInput phone={phone} setPhone={setPhone}/><button onClick={sendRecoveryCode} disabled={loading} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0d4f4b] text-sm font-extrabold text-white disabled:opacity-50"><Phone size={16}/>{loading?'Enviando…':'Enviar código SMS'}</button></div>:<form onSubmit={resetPassword} className="mt-8 space-y-5"><label className="block"><span className="mb-2 block text-xs font-extrabold text-slate-700">Código de verificación</span><input value={code} onChange={event=>setCode(event.target.value.replace(/\D/g,'').slice(0,6))} inputMode="numeric" autoComplete="one-time-code" placeholder="000000" className="h-14 w-full rounded-xl border border-slate-200 text-center font-mono text-xl tracking-[.35em] outline-none focus:border-teal-700"/></label><PasswordInput label="Nueva contraseña" value={newPassword} setValue={setNewPassword} show={showPassword} setShow={setShowPassword} autoComplete="new-password"/><p className="text-[10px] leading-5 text-slate-400">Mínimo 8 caracteres, incluyendo letras y números.</p><button disabled={loading} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0d4f4b] text-sm font-extrabold text-white disabled:opacity-50"><KeyRound size={16}/>{loading?'Actualizando…':'Guardar contraseña'}</button><button type="button" onClick={sendRecoveryCode} disabled={loading} className="w-full text-xs font-bold text-slate-500">Reenviar código</button></form>}
+        </>}
+      </section>
     </div>
-  )
+  </main>
 }
+
+function PhoneInput({phone,setPhone}){return <label className="block"><span className="mb-2 block text-xs font-extrabold text-slate-700">Número de celular</span><div className="flex h-12 overflow-hidden rounded-xl border border-slate-200 focus-within:border-teal-700 focus-within:ring-2 focus-within:ring-teal-50"><span className="flex items-center border-r border-slate-200 px-3 text-sm text-slate-500">🇲🇽 +52</span><input required type="tel" value={phone} onChange={event=>setPhone(event.target.value.replace(/\D/g,'').slice(0,10))} inputMode="numeric" autoComplete="tel" placeholder="10 dígitos" className="min-w-0 flex-1 px-3 text-sm outline-none"/></div></label>}
+function PasswordInput({label,value,setValue,show,setShow,autoComplete}){return <label className="block"><span className="mb-2 block text-xs font-extrabold text-slate-700">{label}</span><div className="flex h-12 rounded-xl border border-slate-200 focus-within:border-teal-700 focus-within:ring-2 focus-within:ring-teal-50"><input required type={show?'text':'password'} value={value} onChange={event=>setValue(event.target.value)} autoComplete={autoComplete} className="min-w-0 flex-1 rounded-l-xl px-4 text-sm outline-none"/><button type="button" onClick={()=>setShow(!show)} aria-label={show?'Ocultar contraseña':'Mostrar contraseña'} className="grid w-12 place-items-center text-slate-400">{show?<EyeOff size={17}/>:<Eye size={17}/>}</button></div></label>}

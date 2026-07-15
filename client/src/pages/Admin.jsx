@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
 import { api } from '../lib/api.js'
@@ -9,6 +10,7 @@ import {
   Clock, ExternalLink, Ban, AlertOctagon, Eye, ChevronDown,
   FileWarning, Search, Truck, Building2, HelpCircle,
   MessageSquare, ThumbsUp, ThumbsDown, Timer, Gavel,
+  FileCheck2,
 } from 'lucide-react'
 
 const ROLES = ['operator_free', 'operator_premium', 'company', 'moderador', 'admin']
@@ -1562,12 +1564,13 @@ export default function Admin() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Shield size={20} className="text-[#00C2FF]" />
-          <div>
+          <div className="mr-auto">
             <h1 className="text-xl font-bold text-gray-900">Panel de Administración</h1>
             <p className="text-gray-500 text-xs mt-0.5">Faro Portuario · Control de la plataforma</p>
           </div>
+          <Link to="/admin/verificaciones" className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-teal-200 bg-teal-50 px-4 text-xs font-black text-teal-800 hover:bg-teal-100"><FileCheck2 size={15}/>Verificar empresas</Link>
         </div>
 
         {/* Stats */}
