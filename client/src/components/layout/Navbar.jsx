@@ -14,6 +14,7 @@ const PRIMARY = [
   ['/vacantes', 'Empleos', Briefcase], ['/marketplace', 'Marketplace', Store], ['/noticias', 'Actualidad', Newspaper],
 ]
 const MORE = [
+  ['/pulso-portuario', 'Pulso del puerto', RadioTower],
   ['/comunidad', 'Comunidad', MessageSquareText], ['/capacitacion', 'Capacitación', GraduationCap],
   ['/documentos', 'Biblioteca', BookOpen], ['/calculadoras', 'Herramientas', Calculator],
   ['/torre-control', 'Torre de control', RadioTower], ['/rutas-inteligentes', 'Rutas inteligentes', MapPinned],

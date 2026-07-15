@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import SponsoredCompanies from '../components/ui/SponsoredCompanies.jsx'
 import { isDemoMode, supabase } from '../lib/supabase.js'
+import { useSections } from '../hooks/useSections.js'
 
 const API = import.meta.env.VITE_API_URL || ''
 const SEARCH_TYPES = ['Todo', 'Empresas', 'Fletes', 'Vacantes', 'Proveedores', 'Servicios', 'Noticias']
@@ -43,6 +44,7 @@ export default function Dashboard() {
   const [type, setType] = useState('Todo')
   const { data: companies = [] } = useQuery({ queryKey: ['home-verified-companies'], queryFn: fetchVerifiedCompanies, staleTime: 120_000, retry: 1 })
   const { data: jobs = [] } = useQuery({ queryKey: ['home-recent-jobs'], queryFn: fetchRecentJobs, staleTime: 120_000, retry: 1 })
+  const { data: portSections = [] } = useSections()
 
   const search = (event) => {
     event.preventDefault()
@@ -79,6 +81,8 @@ export default function Dashboard() {
       </section>
 
       <SponsoredCompanies />
+
+      <PortPulsePreview sections={portSections} />
 
       <main>
         <section className="border-b border-slate-100 py-16 sm:py-20">
@@ -154,3 +158,9 @@ export default function Dashboard() {
 
 function Heading({ eyebrow, title, text }) { return <div className="max-w-3xl"><p className="text-[10px] font-black uppercase tracking-[.2em] text-teal-700">{eyebrow}</p><h2 className="mt-3 text-3xl font-black tracking-[-.04em] text-[#081f2c] sm:text-4xl">{title}</h2><p className="mt-3 text-sm leading-6 text-slate-500 sm:text-base">{text}</p></div> }
 function DynamicGroup({ title, icon: Icon, to, children }) { return <section><div className="flex items-center justify-between"><h3 className="flex items-center gap-2 font-black"><Icon size={17} className="text-teal-700" />{title}</h3><Link to={to} className="text-xs font-extrabold text-teal-800">Ver todo</Link></div><div className="mt-3">{children}</div></section> }
+
+function PortPulsePreview({ sections }) {
+  const visible = sections.slice(0, 4)
+  const active = sections.reduce((sum, section) => sum + Number(section.active_reports || 0), 0)
+  return <section className="border-b border-slate-100 bg-[#f4f8f7] py-10 sm:py-14"><div className="mx-auto max-w-7xl px-4"><div className="overflow-hidden rounded-3xl bg-[#082f35] text-white shadow-[0_25px_70px_rgba(8,47,53,.16)]"><div className="port-grid relative grid gap-7 p-6 sm:p-8 lg:grid-cols-[.75fr_1.25fr] lg:items-center"><div><div className="inline-flex items-center gap-2 rounded-full border border-teal-300/20 bg-teal-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.18em] text-teal-200"><span className="h-2 w-2 animate-pulse rounded-full bg-teal-300 shadow-[0_0_12px_#5eead4]"/> Pulso portuario</div><h2 className="mt-4 text-3xl font-black tracking-[-.04em]">Consulta antes de salir.</h2><p className="mt-3 text-sm leading-6 text-teal-50/65">Identifica zonas con actividad, revisa la confianza de los datos y reporta lo que ves en pocos segundos.</p><div className="mt-5 flex items-center gap-4 text-[10px] font-bold text-teal-100/55"><span>{sections.length} zonas</span><span>{active} reportes activos</span></div><Link to="/pulso-portuario" className="port-glow-button mt-6 inline-flex min-h-11 items-center gap-2 rounded-xl bg-teal-300 px-5 text-xs font-black text-[#062b2f]">Abrir pulso del puerto <ArrowRight size={14}/></Link></div><div className="grid gap-2 sm:grid-cols-2">{visible.length ? visible.map((section) => { const hasData = Number(section.active_reports || 0)>0; const color = !hasData?'#94a3b8':section.status==='free'?'#22c55e':section.status==='moderate'?'#f59e0b':section.status==='congested'?'#ef4444':'#64748b'; return <Link key={section.id} to={`/seccion/${section.slug}`} className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[.06] p-4 backdrop-blur transition hover:border-teal-300/40 hover:bg-white/[.10]"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{background:color,boxShadow:`0 0 13px ${color}`}}/><div className="min-w-0 flex-1"><p className="truncate text-xs font-black">{section.name}</p><p className="mt-1 text-[10px] text-teal-50/45">{hasData?`${section.active_reports} reportes activos`:'Sin confirmar'}</p></div><ChevronRight size={14} className="text-white/25 transition group-hover:translate-x-1 group-hover:text-teal-200"/></Link> }) : <div className="col-span-2 rounded-2xl border border-dashed border-white/15 p-8 text-center text-xs text-white/50">Las zonas aparecerán al conectarse con la plataforma.</div>}</div></div></div></div></section>
+}

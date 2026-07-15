@@ -2,6 +2,10 @@
 -- Elimina zonas genéricas e inserta todas las zonas reales del puerto
 -- Cubre: acceso → regulador → aduana → terminales → patios de almacenamiento
 
+ALTER TABLE public.sections
+  ADD COLUMN IF NOT EXISTS lat double precision,
+  ADD COLUMN IF NOT EXISTS lng double precision;
+
 -- Limpiar zonas anteriores (si existen con slugs viejos)
 DELETE FROM public.sections WHERE slug IN (
   'patio-tep','impala-terminals','patio-alcam','patios-vacios-ssa',

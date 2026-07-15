@@ -12,14 +12,15 @@ export default function Modal({ open, onClose, title, children }) {
   if (!open) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-md bg-[#161B22] border border-[#30363D] rounded-2xl shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-[#30363D]">
-          <h2 className="text-lg font-bold text-white">{title}</h2>
+    <div role="dialog" aria-modal="true" aria-label={title} className="fixed inset-0 z-50 flex items-end justify-center p-3 sm:items-center sm:p-4">
+      <div className="absolute inset-0 bg-[#03151c]/75 backdrop-blur-md" onClick={onClose} />
+      <div className="relative max-h-[92vh] w-full max-w-md overflow-y-auto rounded-[26px] border border-white/20 bg-white shadow-[0_35px_100px_rgba(1,17,23,.4)]">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-100 bg-white/95 p-5 backdrop-blur-xl">
+          <h2 className="pr-4 text-lg font-black tracking-tight text-[#081f2c]">{title}</h2>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-[#8B949E] hover:text-white hover:bg-[#30363D] transition-colors"
+            aria-label="Cerrar"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-slate-200 text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
           >
             <X size={18} />
           </button>

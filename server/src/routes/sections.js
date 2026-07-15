@@ -9,7 +9,7 @@ router.get('/', async (_req, res) => {
     const { data, error } = await supabaseAdmin
       .from('sections')
       .select(`
-        id, slug, name, description, icon, sort_order,
+        id, slug, name, description, icon, sort_order, lat, lng,
         section_status_cache(current_status, active_reports, confidence, last_report_at)
       `)
       .eq('is_active', true)
@@ -37,7 +37,7 @@ router.get('/:slug', async (req, res) => {
     const { data, error } = await supabaseAdmin
       .from('sections')
       .select(`
-        id, slug, name, description, icon,
+        id, slug, name, description, icon, lat, lng,
         section_status_cache(current_status, active_reports, confidence, last_report_at, last_calculated)
       `)
       .eq('slug', req.params.slug)

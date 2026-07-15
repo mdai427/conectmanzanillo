@@ -46,3 +46,31 @@ body {
 .safe-bottom { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 
 #root { min-height: 100vh; }
+
+.port-grid {
+  background-image: linear-gradient(rgba(94,234,212,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(94,234,212,.06) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+.port-map-fallback {
+  background-color: #dfe9e8;
+  background-image: linear-gradient(32deg, transparent 48%, rgba(13,91,85,.16) 49%, rgba(13,91,85,.16) 51%, transparent 52%), linear-gradient(-24deg, transparent 47%, rgba(14,116,144,.12) 48%, rgba(14,116,144,.12) 50%, transparent 51%), radial-gradient(circle at 22% 32%, rgba(15,118,110,.16) 0 4px, transparent 5px), radial-gradient(circle at 76% 66%, rgba(15,118,110,.16) 0 4px, transparent 5px);
+  background-size: 180px 180px, 220px 220px, 120px 120px, 150px 150px;
+}
+
+.port-glow-button {
+  box-shadow: 0 0 0 1px rgba(94,234,212,.2), 0 0 25px rgba(45,212,191,.24), 0 12px 28px rgba(3,24,29,.18);
+  transition: transform .2s ease, box-shadow .2s ease, filter .2s ease;
+}
+.port-glow-button:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 0 0 1px rgba(94,234,212,.35), 0 0 36px rgba(45,212,191,.38), 0 15px 34px rgba(3,24,29,.22); }
+.port-glow-button:active { transform: translateY(0) scale(.98); }
+.port-report-action { position: relative; overflow: hidden; }
+.port-report-action::after { content: ''; position: absolute; inset: 0; transform: translateX(-120%); background: linear-gradient(100deg,transparent,rgba(20,184,166,.12),transparent); transition: transform .5s ease; }
+.port-report-action:hover::after { transform: translateX(120%); }
+
+@keyframes zoneReveal { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+.zone-reveal { animation: zoneReveal .42s both ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .zone-reveal { animation: none; }
+  .port-glow-button, .port-report-action::after { transition: none; }
+}

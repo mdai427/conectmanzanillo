@@ -32,6 +32,8 @@ const VerificationQueue = lazy(() => import('./pages/VerificationQueue.jsx'))
 const ResourceLibrary = lazy(() => import('./pages/ResourceLibrary.jsx'))
 const TrainingLibrary = lazy(() => import('./pages/TrainingLibrary.jsx'))
 const Community = lazy(() => import('./pages/Community.jsx'))
+const PortStatus = lazy(() => import('./pages/PortStatus.jsx'))
+const SectionDetail = lazy(() => import('./pages/SectionDetail.jsx'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -67,7 +69,8 @@ export default function App() {
         <Suspense fallback={<RouteFallback />}><Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
-            <Route path="seccion/:slug" element={<Navigate to="/" replace />} />
+            <Route path="seccion/:slug" element={<SectionDetail />} />
+            <Route path="pulso-portuario" element={<PortStatus />} />
             <Route path="noticias" element={<Noticias />} />
             <Route path="directorio" element={<Directorio />} />
             <Route path="posturas" element={<Posturas />} />
