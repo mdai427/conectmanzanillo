@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { ArrowLeft, ArrowRight, Building2, Check, Eye, EyeOff, KeyRound, Phone, UserRound } from 'lucide-react'
 import { sendOtp, verifyOtp } from '../hooks/useAuth.js'
@@ -25,6 +25,9 @@ const COMPANY_TYPES = [
 
 export default function Register() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const requestedReturn = searchParams.get('returnTo')
+  const returnTo = requestedReturn?.startsWith('/') && !requestedReturn.startsWith('//') ? requestedReturn : ''
   const [step, setStep] = useState(1)
   const [accountKind, setAccountKind] = useState('')
   const [accountType, setAccountType] = useState('')
@@ -73,7 +76,7 @@ export default function Register() {
     try {
       await verifyOtp({ phone: sentPhone, code, fullName, accountKind, accountType, password, smsNotificationsEnabled })
       toast.success('Cuenta validada. Continuemos con tu perfil.')
-      navigate(accountKind === 'company' ? '/empresa/onboarding' : '/perfil?onboarding=1')
+      navigate(returnTo || (accountKind === 'company' ? '/empresa/onboarding' : '/perfil?onboarding=1'))
     } catch (error) {
       toast.error(error.message)
       setLoading(false)

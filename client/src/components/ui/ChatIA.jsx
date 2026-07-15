@@ -16,7 +16,7 @@ function fallbackAnswer(question) {
   if (text.includes('empresa') || text.includes('proveedor')) return 'Puedes consultar empresas y proveedores en **Directorio**: /directorio-empresarial. Usa los filtros para encontrar la categoría adecuada.'
   if (text.includes('flete') || text.includes('carga')) return 'La bolsa de cargas y unidades está en **Fletes**: /fletes. Faro solo mostrará publicaciones guardadas en la plataforma.'
   if (text.includes('vacante') || text.includes('empleo') || text.includes('trabajo')) return 'Consulta oportunidades en **Empleos**: /vacantes. También puedes completar tu perfil desde Mi cuenta.'
-  if (text.includes('curso') || text.includes('capacita')) return 'Los cursos y certificaciones se organizan en **Capacitación**: /capacitacion.'
+  if (text.includes('curso') || text.includes('capacita')) return 'Las guías prácticas y cursos descargables se organizan en **Capacitación**: /capacitacion. Son materiales educativos y no certificaciones oficiales.'
   if (text.includes('documento') || text.includes('formato')) return 'La biblioteca de formatos está en /documentos. Verifica siempre requisitos legales o aduanales con la autoridad o un profesional.'
   return 'Puedo orientarte para encontrar empresas, fletes, vacantes, capacitación y documentos dentro de Faro Portuario. También puedes usar el buscador de la página principal.'
 }

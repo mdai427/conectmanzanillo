@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { ArrowLeft, Eye, EyeOff, KeyRound, LockKeyhole, Phone, ShieldCheck } from 'lucide-react'
 import { resetPasswordWithOtp, sendOtp, signInWithPhonePassword } from '../hooks/useAuth.js'
 
 export default function Login() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const requestedReturn = searchParams.get('returnTo')
+  const returnTo = requestedReturn?.startsWith('/') && !requestedReturn.startsWith('//') ? requestedReturn : '/'
   const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -23,7 +26,7 @@ export default function Login() {
     try {
       await signInWithPhonePassword(phone, password)
       toast.success('Bienvenido a Faro Portuario')
-      navigate('/')
+      navigate(returnTo)
     } catch (error) { toast.error(error.message) } finally { setLoading(false) }
   }
 
@@ -66,7 +69,7 @@ export default function Login() {
             <div className="flex justify-end"><button type="button" onClick={()=>setMode('recovery')} className="text-xs font-extrabold text-teal-800 hover:underline">Olvidé o aún no tengo contraseña</button></div>
             <button disabled={loading} className="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-[#0d4f4b] text-sm font-extrabold text-white disabled:opacity-50"><LockKeyhole size={16}/>{loading?'Ingresando…':'Ingresar'}</button>
           </form>
-          <p className="mt-7 text-center text-xs text-slate-500">¿No tienes cuenta? <Link to="/register" className="font-extrabold text-teal-800">Crear cuenta</Link></p>
+          <p className="mt-7 text-center text-xs text-slate-500">¿No tienes cuenta? <Link to={`/register?returnTo=${encodeURIComponent(returnTo)}`} className="font-extrabold text-teal-800">Crear cuenta</Link></p>
         </> : <>
           <button onClick={()=>{setMode('login');setRecoveryStep(1)}} className="inline-flex items-center gap-2 text-xs font-bold text-slate-500"><ArrowLeft size={14}/>Volver al acceso</button>
           <div className="mt-7"><p className="text-xs font-black uppercase tracking-[.16em] text-teal-700">Recuperación segura</p><h2 className="mt-3 text-3xl font-black tracking-tight">{recoveryStep===1?'Crea una nueva contraseña':'Confirma tu número'}</h2><p className="mt-2 text-sm leading-6 text-slate-500">{recoveryStep===1?'Te enviaremos un código SMS al teléfono verificado de tu cuenta.':`Enviamos un código a ${sentPhone}. Expira aproximadamente en 10 minutos.`}</p></div>

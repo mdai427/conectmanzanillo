@@ -24,6 +24,7 @@ import pagosRouter        from './routes/pagos.js'
 import foundationsRouter  from './routes/foundations.js'
 import operationsRouter   from './routes/operations.js'
 import freightsRouter     from './routes/freights.js'
+import resourcesRouter    from './routes/resources.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
 import { initWorkers } from './services/workers.js'
@@ -56,6 +57,7 @@ app.use(morgan('combined'))
 // Rate limiting
 app.use('/api/phone-auth', rateLimit({ windowMs: 10 * 60 * 1000, max: 8, message: { error: 'Demasiados intentos. Espera unos minutos antes de solicitar otro código.' } }))
 app.use('/api/reports', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Demasiadas solicitudes' }))
+app.use('/api/resources', rateLimit({ windowMs: 15 * 60 * 1000, max: 80, message: { error: 'Demasiadas descargas. Espera unos minutos.' } }))
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }))
 
 // API routes — con cache por tipo de dato
@@ -75,6 +77,7 @@ app.use('/api/pagos',      noCache,        pagosRouter)
 app.use('/api/foundations', noCache,       foundationsRouter)
 app.use('/api/operations',  noCache,       operationsRouter)
 app.use('/api/freights',    noCache,        freightsRouter)
+app.use('/api/resources',   noCache,        resourcesRouter)
 
 // Semi-estático: cache corto + stale-while-revalidate
 app.use('/api/sections',  cacheFor(30),   sectionsRouter)   // 30s  — zonas cambian seguido
