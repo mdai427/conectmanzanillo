@@ -27,8 +27,11 @@ async function fetchEmpresas({ categoria, q, page, tier }) {
 function TierBadge({ empresa }) {
   if (empresa.es_premium)   return <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700"><Crown size={9}/>Premium</span>
   if (empresa.es_destacado) return <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700"><Star size={9}/>Destacado</span>
-  if (empresa.es_verificado)return <span className="inline-flex items-center gap-0.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-green-100 text-green-700"><BadgeCheck size={9}/>Verificado</span>
   return null
+}
+
+function VerificationBadge({ verified }) {
+  return <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[9px] font-bold ${verified ? 'bg-teal-50 text-teal-800' : 'bg-slate-100 text-slate-500'}`}><BadgeCheck size={10}/>{verified ? 'Verificada' : 'No verificada'}</span>
 }
 
 function EmpresaCard({ empresa }) {
@@ -68,9 +71,7 @@ function EmpresaCard({ empresa }) {
 
       {/* Content */}
       <div className="pt-7 px-4 pb-4 flex flex-col flex-1">
-        <h3 className="font-bold text-gray-900 text-sm leading-snug group-hover:text-blue-600 transition-colors line-clamp-1">
-          {empresa.nombre_comercial}
-        </h3>
+        <div className="flex items-center gap-2"><h3 className="min-w-0 flex-1 truncate text-sm font-bold leading-snug text-gray-900 transition-colors group-hover:text-teal-700">{empresa.nombre_comercial}</h3><VerificationBadge verified={empresa.es_verificado}/></div>
 
         {empresa.categoria_slug && (
           <span className="text-[10px] text-blue-600 font-semibold mt-0.5 uppercase tracking-wide">

@@ -19,19 +19,14 @@ const TALENTO = [
 
 const PLANES = [
   {
-    nombre: 'Vacante individual', precio: '$499', periodo: 'por 30 días',
-    descripcion: 'Para cubrir una posición puntual.',
-    beneficios: ['Publicación destacada', 'Recepción de postulaciones', 'Filtros básicos de talento'],
+    nombre: 'Impulso Faro', precio: '$799', periodo: 'MXN al mes',
+    descripcion: 'Visibilidad constante para generar reconocimiento y contactos.',
+    beneficios: ['Perfil destacado', 'Banner en una sección', '1 publicación patrocinada', 'Reporte de impresiones y clics'],
   },
   {
-    nombre: 'Empresa visible', precio: '$1,490', periodo: 'al mes', destacado: true,
-    descripcion: 'Para empresas que contratan de forma continua.',
-    beneficios: ['Hasta 5 vacantes activas', 'Perfil de empresa verificado', 'Búsqueda avanzada de talento', 'Aparición en empresas contratando'],
-  },
-  {
-    nombre: 'Marca empleadora', precio: 'A la medida', periodo: '',
-    descripcion: 'Presencia premium para atraer talento especializado.',
-    beneficios: ['Vacantes ilimitadas', 'Campañas y anuncios', 'Analítica y soporte prioritario'],
+    nombre: 'Líder Portuario', precio: '$1,999', periodo: 'MXN al mes', destacado: true,
+    descripcion: 'Cobertura preferente para posicionar la marca y captar oportunidades.',
+    beneficios: ['Portada y hasta 3 secciones', 'Prioridad en el directorio', '4 publicaciones patrocinadas', 'Reporte y acompañamiento mensual'],
   },
 ]
 
@@ -152,7 +147,7 @@ export default function Empresa() {
               <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">Elige cómo quieres aparecer</h2>
               <p className="mt-3 text-slate-600">Planes sencillos para publicar, buscar y posicionar tu empresa.</p>
             </div>
-            <div className="grid gap-5 lg:grid-cols-3">
+            <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
               {PLANES.map((plan) => (
                 <article key={plan.nombre} className={`relative rounded-3xl border bg-white p-6 ${plan.destacado ? 'border-teal-600 shadow-xl shadow-teal-900/10' : 'border-slate-200'}`}>
                   {plan.destacado && <span className="absolute -top-3 left-6 rounded-full bg-teal-700 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Recomendado</span>}
@@ -161,7 +156,7 @@ export default function Empresa() {
                   <p className="mt-5 text-3xl font-black text-teal-900">{plan.precio}</p>
                   <p className="text-xs text-slate-500">{plan.periodo}</p>
                   <ul className="mt-6 space-y-3">{plan.beneficios.map((item) => <li key={item} className="flex gap-2 text-sm text-slate-700"><Check size={17} className="mt-0.5 shrink-0 text-teal-600" />{item}</li>)}</ul>
-                  <Link to="/vacantes" className={`mt-7 flex min-h-11 items-center justify-center rounded-xl text-sm font-extrabold ${plan.destacado ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-800'}`}>Elegir plan</Link>
+                  <Link to="/anunciate" className={`mt-7 flex min-h-11 items-center justify-center rounded-xl text-sm font-extrabold ${plan.destacado ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-800'}`}>Ver detalles</Link>
                 </article>
               ))}
             </div>

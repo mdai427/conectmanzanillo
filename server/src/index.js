@@ -25,8 +25,11 @@ import foundationsRouter  from './routes/foundations.js'
 import operationsRouter   from './routes/operations.js'
 import freightsRouter     from './routes/freights.js'
 import resourcesRouter    from './routes/resources.js'
+import newsRouter         from './routes/news.js'
+import communityRouter    from './routes/community.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
+import { startNewsScheduler } from './services/newsScheduler.js'
 import { initWorkers } from './services/workers.js'
 import { cacheFor, noCache } from './middleware/cache.js'
 import { reportQueue, predQueue, maintenanceQueue } from './services/queue.js'
@@ -78,6 +81,8 @@ app.use('/api/foundations', noCache,       foundationsRouter)
 app.use('/api/operations',  noCache,       operationsRouter)
 app.use('/api/freights',    noCache,        freightsRouter)
 app.use('/api/resources',   noCache,        resourcesRouter)
+app.use('/api/news',        noCache,        newsRouter)
+app.use('/api/community',   noCache,        communityRouter)
 
 // Semi-estático: cache corto + stale-while-revalidate
 app.use('/api/sections',  cacheFor(30),   sectionsRouter)   // 30s  — zonas cambian seguido
@@ -123,6 +128,7 @@ app.get('*', (_req, res) => {
 // Workers y scheduler
 initWorkers()
 startScheduler()
+startNewsScheduler()
 
 const PORT = process.env.PORT || 3000
 httpServer.listen(PORT, () => {

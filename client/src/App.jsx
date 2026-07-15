@@ -31,6 +31,7 @@ const Freights = lazy(() => import('./pages/Freights.jsx'))
 const VerificationQueue = lazy(() => import('./pages/VerificationQueue.jsx'))
 const ResourceLibrary = lazy(() => import('./pages/ResourceLibrary.jsx'))
 const TrainingLibrary = lazy(() => import('./pages/TrainingLibrary.jsx'))
+const Community = lazy(() => import('./pages/Community.jsx'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -87,7 +88,8 @@ export default function App() {
             <Route path="fletes" element={<Freights />} />
             <Route path="documentos" element={<ResourceLibrary />} />
             <Route path="capacitacion" element={<TrainingLibrary />} />
-            {['marketplace', 'salarios', 'comunidad', 'resenas', 'ia-portuaria'].map(path => (
+            <Route path="comunidad" element={<Community />} />
+            {['marketplace', 'salarios', 'resenas', 'ia-portuaria'].map(path => (
               <Route key={path} path={path} element={<EcosystemModule />} />
             ))}
             <Route path="login" element={<Login />} />

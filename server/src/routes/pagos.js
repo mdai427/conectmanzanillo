@@ -31,27 +31,15 @@ function getSupabase() {
 // ── Paquetes disponibles ──────────────────────────────────────────────────────
 // Sustituye los price_XXXX por los Price IDs reales de tu cuenta Stripe
 const PAQUETES = {
-  basico: {
-    nombre: 'Banner Básico',
+  impulso: {
+    nombre: 'Impulso Faro',
     priceId: process.env.STRIPE_PRICE_BASICO || 'price_BASICO',
     zona: 'principal',
     meses: 1,
   },
-  zona: {
-    nombre: 'Patrocinador de Zona',
-    priceId: process.env.STRIPE_PRICE_ZONA || 'price_ZONA',
-    zona: 'directorio',
-    meses: 1,
-  },
-  principal: {
-    nombre: 'Patrocinador Principal',
-    priceId: process.env.STRIPE_PRICE_PRINCIPAL || 'price_PRINCIPAL',
-    zona: 'global',
-    meses: 1,
-  },
-  reporte: {
-    nombre: 'Reporte WA Patrocinado',
-    priceId: process.env.STRIPE_PRICE_REPORTE || 'price_REPORTE',
+  lider: {
+    nombre: 'Líder Portuario',
+    priceId: process.env.STRIPE_PRICE_PREMIUM || 'price_PREMIUM',
     zona: 'global',
     meses: 1,
   },
@@ -94,7 +82,7 @@ router.post('/freight-membership/checkout', requireAuth, async (req, res) => {
 })
 
 // POST /api/pagos/checkout
-// Body: { paquete: 'basico' | 'zona' | 'principal' | 'reporte', empresa_nombre, empresa_whatsapp }
+// Body: { paquete: 'impulso' | 'lider', empresa_nombre, empresa_whatsapp }
 router.post('/checkout', requireAuth, async (req, res) => {
   try {
     const { paquete, empresa_nombre = '', empresa_whatsapp = '' } = req.body
@@ -183,7 +171,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       titulo: empresa_nombre || `Campaña ${paquete}`,
       whatsapp: empresa_whatsapp || null,
       zona: zona || 'global',
-      prioridad: paquete === 'reporte' ? 10 : paquete === 'principal' ? 8 : paquete === 'zona' ? 5 : 2,
+      prioridad: paquete === 'lider' ? 8 : 3,
       fecha_inicio: fechaInicio.toISOString().split('T')[0],
       fecha_fin: fechaFin.toISOString().split('T')[0],
       is_active: true,

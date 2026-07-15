@@ -25,7 +25,6 @@ async function registrarEvento(id, tipo) {
 function TierBadge({ empresa }) {
   if (empresa.es_premium)    return <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-amber-100 text-amber-700"><Crown size={11}/>Premium</span>
   if (empresa.es_destacado)  return <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-700"><Star size={11}/>Destacado</span>
-  if (empresa.es_verificado) return <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-green-100 text-green-700"><BadgeCheck size={11}/>Verificado</span>
   return null
 }
 
@@ -75,6 +74,7 @@ export default function EmpresaPerfil() {
           )}
           <div className="absolute top-3 right-3 flex gap-2">
             <TierBadge empresa={empresa} />
+            <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold ${empresa.es_verificado ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-600'}`}><BadgeCheck size={11}/>{empresa.es_verificado ? 'Verificada' : 'No verificada'}</span>
           </div>
         </div>
 

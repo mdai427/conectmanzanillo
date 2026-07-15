@@ -10,7 +10,7 @@ import {
   Clock, ExternalLink, Ban, AlertOctagon, Eye, ChevronDown,
   FileWarning, Search, Truck, Building2, HelpCircle,
   MessageSquare, ThumbsUp, ThumbsDown, Timer, Gavel,
-  FileCheck2,
+  FileCheck2, RefreshCw, ShieldCheck,
 } from 'lucide-react'
 
 const ROLES = ['operator_free', 'operator_premium', 'company', 'moderador', 'admin']
@@ -96,19 +96,53 @@ function AlertsTab() {
 const NEWS_CATS = ['aviso', 'cierre', 'operativo', 'clima', 'general']
 
 function NewsTab() {
+  const [status, setStatus] = useState('draft')
+  const [rejectingId, setRejectingId] = useState(null)
+  const [reviewNote, setReviewNote] = useState('')
   const [content, setContent] = useState('')
   const [category, setCategory] = useState('aviso')
   const [priority, setPriority] = useState(0)
   const [sending, setSending] = useState(false)
   const qc = useQueryClient()
 
-  const { data: news = [] } = useQuery({
-    queryKey: ['admin-news'],
-    queryFn: async () => {
-      const { data } = await supabase.from('news_items')
-        .select('*').order('created_at', { ascending: false }).limit(20)
-      return data || []
+  async function editorialFetch(path, options = {}) {
+    const token = (await supabase.auth.getSession()).data.session?.access_token
+    const response = await fetch(`/api/news/admin${path}`, {
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      ...options,
+    })
+    const payload = await response.json().catch(() => ({}))
+    if (!response.ok) throw new Error(payload.error || 'No fue posible completar la operación.')
+    return payload
+  }
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['admin-editorial-news', status],
+    queryFn: () => editorialFetch(`/items?status=${status}`),
+  })
+  const news = data?.items || []
+
+  const ingest = useMutation({
+    mutationFn: () => editorialFetch('/ingest', { method: 'POST' }),
+    onSuccess: result => {
+      toast.success(`Búsqueda terminada: ${result.inserted || 0} referencias nuevas`)
+      qc.invalidateQueries({ queryKey: ['admin-editorial-news'] })
     },
+    onError: error => toast.error(error.message),
+  })
+
+  const decide = useMutation({
+    mutationFn: ({ id, nextStatus, note = '' }) => editorialFetch(`/items/${id}/status`, {
+      method: 'PATCH', body: JSON.stringify({ status: nextStatus, note }),
+    }),
+    onSuccess: item => {
+      toast.success(item.status === 'published' ? 'Noticia publicada' : 'Noticia rechazada')
+      setRejectingId(null)
+      setReviewNote('')
+      qc.invalidateQueries({ queryKey: ['admin-editorial-news'] })
+      qc.invalidateQueries({ queryKey: ['faro-port-news'] })
+    },
+    onError: error => toast.error(error.message),
   })
 
   async function create() {
@@ -123,58 +157,83 @@ function NewsTab() {
     setSending(false)
   }
 
-  async function deactivate(id) {
-    await supabase.from('news_items').update({ is_active: false }).eq('id', id)
-    toast.success('Noticia desactivada')
-    qc.invalidateQueries({ queryKey: ['admin-news'] })
-  }
-
   return (
     <div className="space-y-4">
-      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
-        <div className="flex gap-2">
-          <select value={category} onChange={e => setCategory(e.target.value)}
-            className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 focus:outline-none">
-            {NEWS_CATS.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-          <input type="number" value={priority} onChange={e => setPriority(e.target.value)}
-            placeholder="Prioridad"
-            className="w-24 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-sm text-gray-500 focus:outline-none" />
-        </div>
-        <textarea value={content} onChange={e => setContent(e.target.value)}
-          placeholder="Contenido de la noticia (máx 200 caracteres)…"
-          maxLength={200} rows={3}
-          className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#00C2FF]/50 resize-none" />
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">{content.length}/200</span>
-          <button onClick={create} disabled={!content.trim() || sending}
-            className="flex items-center gap-2 bg-[#00C2FF] hover:bg-[#00AADD] text-black text-sm font-semibold px-4 py-2 rounded-xl transition-colors disabled:opacity-40">
-            <Plus size={14} /> Publicar
+      <div className="rounded-xl border border-gray-200 bg-white p-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-black text-gray-900">Bandeja editorial de Faro Portuario</p>
+            <p className="mt-1 text-xs text-gray-500">Las fuentes periodísticas requieren aprobación humana antes de aparecer en el portal.</p>
+          </div>
+          <button onClick={() => ingest.mutate()} disabled={ingest.isPending} className="inline-flex min-h-10 items-center justify-center gap-2 rounded-xl bg-[#082F35] px-4 text-xs font-bold text-white disabled:opacity-50">
+            <RefreshCw size={14} className={ingest.isPending ? 'animate-spin' : ''} /> Buscar noticias ahora
           </button>
         </div>
+        <div className="mt-4 flex gap-2 overflow-x-auto border-t border-gray-100 pt-4">
+          {[['draft', 'Por revisar'], ['published', 'Publicadas'], ['rejected', 'Rechazadas']].map(([value, label]) => <button key={value} onClick={() => setStatus(value)} className={`whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold ${status === value ? 'bg-teal-700 text-white' : 'border border-gray-200 text-gray-600'}`}>{label}</button>)}
+        </div>
       </div>
+
       <div className="space-y-2">
+        {isLoading && Array.from({ length: 3 }).map((_, index) => <div key={index} className="h-36 animate-pulse rounded-xl border border-gray-200 bg-white" />)}
+        {!isLoading && news.length === 0 && <div className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-12 text-center"><Newspaper className="mx-auto text-gray-300" /><p className="mt-3 text-sm font-bold text-gray-600">No hay noticias en esta bandeja</p></div>}
         {news.map(n => (
-          <div key={n.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border ${
-            n.is_active ? 'border-gray-200 bg-white' : 'border-gray-200/30 bg-white opacity-50'
-          }`}>
-            <div className="flex-1 min-w-0">
-              <p className="text-gray-900 text-xs truncate">{n.content}</p>
-              <p className="text-gray-400 text-[10px] mt-0.5">
-                {n.category} · prioridad {n.priority} · {n.is_active ? '✅ Activa' : '⛔ Inactiva'}
-              </p>
+          <article key={n.id} className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="min-w-0 flex-1">
+                <div className="flex flex-wrap items-center gap-2 text-[10px] font-bold uppercase tracking-wide"><span className="rounded-full bg-teal-50 px-2 py-1 text-teal-700">{n.category}</span><span className={`rounded-full px-2 py-1 ${n.relevance_score >= 70 ? 'bg-emerald-50 text-emerald-700' : n.relevance_score >= 40 ? 'bg-amber-50 text-amber-700' : 'bg-gray-100 text-gray-600'}`}>Relevancia {n.relevance_score}/100</span></div>
+                <h3 className="mt-3 text-sm font-black leading-5 text-gray-900">{n.title}</h3>
+                <p className="mt-2 text-xs leading-5 text-gray-500">{n.editorial_summary}</p>
+                <div className="mt-3 flex flex-wrap items-center gap-2 text-[10px] text-gray-400"><span className="font-bold text-gray-600">{n.source_name}</span><span>·</span><span>{n.published_at_source ? new Date(n.published_at_source).toLocaleString('es-MX') : 'Sin fecha de origen'}</span><a href={n.canonical_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-bold text-teal-700">Abrir fuente <ExternalLink size={11} /></a></div>
+                {n.rejection_reason && <p className="mt-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700">Motivo: {n.rejection_reason}</p>}
+              </div>
+              {status === 'draft' && <div className="flex shrink-0 gap-2"><button onClick={() => decide.mutate({ id: n.id, nextStatus: 'published' })} disabled={decide.isPending} className="inline-flex min-h-10 items-center gap-1.5 rounded-lg bg-emerald-600 px-3 text-xs font-bold text-white"><CheckCircle2 size={14} /> Aprobar</button><button onClick={() => setRejectingId(rejectingId === n.id ? null : n.id)} className="inline-flex min-h-10 items-center gap-1.5 rounded-lg border border-red-200 px-3 text-xs font-bold text-red-600"><XCircle size={14} /> Rechazar</button></div>}
             </div>
-            {n.is_active && (
-              <button onClick={() => deactivate(n.id)}
-                className="text-gray-400 hover:text-gray-700 p-1.5 rounded-lg hover:bg-gray-100 transition-colors">
-                <Trash2 size={13} />
-              </button>
-            )}
-          </div>
+            {rejectingId === n.id && <div className="mt-4 flex flex-col gap-2 border-t border-gray-100 pt-4 sm:flex-row"><input value={reviewNote} onChange={event => setReviewNote(event.target.value)} placeholder="Motivo del rechazo (obligatorio)" className={INPUT} maxLength={500} /><button onClick={() => decide.mutate({ id: n.id, nextStatus: 'rejected', note: reviewNote })} disabled={reviewNote.trim().length < 5 || decide.isPending} className="min-h-10 shrink-0 rounded-lg bg-red-600 px-4 text-xs font-bold text-white disabled:opacity-40">Confirmar rechazo</button></div>}
+          </article>
         ))}
       </div>
+
+      <details className="rounded-xl border border-gray-200 bg-white p-4">
+        <summary className="cursor-pointer text-xs font-bold text-gray-600">Publicar aviso breve en el ticker heredado</summary>
+        <div className="mt-4 space-y-3 border-t border-gray-100 pt-4">
+          <div className="flex gap-2"><select value={category} onChange={e => setCategory(e.target.value)} className="rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500">{NEWS_CATS.map(c => <option key={c} value={c}>{c}</option>)}</select><input type="number" value={priority} onChange={e => setPriority(e.target.value)} placeholder="Prioridad" className="w-24 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm" /></div>
+          <textarea value={content} onChange={e => setContent(e.target.value)} placeholder="Aviso breve (máx. 200 caracteres)…" maxLength={200} rows={3} className={INPUT} />
+          <div className="flex items-center justify-between"><span className="text-xs text-gray-400">{content.length}/200</span><button onClick={create} disabled={!content.trim() || sending} className="flex items-center gap-2 rounded-xl bg-teal-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-40"><Plus size={14} /> Publicar aviso</button></div>
+        </div>
+      </details>
     </div>
   )
+}
+
+// ── Moderación de comunidad ──────────────────────────────────────────────────
+function CommunityModerationTab() {
+  const qc = useQueryClient()
+  const communityFetch = async (path, options = {}) => {
+    const token = (await supabase.auth.getSession()).data.session?.access_token
+    const response = await fetch(`/api/community${path}`, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, ...options })
+    const payload = await response.json().catch(() => ({}))
+    if (!response.ok) throw new Error(payload.error || 'No fue posible completar la moderación.')
+    return payload
+  }
+  const { data: posts, isLoading } = useQuery({ queryKey: ['community-moderation-posts'], queryFn: () => communityFetch('/moderation/queue') })
+  const { data: comments } = useQuery({ queryKey: ['community-moderation-comments'], queryFn: () => communityFetch('/admin/moderation/comments') })
+  const decidePost = useMutation({
+    mutationFn: ({ id, status, reason }) => communityFetch(`/moderation/${id}`, { method: 'PATCH', body: JSON.stringify({ status, reason }) }),
+    onSuccess: () => { toast.success('Decisión guardada'); qc.invalidateQueries({ queryKey: ['community-moderation-posts'] }) },
+    onError: error => toast.error(error.message),
+  })
+  const decideComment = useMutation({
+    mutationFn: ({ id, status, reason }) => communityFetch(`/admin/moderation/comments/${id}`, { method: 'PATCH', body: JSON.stringify({ status, reason }) }),
+    onSuccess: () => { toast.success('Comentario revisado'); qc.invalidateQueries({ queryKey: ['community-moderation-comments'] }) },
+    onError: error => toast.error(error.message),
+  })
+  const rejectReason = () => window.prompt('Motivo del rechazo (visible para la persona):')?.trim()
+  return <div className="space-y-5">
+    <div className="rounded-xl border border-teal-200 bg-teal-50 p-4"><div className="flex gap-3"><ShieldCheck className="shrink-0 text-teal-700"/><div><h2 className="text-sm font-black text-teal-950">Revisión humana de seguridad</h2><p className="mt-1 text-xs leading-5 text-teal-800">Aprueba solamente contenido profesional. Rechaza imágenes o textos sexuales, con muertes, gore, explotación o datos personales sensibles.</p></div></div></div>
+    <section><h2 className="mb-3 text-sm font-black text-gray-900">Publicaciones pendientes ({posts?.items?.length || 0})</h2>{isLoading ? <div className="h-32 animate-pulse rounded-xl bg-gray-100"/> : !posts?.items?.length ? <p className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-xs text-gray-500">No hay publicaciones pendientes.</p> : <div className="space-y-3">{posts.items.map(post => <article key={post.id} className="rounded-xl border border-gray-200 bg-white p-4"><p className="whitespace-pre-wrap text-sm leading-6 text-gray-700">{post.body || 'Publicación solo con fotografías'}</p>{post.media?.length > 0 && <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">{post.media.map(media => media.url && <img key={media.id} src={media.url} alt="Contenido pendiente de moderación" className="aspect-square w-full rounded-xl object-cover"/>)}</div>}<p className="mt-3 text-[10px] text-gray-400">{new Date(post.created_at).toLocaleString('es-MX')}</p><div className="mt-4 flex gap-2"><button disabled={decidePost.isPending} onClick={() => decidePost.mutate({ id: post.id, status: 'approved', reason: '' })} className="rounded-lg bg-emerald-600 px-4 py-2 text-xs font-bold text-white">Aprobar</button><button disabled={decidePost.isPending} onClick={() => { const reason = rejectReason(); if (reason) decidePost.mutate({ id: post.id, status: 'rejected', reason }) }} className="rounded-lg border border-red-200 px-4 py-2 text-xs font-bold text-red-700">Rechazar</button></div></article>)}</div>}</section>
+    <section><h2 className="mb-3 text-sm font-black text-gray-900">Comentarios pendientes ({comments?.items?.length || 0})</h2>{!comments?.items?.length ? <p className="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-xs text-gray-500">No hay comentarios pendientes.</p> : <div className="space-y-2">{comments.items.map(comment => <article key={comment.id} className="rounded-xl border border-gray-200 bg-white p-4"><p className="text-xs font-bold text-gray-500">{comment.author?.full_name || comment.author?.username || 'Miembro'}</p><p className="mt-2 text-sm text-gray-700">{comment.body}</p><div className="mt-3 flex gap-2"><button onClick={() => decideComment.mutate({ id: comment.id, status: 'approved', reason: '' })} className="rounded-lg bg-emerald-600 px-3 py-2 text-xs font-bold text-white">Aprobar</button><button onClick={() => { const reason = rejectReason(); if (reason) decideComment.mutate({ id: comment.id, status: 'rejected', reason }) }} className="rounded-lg border border-red-200 px-3 py-2 text-xs font-bold text-red-700">Rechazar</button></div></article>)}</div>}</section>
+  </div>
 }
 
 // ── Anuncios ──────────────────────────────────────────────────────────────────
@@ -1532,6 +1591,7 @@ const TABS = [
   { id: 'users',         label: 'Usuarios',       icon: Users        },
   { id: 'alerts',        label: 'Alertas',        icon: AlertTriangle},
   { id: 'news',          label: 'Noticias',       icon: Newspaper    },
+  { id: 'community',     label: 'Comunidad',      icon: ShieldCheck  },
   { id: 'ads',           label: 'Anuncios',       icon: Megaphone    },
   { id: 'directory',     label: 'Directorio',     icon: List         },
   { id: 'sections',      label: 'Zonas',          icon: Map          },
@@ -1551,6 +1611,7 @@ export default function Admin() {
     users:         <UsersTab />,
     alerts:        <AlertsTab />,
     news:          <NewsTab />,
+    community:     <CommunityModerationTab />,
     ads:           <AdsTab />,
     directory:     <DirectoryTab />,
     sections:      <SectionsTab />,

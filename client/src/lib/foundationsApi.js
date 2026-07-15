@@ -26,7 +26,10 @@ export const foundationsApi = {
   getMyCompanies: () => request('/companies/me'),
   createCompany: (payload) => request('/companies', { method: 'POST', body: JSON.stringify(payload) }),
   updateCompany: (id, payload) => request(`/companies/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  getDocuments: (id) => request(`/companies/${id}/documents`),
   prepareDocument: (id, payload) => request(`/companies/${id}/documents/upload-url`, { method: 'POST', body: JSON.stringify(payload) }),
+  completeDocument: (companyId, documentId, payload) => request(`/companies/${companyId}/documents/${documentId}/complete`, { method: 'POST', body: JSON.stringify(payload) }),
+  confirmExtraction: (companyId, documentId, payload) => request(`/companies/${companyId}/documents/${documentId}/confirm-extraction`, { method: 'POST', body: JSON.stringify(payload) }),
   selectPlan: (id, payload) => request(`/companies/${id}/select-plan`, { method: 'POST', body: JSON.stringify(payload) }),
   submitVerification: (id) => request(`/companies/${id}/submit-verification`, { method: 'POST' }),
 }
