@@ -1,6 +1,5 @@
 import { supabase } from '../lib/supabase.js'
-
-const API = import.meta.env.VITE_API_URL || ''
+import { fetchApi } from '../lib/apiBase.js'
 
 function normalizePhone(phone) {
   const digits = String(phone || '').replace(/\D/g, '')
@@ -14,7 +13,7 @@ function phoneToAuthEmail(phone) {
 }
 
 async function post(path, body) {
-  const response = await fetch(`${API}/api/phone-auth${path}`, {
+  const response = await fetchApi(`/api/phone-auth${path}`, {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body),
   })
   const data = await response.json().catch(() => ({}))

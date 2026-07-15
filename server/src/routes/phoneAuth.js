@@ -7,6 +7,16 @@ import { formatMexicoPhone, phoneToAuthEmail, validatePassword } from '../servic
 const router = Router()
 const PURPOSES = new Set(['register', 'reset_password'])
 
+router.get('/status', (_req, res) => {
+  res.json({
+    available: Boolean(verificationClient()),
+    provider: 'sms',
+    message: verificationClient()
+      ? 'La validación por SMS está disponible'
+      : 'La validación por SMS requiere configuración en el servidor',
+  })
+})
+
 function verificationClient() {
   const sid = process.env.TWILIO_ACCOUNT_SID
   const token = process.env.TWILIO_AUTH_TOKEN

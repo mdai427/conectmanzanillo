@@ -4,7 +4,7 @@ import { ExternalLink, Layers3, MapPin, Navigation, Radio, Route } from 'lucide-
 const MANZANILLO_PORT = { lat: 19.0716, lng: -104.2997 }
 let mapsLoader
 
-function loadGoogleMaps(apiKey) {
+export function loadGoogleMaps(apiKey) {
   if (window.google?.maps) return Promise.resolve(window.google.maps)
   if (mapsLoader) return mapsLoader
   mapsLoader = new Promise((resolve, reject) => {
