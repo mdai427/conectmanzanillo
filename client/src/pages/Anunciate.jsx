@@ -4,13 +4,20 @@ import { ArrowRight, BarChart3, Check, Megaphone, ShieldCheck, Target, X } from 
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { supabase } from '../lib/supabase.js'
+import { API_BASE } from '../lib/apiBase.js'
 
-const API = import.meta.env.VITE_API_URL || ''
+const FALLBACK_PLANS = [
+  { code:'basic_presence', name:'Impulso Faro', description:'Presencia constante para generar reconocimiento y contactos.', monthly_price:799, currency:'MXN', features:['Perfil destacado en el directorio','Banner en una sección','Enlace a sitio web o WhatsApp','1 publicación patrocinada al mes','Reporte de impresiones y clics'] },
+  { code:'featured_company', name:'Líder Portuario', description:'Cobertura preferente para posicionar la marca y captar oportunidades.', monthly_price:1999, currency:'MXN', features:['Todo lo incluido en Impulso Faro','Banner en portada y hasta 3 secciones','Prioridad en el directorio','4 publicaciones patrocinadas al mes','Reporte de impresiones, clics y contactos'] },
+]
 
 async function fetchPlans() {
-  const response = await fetch(`${API}/api/publicidad/planes`)
-  if (!response.ok) return []
-  return response.json()
+  try {
+    const response = await fetch(`${API_BASE}/api/publicidad/planes`)
+    if (!response.ok) return FALLBACK_PLANS
+    const plans = await response.json()
+    return plans.length ? plans : FALLBACK_PLANS
+  } catch { return FALLBACK_PLANS }
 }
 
 export default function Anunciate() {
@@ -51,7 +58,7 @@ function LeadModal({ plan, onClose }) {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) throw new Error('Inicia sesión y completa el registro de tu empresa para enviar la solicitud.')
-      const response = await fetch(`${API}/api/publicidad/solicitudes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ ...form, plan_code: plan.code }) })
+      const response = await fetch(`${API_BASE}/api/publicidad/solicitudes`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` }, body: JSON.stringify({ ...form, plan_code: plan.code }) })
       const data = await response.json().catch(() => ({}))
       if (!response.ok) throw new Error(data.error || 'No fue posible enviar la solicitud')
       toast.success('Solicitud registrada. El equipo comercial podrá darle seguimiento.')

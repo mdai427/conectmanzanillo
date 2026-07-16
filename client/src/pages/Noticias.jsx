@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight, BellRing, CheckCircle2, Clock3, ExternalLink, Newspaper, RefreshCw, Search, ShieldCheck, Waves } from 'lucide-react'
+import { ArrowUpRight, BellRing, CheckCircle2, Clock3, ExternalLink, Newspaper, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Logo from '../components/ui/Logo.jsx'
@@ -15,6 +15,11 @@ const CATEGORIES = [
 ]
 
 const CATEGORY_LABEL = Object.fromEntries(CATEGORIES)
+const CATEGORY_IMAGE = {
+  accesos: '/news/transporte.jpg', transporte: '/news/transporte.jpg', empleo: '/news/transporte.jpg',
+  puerto: '/news/puerto.jpg', comercio_exterior: '/news/puerto.jpg',
+  aduana: '/news/aduana.jpg', normatividad: '/news/aduana.jpg', clima: '/news/clima.jpg',
+}
 
 async function fetchNews() {
   const response = await fetch(`${API_BASE}/api/news?limit=48`, { headers: { Accept: 'application/json' } })
@@ -23,6 +28,7 @@ async function fetchNews() {
 }
 
 function NewsCard({ item, featured = false }) {
+  const editorialImage = item.image_url || CATEGORY_IMAGE[item.category] || '/news/puerto.jpg'
   const publishedDate = item.published_at_source || item.published_at_portal
   const when = publishedDate
     ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true, locale: es })
@@ -31,15 +37,7 @@ function NewsCard({ item, featured = false }) {
   return (
     <article className={`group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_12px_40px_rgba(8,47,53,.06)] transition duration-300 hover:-translate-y-1 hover:border-teal-300 hover:shadow-[0_20px_55px_rgba(8,47,53,.12)] ${featured ? 'lg:grid lg:grid-cols-[1.15fr_.85fr]' : ''}`}>
       <div className={`relative overflow-hidden bg-[#082F35] ${featured ? 'min-h-64 lg:min-h-full' : 'h-40'}`}>
-        {item.image_url ? (
-          <img src={item.image_url} alt="" loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105" />
-        ) : (
-          <div className="absolute inset-0">
-            <div className="absolute -right-10 -top-20 h-64 w-64 rounded-full border border-teal-400/20" />
-            <div className="absolute -right-2 -top-10 h-44 w-44 rounded-full border border-amber-300/20" />
-            <Waves className="absolute bottom-7 left-7 text-teal-300" size={featured ? 58 : 38} strokeWidth={1.3} />
-          </div>
-        )}
+        <img src={editorialImage} alt={`Imagen editorial sobre ${CATEGORY_LABEL[item.category] || 'actividad portuaria'}`} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105" onError={(event) => { event.currentTarget.src = '/news/puerto.jpg' }} />
         <span className="absolute left-5 top-5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.14em] text-white backdrop-blur">
           {CATEGORY_LABEL[item.category] || 'Sector'}
         </span>

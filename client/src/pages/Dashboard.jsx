@@ -136,7 +136,7 @@ export default function Dashboard() {
           <div className="mx-auto max-w-7xl px-4">
             <div className="grid gap-10 lg:grid-cols-2">
               <div><Heading eyebrow="Actualidad" title="Información útil, con fuente y fecha" text="Noticias, normatividad, capacitación y alertas editoriales publicadas con contexto verificable." /><Link to="/noticias" className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-4 text-xs font-extrabold">Consultar actualidad <Newspaper size={14} /></Link></div>
-              <div><Heading eyebrow="Planes" title="Empieza con una cuenta gratuita" text="Registra tu empresa y elige después las herramientas que realmente necesitas. Los precios y límites se administran desde la plataforma." /><Link to="/register" className="mt-7 inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d4f4b] px-5 text-xs font-extrabold text-white">Registrar empresa <ArrowRight size={14} /></Link></div>
+              <div><Heading eyebrow="Planes comerciales" title="Vende, contrata o anuncia tu empresa" text="Consulta precios claros para Marketplace, publicación de vacantes y campañas publicitarias. El registro de cuenta es gratuito." /><div className="mt-7 flex flex-wrap gap-3"><Link to="/marketplace#planes" className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d4f4b] px-5 text-xs font-extrabold text-white">Ver membresías <ArrowRight size={14} /></Link><Link to="/anunciate" className="inline-flex min-h-11 items-center gap-2 rounded-xl border border-slate-200 px-5 text-xs font-extrabold">Paquetes de publicidad</Link></div></div>
             </div>
           </div>
         </section>

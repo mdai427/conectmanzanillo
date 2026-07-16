@@ -3,6 +3,7 @@ import Stripe from 'stripe'
 import { createClient } from '@supabase/supabase-js'
 import { requireAuth } from '../middleware/auth.js'
 import { evaluateFreightAccess, FREIGHT_MEMBERSHIP_MONTHLY_MXN } from '../services/freightAccessPolicy.js'
+import { commercePlan, publicCommercePlans } from '../services/commercePlans.js'
 
 const router = express.Router()
 
@@ -44,6 +45,34 @@ const PAQUETES = {
     meses: 1,
   },
 }
+
+router.get('/commerce-plans', (req, res) => res.json({ plans: publicCommercePlans(req.query.kind) }))
+
+router.post('/commerce-membership/checkout', requireAuth, async (req, res) => {
+  let pendingId = null
+  try {
+    const plan = commercePlan(String(req.body.plan_code || ''))
+    if (!plan) return res.status(400).json({ error:'Membresía inválida' })
+    const companyId = String(req.body.company_id || '')
+    const { data: membership } = await getSupabase().from('company_members').select('member_role,companies(id,trade_name,status)').eq('company_id',companyId).eq('user_id',req.user.id).eq('status','active').maybeSingle()
+    if (!membership || !['owner','admin'].includes(membership.member_role)) return res.status(403).json({ error:'Registra una empresa o persona física para contratar' })
+    if (membership.companies?.status !== 'verified') return res.status(422).json({ error:'Tu empresa o actividad empresarial debe estar verificada antes de contratar', code:'VERIFICATION_REQUIRED' })
+    if (!process.env.STRIPE_SECRET_KEY) return res.status(503).json({ error:'Los pagos con tarjeta estarán disponibles al finalizar la configuración de Stripe', code:'PAYMENTS_NOT_CONFIGURED' })
+    await getSupabase().from('subscriptions').update({ estatus:'cancelada' }).eq('company_id',companyId).eq('estatus','pendiente').eq('tipo',plan.code)
+    const { data: pending, error } = await getSupabase().from('subscriptions').insert({ user_id:req.user.id,company_id:companyId,tipo:plan.code,estatus:'pendiente',monto:plan.monthlyPrice,moneda:'MXN',billing_period:'monthly',provider:'stripe' }).select('id').single()
+    if (error) throw error
+    pendingId = pending.id
+    const baseUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+    const returnPath = plan.kind === 'jobs' ? '/vacantes' : '/marketplace'
+    const metadata = { purpose:'commerce_membership',plan_code:plan.code,subscription_id:pending.id,company_id:companyId,user_id:req.user.id }
+    const session = await getStripe().checkout.sessions.create({ mode:'subscription',client_reference_id:pending.id,line_items:[{price_data:{currency:'mxn',unit_amount:plan.monthlyPrice*100,recurring:{interval:'month'},product_data:{name:`Faro Portuario · ${plan.name}`,description:plan.description}},quantity:1}],success_url:`${baseUrl}${returnPath}?payment=success`,cancel_url:`${baseUrl}${returnPath}?payment=cancelled`,metadata,subscription_data:{metadata},locale:'es',billing_address_collection:'required',tax_id_collection:{enabled:true} })
+    res.json({ url:session.url })
+  } catch (error) {
+    if (pendingId) await getSupabase().from('subscriptions').update({ estatus:'cancelada' }).eq('id',pendingId)
+    console.error('[pagos/commerce-checkout]',error.message)
+    res.status(500).json({ error:'No fue posible iniciar el pago de la membresía' })
+  }
+})
 
 router.post('/freight-membership/checkout', requireAuth, async (req, res) => {
   let pendingSubscriptionId = null
@@ -98,6 +127,7 @@ router.post('/checkout', requireAuth, async (req, res) => {
       success_url: `${baseUrl}/anunciate?success=true&paquete=${paquete}`,
       cancel_url:  `${baseUrl}/anunciate?canceled=true`,
       metadata: {
+        purpose: 'advertising',
         user_id: req.user.id,
         paquete,
         empresa_nombre,
@@ -146,6 +176,10 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
         const paid = ['paid','no_payment_required'].includes(session.payment_status)
         await database.from('subscriptions').update({ estatus: paid ? 'activa' : 'pendiente', starts_at: paid ? new Date().toISOString() : null, provider: 'stripe', provider_customer_id: String(session.customer || ''), provider_subscription_id: String(session.subscription || '') }).eq('id', session.metadata.subscription_id).eq('company_id', session.metadata.company_id)
       }
+      if (session.metadata?.purpose === 'commerce_membership') {
+        const paid = ['paid','no_payment_required'].includes(session.payment_status)
+        await database.from('subscriptions').update({ estatus:paid?'activa':'pendiente',starts_at:paid?new Date().toISOString():null,provider:'stripe',provider_customer_id:String(session.customer||''),provider_subscription_id:String(session.subscription||'') }).eq('id',session.metadata.subscription_id).eq('company_id',session.metadata.company_id)
+      }
     }
     if (event.type === 'invoice.paid') {
       const invoice = event.data.object
@@ -158,7 +192,7 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
       await database.from('subscriptions').update({ estatus: status, cancel_at_period_end: Boolean(subscription.cancel_at_period_end) }).eq('provider_subscription_id', subscription.id)
     }
 
-  if (event.type === 'checkout.session.completed' && event.data.object.metadata?.purpose !== 'freight_membership') {
+  if (event.type === 'checkout.session.completed' && event.data.object.metadata?.purpose === 'advertising') {
     const session = event.data.object
     const { paquete, empresa_nombre, empresa_whatsapp, zona } = session.metadata || {}
 

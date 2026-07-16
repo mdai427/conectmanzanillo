@@ -4,6 +4,7 @@ import {
   BookOpen, Briefcase, Building2, Calculator, ChevronDown, GraduationCap, Home,
   LogIn, LogOut, Menu, MessageSquareText, Newspaper, PackageSearch, Shield,
   Store, User, X, MapPinned, RadioTower, Anchor, Route,
+  Megaphone,
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useAuthStore } from '../../stores/authStore.js'
@@ -18,6 +19,7 @@ const MORE = [
   ['/rutas-foraneas', 'Rutas foráneas', Route],
   ['/comunidad', 'Comunidad', MessageSquareText], ['/capacitacion', 'Capacitación', GraduationCap],
   ['/documentos', 'Biblioteca', BookOpen], ['/calculadoras', 'Herramientas', Calculator],
+  ['/anunciate', 'Anúnciate', Megaphone],
   ['/torre-control', 'Torre de control', RadioTower], ['/rutas-inteligentes', 'Rutas inteligentes', MapPinned],
   ['/control-aduanal', 'Control aduanal', Anchor],
 ]

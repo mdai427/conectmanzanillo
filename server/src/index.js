@@ -27,6 +27,7 @@ import freightsRouter     from './routes/freights.js'
 import resourcesRouter    from './routes/resources.js'
 import newsRouter         from './routes/news.js'
 import communityRouter    from './routes/community.js'
+import marketplaceRouter  from './routes/marketplace.js'
 import { initSocket }  from './socket/index.js'
 import { startScheduler } from './services/scheduler.js'
 import { startNewsScheduler } from './services/newsScheduler.js'
@@ -83,6 +84,7 @@ app.use('/api/freights',    noCache,        freightsRouter)
 app.use('/api/resources',   noCache,        resourcesRouter)
 app.use('/api/news',        noCache,        newsRouter)
 app.use('/api/community',   noCache,        communityRouter)
+app.use('/api/marketplace', noCache,        marketplaceRouter)
 
 // Semi-estático: cache corto + stale-while-revalidate
 app.use('/api/sections',  cacheFor(30),   sectionsRouter)   // 30s  — zonas cambian seguido

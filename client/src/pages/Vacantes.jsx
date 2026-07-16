@@ -2,10 +2,11 @@ import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { Building2, Search, ChevronDown, MapPin, Clock, BadgeCheck, Sparkles, Lock, CheckCircle2, Upload, AlertCircle } from 'lucide-react'
+import { Building2, Search, ChevronDown, MapPin, Clock, BadgeCheck, Sparkles, Lock, CheckCircle2, ShieldCheck } from 'lucide-react'
 import { supabase, isDemoMode } from '../lib/supabase.js'
 import { useAuthStore } from '../stores/authStore.js'
 import BannerRotativo from '../components/ui/BannerRotativo.jsx'
+import { marketplaceApi } from '../lib/marketplaceApi.js'
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 const LICENCIAS = [
@@ -46,12 +47,6 @@ const CONTRATO_COLOR = {
   'por-viaje':{ bg: '#f0fdf4', text: '#15803d', border: '#bbf7d0' },
   honorarios: { bg: '#fdf4ff', text: '#7e22ce', border: '#e9d5ff' },
 }
-
-const METODOS_PAGO = [
-  { value: 'transferencia', label: 'Transferencia SPEI' },
-  { value: 'oxxo',          label: 'Pago en OXXO' },
-  { value: 'efectivo',      label: 'Efectivo / Depósito' },
-]
 
 const inputCls = 'w-full rounded-xl px-4 py-3 text-slate-800 text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder-slate-400'
 const selectCls = inputCls + ' appearance-none cursor-pointer'
@@ -178,81 +173,19 @@ function VacanteCard({ v, perfil, destacada }) {
 }
 
 // ─── Paywall — pantalla de pago ───────────────────────────────────────────────
-function PagoSuscripcion({ suscripcion, onPago }) {
+function PagoSuscripcion({ companyId }) {
   const { user } = useAuthStore()
-  const [metodo, setMetodo] = useState('transferencia')
-  const [referencia, setReferencia] = useState('')
-  const [comprobante, setComprobante] = useState(null)
-  const [uploading, setUploading] = useState(false)
-  const qc = useQueryClient()
-
-  // Si ya hay suscripción pendiente, mostrar estado
-  if (suscripcion?.estatus === 'pendiente') {
-    return (
-      <div className="max-w-lg mx-auto">
-        <div className="bg-white rounded-2xl border border-amber-200 shadow-sm p-6 text-center">
-          <div className="w-14 h-14 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-4">
-            <AlertCircle size={28} className="text-amber-500" />
-          </div>
-          <h3 className="text-lg font-black text-slate-800 mb-2">Pago en revisión</h3>
-          <p className="text-sm text-slate-500 mb-4">
-            Recibimos tu solicitud de pago. Un administrador la revisará en menos de 24 horas hábiles
-            y activará tu cuenta para publicar vacantes.
-          </p>
-          {suscripcion.referencia_pago && (
-            <div className="bg-slate-50 rounded-xl p-3 mb-4 text-left">
-              <p className="text-xs font-bold text-slate-500 mb-1">Referencia enviada:</p>
-              <p className="text-sm font-mono text-slate-700">{suscripcion.referencia_pago}</p>
-            </div>
-          )}
-          <p className="text-xs text-slate-400">Puedes consultar el estado de la solicitud desde esta misma sección.</p>
-        </div>
-      </div>
-    )
-  }
-
-  const handleSubmit = async () => {
-    if (!referencia.trim() && !comprobante) {
-      toast.error('Ingresa la referencia de pago o sube el comprobante')
-      return
-    }
-    setUploading(true)
-    try {
-      let comprobanteUrl = null
-      if (comprobante) {
-        const ext = comprobante.name.split('.').pop()
-        const path = `subscriptions/${user.id}/${Date.now()}.${ext}`
-        const { error: upErr } = await supabase.storage.from('documents').upload(path, comprobante, { upsert: true })
-        if (upErr) throw new Error(upErr.message)
-        const { data: urlData } = supabase.storage.from('documents').getPublicUrl(path)
-        comprobanteUrl = urlData.publicUrl
-      }
-
-      const { error } = await supabase.from('subscriptions').insert({
-        user_id: user.id,
-        tipo: 'empresa_vacantes',
-        estatus: 'pendiente',
-        monto: 500.00,
-        moneda: 'MXN',
-        metodo_pago: metodo,
-        referencia_pago: referencia.trim() || null,
-        comprobante_url: comprobanteUrl,
-      })
-      if (error) throw new Error(error.message)
-
-      toast.success('¡Solicitud enviada! Te avisamos cuando esté activa.')
-      qc.invalidateQueries({ queryKey: ['mi-suscripcion'] })
-      onPago?.()
-    } catch (e) {
-      toast.error(e.message)
-    } finally {
-      setUploading(false)
-    }
+  const [paying, setPaying] = useState(false)
+  async function checkout() {
+    if (!companyId) return toast.error('Registra una empresa o persona física para contratar')
+    setPaying(true)
+    try { const result = await marketplaceApi.checkout('job_membership', companyId); window.location.assign(result.url) }
+    catch (error) { toast.error(error.message) }
+    finally { setPaying(false) }
   }
 
   return (
     <div className="max-w-lg mx-auto">
-      {/* Encabezado con candado */}
       <div className="text-center mb-6">
         <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
              style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
@@ -262,11 +195,10 @@ function PagoSuscripcion({ suscripcion, onPago }) {
         <p className="text-slate-500 text-sm">Publica oportunidades para profesionales del ecosistema logístico de Manzanillo.</p>
       </div>
 
-      {/* Precio */}
-      <div className="bg-gradient-to-br from-blue-600 to-blue-700 rounded-2xl p-5 mb-5 text-white text-center shadow-lg">
-        <p className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Plan Empresa</p>
+      <div className="rounded-2xl bg-[#082f35] p-6 mb-5 text-white text-center shadow-lg">
+        <p className="text-xs font-bold uppercase tracking-widest text-teal-200 mb-1">Talento Faro</p>
         <div className="flex items-end justify-center gap-1 mb-1">
-          <span className="text-4xl font-black">$500</span>
+          <span className="text-4xl font-black">$599</span>
           <span className="text-lg font-bold opacity-80 mb-1">MXN</span>
         </div>
         <p className="text-sm opacity-80">por mes · sin contratos</p>
@@ -274,8 +206,8 @@ function PagoSuscripcion({ suscripcion, onPago }) {
           {[
             'Vacantes ilimitadas durante 30 días',
             'Matching automático con operadores',
-            'Candidatos te contactan por WhatsApp',
-            'Aparece antes que otras empresas',
+            'Candidatos contactan por WhatsApp',
+            'Panel para administrar publicaciones',
           ].map(b => (
             <div key={b} className="flex items-center gap-2 text-sm">
               <CheckCircle2 size={14} className="text-green-300 shrink-0" />
@@ -285,7 +217,6 @@ function PagoSuscripcion({ suscripcion, onPago }) {
         </div>
       </div>
 
-      {/* Necesita estar registrado */}
       {!user ? (
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 text-center">
           <p className="text-slate-700 font-bold mb-2">Primero crea tu cuenta gratuita</p>
@@ -301,71 +232,13 @@ function PagoSuscripcion({ suscripcion, onPago }) {
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 space-y-4">
-          <p className="text-sm font-black text-slate-700 mb-2">Realiza tu pago y envía el comprobante</p>
-
-          {/* Datos bancarios */}
-          <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-2">
-            <p className="text-xs font-black text-slate-500 uppercase tracking-widest mb-2">Datos para transferencia SPEI</p>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Banco</p>
-                <p className="font-bold text-slate-800">BBVA</p>
-              </div>
-              <div>
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Cuenta</p>
-                <p className="font-bold text-slate-800 font-mono">1234 5678 9012</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-[10px] text-slate-400 font-bold uppercase">CLABE</p>
-                <p className="font-bold text-slate-800 font-mono tracking-wider">012 345 678 901 234 5</p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-[10px] text-slate-400 font-bold uppercase">Beneficiario</p>
-                <p className="font-bold text-slate-800">Faro Portuario</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Método de pago */}
-          <div>
-            <label className={labelCls}>Método de pago *</label>
-            <div className="relative">
-              <select value={metodo} onChange={e => setMetodo(e.target.value)} className={selectCls}>
-                {METODOS_PAGO.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-              </select>
-              <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-            </div>
-          </div>
-
-          {/* Referencia */}
-          <div>
-            <label className={labelCls}>Número de referencia / operación</label>
-            <input value={referencia} onChange={e => setReferencia(e.target.value)}
-              placeholder="Ej: 00012345678901234567" className={inputCls} />
-          </div>
-
-          {/* Comprobante */}
-          <div>
-            <label className={labelCls}>Comprobante de pago (foto/PDF)</label>
-            <label className="flex flex-col items-center justify-center gap-2 w-full py-6 rounded-xl cursor-pointer border-2 border-dashed border-slate-300 hover:border-blue-400 hover:bg-blue-50 transition-all bg-slate-50">
-              <Upload size={20} className="text-slate-400" />
-              <span className="text-sm text-slate-500 font-medium">
-                {comprobante ? comprobante.name : 'Toca para subir imagen o PDF'}
-              </span>
-              <input type="file" accept="image/*,.pdf" className="hidden"
-                onChange={e => setComprobante(e.target.files?.[0] || null)} />
-            </label>
-          </div>
-
-          <button onClick={handleSubmit} disabled={uploading}
-            className="w-full py-4 rounded-2xl font-black text-base text-white disabled:opacity-40 active:scale-[0.98] transition-all shadow-lg"
-            style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
-            {uploading ? 'Enviando…' : '📩 Enviar comprobante y solicitar activación'}
-          </button>
-          <p className="text-xs text-slate-400 text-center">
-            Tu cuenta se activará en menos de 24 horas hábiles tras verificar el pago.
-          </p>
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 text-center">
+          <ShieldCheck size={30} className="mx-auto text-teal-700" />
+          <h3 className="mt-4 font-black text-slate-800">Cuenta empresarial verificada</h3>
+          <p className="mt-2 text-sm leading-6 text-slate-500">Para proteger a los candidatos, solo empresas o personas físicas verificadas pueden contratar y publicar.</p>
+          {!companyId && <Link to="/empresa/onboarding" className="mt-5 inline-flex min-h-11 items-center rounded-xl border border-slate-200 px-5 text-sm font-black text-slate-700">Registrar empresa o persona física</Link>}
+          {companyId && <button onClick={checkout} disabled={paying} className="mt-5 min-h-12 w-full rounded-xl bg-[#0f766e] text-sm font-black text-white disabled:opacity-50">{paying ? 'Abriendo pago seguro…' : 'Contratar por $599 MXN al mes'}</button>}
+          <p className="mt-3 text-[11px] text-slate-400">Pago mensual seguro con tarjeta. Cancela antes de la siguiente renovación.</p>
         </div>
       )}
     </div>
@@ -598,13 +471,21 @@ export default function Vacantes() {
         .from('subscriptions')
         .select('*')
         .eq('user_id', user.id)
-        .eq('tipo', 'empresa_vacantes')
+        .in('tipo', ['job_membership', 'empresa_vacantes'])
         .order('created_at', { ascending: false })
         .limit(1)
         .maybeSingle()
       return data
     },
   })
+
+  const { data: companyContext } = useQuery({
+    queryKey: ['marketplace-context-jobs', user?.id],
+    queryFn: marketplaceApi.context,
+    enabled: !!user,
+    retry: false,
+  })
+  const companyId = companyContext?.companies?.[0]?.id || ''
 
   const tieneAcceso = miSuscripcion?.estatus === 'activa' &&
     (!miSuscripcion.expires_at || new Date(miSuscripcion.expires_at) > new Date())
@@ -778,8 +659,7 @@ export default function Vacantes() {
             {/* Sin suscripción activa → paywall */}
             {!loadingSub && !tieneAcceso ? (
               <PagoSuscripcion
-                suscripcion={miSuscripcion}
-                onPago={() => {}}
+                companyId={companyId}
               />
             ) : (
               <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">

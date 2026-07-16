@@ -4,9 +4,14 @@ import { requireAuth, requirePermission } from '../middleware/auth.js'
 
 
 const router = express.Router()
+const FALLBACK_PLANS = [
+  { code:'basic_presence', name:'Impulso Faro', description:'Presencia constante para empresas que quieren generar reconocimiento y contactos.', monthly_price:799, currency:'MXN', requires_quote:false, sort_order:10, features:['Perfil destacado en el directorio','Banner en una sección','Enlace a sitio web o WhatsApp','1 publicación patrocinada al mes','Reporte de impresiones y clics'] },
+  { code:'featured_company', name:'Líder Portuario', description:'Cobertura preferente para posicionar la marca y captar oportunidades comerciales.', monthly_price:1999, currency:'MXN', requires_quote:false, sort_order:20, features:['Todo lo incluido en Impulso Faro','Banner en portada y hasta 3 secciones','Prioridad en el directorio','4 publicaciones patrocinadas al mes','Reporte de impresiones, clics y contactos'] },
+]
 
 router.get('/planes', async (_req, res) => {
   const { data, error } = await supabaseAdmin.from('advertising_plans').select('id, code, name, description, features, monthly_price, currency, requires_quote, sort_order').eq('is_active', true).order('sort_order')
+  if (error && /advertising_plans|schema cache|PGRST205/i.test(error.message)) return res.json(FALLBACK_PLANS)
   if (error) return res.status(500).json({ error: error.message })
   res.json(data || [])
 })
