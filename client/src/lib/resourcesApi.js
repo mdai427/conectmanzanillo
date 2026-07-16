@@ -1,6 +1,5 @@
 import { supabase } from './supabase.js'
-
-const BASE = import.meta.env.VITE_API_URL || ''
+import { API_BASE } from './apiBase.js'
 
 async function readError(response) {
   const body = await response.json().catch(() => ({}))
@@ -20,7 +19,7 @@ function filenameFromHeader(value, fallback) {
 export const resourcesApi = {
   async list(library) {
     const query = library ? `?library=${encodeURIComponent(library)}` : ''
-    const response = await fetch(`${BASE}/api/resources${query}`)
+    const response = await fetch(`${API_BASE}/api/resources${query}`)
     if (!response.ok) throw await readError(response)
     return response.json()
   },
@@ -33,7 +32,7 @@ export const resourcesApi = {
       throw error
     }
 
-    const response = await fetch(`${BASE}/api/resources/${encodeURIComponent(resource.id)}/download`, {
+    const response = await fetch(`${API_BASE}/api/resources/${encodeURIComponent(resource.id)}/download`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
     })
     if (!response.ok) throw await readError(response)

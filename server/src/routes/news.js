@@ -3,6 +3,7 @@ import { supabaseAdmin } from '../config/supabase.js'
 import { requireAuth, requirePermission } from '../middleware/auth.js'
 import {
   EDITORIAL_STATUSES,
+  discoverPublicNews,
   editorialDecisionPatch,
   ingestNews,
   validateEditorialDecision,
@@ -35,6 +36,20 @@ router.get('/', async (req, res) => {
     })
   } catch (error) {
     console.error('[news/public]', error.message)
+    if (/port_news|schema cache|PGRST205/i.test(error.message)) {
+      try {
+        const items = await discoverPublicNews()
+        res.set('Cache-Control', 'public, max-age=300, stale-while-revalidate=600')
+        return res.json({
+          items,
+          editorialPolicy: 'Referencias descubiertas en Google News; confirma los detalles en el medio original.',
+          updatedAt: new Date().toISOString(),
+          mode: 'live_discovery',
+        })
+      } catch (discoveryError) {
+        console.error('[news/discovery-fallback]', discoveryError.message)
+      }
+    }
     res.status(503).json({ error: 'Las noticias no están disponibles temporalmente.' })
   }
 })

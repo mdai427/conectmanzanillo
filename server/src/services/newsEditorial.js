@@ -3,6 +3,8 @@ import { supabaseAdmin } from '../config/supabase.js'
 
 const MAX_ITEMS_PER_SOURCE = 30
 const FETCH_TIMEOUT_MS = 12_000
+const DISCOVERY_CACHE_MS = 10 * 60_000
+let discoveryCache = { expiresAt: 0, items: [] }
 
 const CATEGORY_TERMS = {
   accesos: ['acceso', 'ingreso', 'libramiento', 'carretera', 'tráfico', 'congestión', 'bloqueo', 'fila', 'patio regulador'],
@@ -72,6 +74,17 @@ export function configuredNewsSources() {
   return sources.filter(isAllowedSource)
 }
 
+export function manzanilloDiscoverySource() {
+  const query = encodeURIComponent('("Puerto de Manzanillo" OR "acceso puerto Manzanillo" OR "aduana Manzanillo" OR "logística Manzanillo")')
+  return {
+    id: 'google-news-discovery-manzanillo',
+    name: 'Google News · descubrimiento',
+    homepageUrl: 'https://news.google.com/',
+    feedUrl: `https://news.google.com/rss/search?q=${query}&hl=es-419&gl=MX&ceid=MX:es-419`,
+    type: 'rss', trusted: false, autoPublish: false, allowsImage: false,
+  }
+}
+
 export function isAllowedSource(source) {
   if (!source?.id || !source?.name || !source?.feedUrl || !source?.homepageUrl) return false
   try {
@@ -137,14 +150,51 @@ export function parseRssFeed(xml, source) {
     const atomLink = attributeValue(block, 'link', 'href')
     const link = canonicalizeUrl(tagValue(block, 'link') || atomLink)
     const published = tagValue(block, 'pubDate') || tagValue(block, 'published') || tagValue(block, 'updated')
+    const publisherName = tagValue(block, 'source')
+    const publisherUrl = attributeValue(block, 'source', 'url')
     return {
       title,
       url: link,
       externalId: tagValue(block, 'guid') || tagValue(block, 'id') || link,
       publishedAt: Number.isNaN(Date.parse(published)) ? null : new Date(published).toISOString(),
+      publisherName: publisherName || null,
+      publisherUrl: canonicalizeUrl(publisherUrl),
       source,
     }
   }).filter(item => item.title.length >= 8 && item.url)
+}
+
+export function publicDiscoveryRecord(item) {
+  const record = prepareNewsRecord(item)
+  return {
+    id: record.fingerprint,
+    title: record.title,
+    editorial_summary: record.editorial_summary,
+    category: record.category,
+    relevance_score: record.relevance_score,
+    canonical_url: record.canonical_url,
+    source_name: item.publisherName || item.source.name,
+    source_url: item.publisherUrl || item.source.homepageUrl,
+    image_url: null,
+    published_at_source: record.published_at_source,
+    published_at_portal: null,
+  }
+}
+
+export async function discoverPublicNews({ force = false } = {}) {
+  if (!force && discoveryCache.expiresAt > Date.now()) return discoveryCache.items
+  const source = manzanilloDiscoverySource()
+  const discovered = await fetchSource(source)
+  const items = discovered
+    .filter(item => {
+      const ageHours = item.publishedAt ? (Date.now() - Date.parse(item.publishedAt)) / 3_600_000 : 0
+      return scoreNewsItem(item).score >= 35 && ageHours <= 24 * 14
+    })
+    .map(publicDiscoveryRecord)
+    .sort((a, b) => Date.parse(b.published_at_source || 0) - Date.parse(a.published_at_source || 0))
+    .slice(0, 30)
+  discoveryCache = { expiresAt: Date.now() + DISCOVERY_CACHE_MS, items }
+  return items
 }
 
 export function parseApiFeed(payload, source) {

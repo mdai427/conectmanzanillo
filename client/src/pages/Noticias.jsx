@@ -6,8 +6,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Logo from '../components/ui/Logo.jsx'
 import BannerRotativo from '../components/ui/BannerRotativo.jsx'
-
-const API_BASE = import.meta.env.VITE_API_URL || ''
+import { API_BASE } from '../lib/apiBase.js'
 
 const CATEGORIES = [
   ['todos', 'Todo'], ['accesos', 'Accesos'], ['puerto', 'Puerto'], ['aduana', 'Aduana'],

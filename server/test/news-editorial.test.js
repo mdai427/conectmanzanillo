@@ -6,6 +6,7 @@ import {
   isAllowedSource,
   isOfficialAutoPublishSource,
   parseRssFeed,
+  publicDiscoveryRecord,
   prepareNewsRecord,
   scoreNewsItem,
   validateEditorialDecision,
@@ -40,6 +41,15 @@ test('lee RSS solo como metadatos', () => {
   assert.equal(item.title, 'Actualización en el Puerto de Manzanillo')
   assert.equal(item.url, 'https://medio.mx/nota')
   assert.equal('description' in item, false)
+})
+
+test('conserva el nombre del medio en descubrimiento sin copiar el artículo', () => {
+  const xml = `<rss><channel><item><title>Movimiento de carga en el Puerto de Manzanillo</title><link>https://news.google.com/articles/abc</link><source url="https://medio.mx">Medio Logístico</source><description>Contenido que no debe conservarse</description><pubDate>Tue, 14 Jul 2026 12:00:00 GMT</pubDate></item></channel></rss>`
+  const [item] = parseRssFeed(xml, source)
+  const record = publicDiscoveryRecord(item)
+  assert.equal(record.source_name, 'Medio Logístico')
+  assert.equal(record.source_url, 'https://medio.mx/')
+  assert.equal('description' in record, false)
 })
 
 test('prioriza Manzanillo y conserva borrador sin autopublicación explícita', () => {
