@@ -38,13 +38,28 @@ import { reportQueue, predQueue, maintenanceQueue } from './services/queue.js'
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const app = express()
 
+// Orígenes permitidos para CORS (coma-separados en CLIENT_URL). El cliente se
+// sirve same-origin desde este mismo servidor, así que las peticiones propias
+// no dependen de CORS; esta allowlist solo controla accesos cross-origin.
+const ALLOWED_ORIGINS = String(process.env.CLIENT_URL || '')
+  .split(',').map(o => o.trim()).filter(Boolean)
+
+function corsOrigin(origin, callback) {
+  // Sin Origin (same-origin, curl, health checks, apps nativas) → permitir.
+  // Si no hay allowlist configurada, permitir (comportamiento previo).
+  if (!origin || ALLOWED_ORIGINS.length === 0 || ALLOWED_ORIGINS.includes(origin)) {
+    return callback(null, true)
+  }
+  return callback(new Error('Origen no permitido por CORS'))
+}
+
 // Railway y la mayoría de plataformas cloud usan un proxy inverso
 app.set('trust proxy', 1)
 const httpServer = createServer(app)
 
 // Socket.io
 const io = new SocketIO(httpServer, {
-  cors: { origin: process.env.CLIENT_URL || '*', methods: ['GET','POST'] }
+  cors: { origin: ALLOWED_ORIGINS.length ? ALLOWED_ORIGINS : '*', methods: ['GET','POST'] }
 })
 initSocket(io)
 app.set('io', io)
@@ -54,7 +69,7 @@ app.use('/api/pagos/webhook', express.raw({ type: 'application/json' }))
 
 // Middlewares
 app.use(helmet({ contentSecurityPolicy: false }))
-app.use(cors({ origin: process.env.CLIENT_URL || '*' }))
+app.use(cors({ origin: corsOrigin }))
 app.use(express.json({ limit: '10kb' }))
 app.use(morgan('combined'))
 

@@ -123,8 +123,14 @@ router.post('/reset-password', async (req, res) => {
   if (!verification.approved) return res.status(400).json({ error: verification.error })
 
   const localPhone = phone.slice(-10)
+  // Búsqueda primaria por número normalizado (+52...). Exacta y segura.
   let { data: profile } = await supabaseAdmin.from('profiles').select('id').eq('phone', phone).limit(1).maybeSingle()
-  if (!profile) ({ data: profile } = await supabaseAdmin.from('profiles').select('id').eq('phone', localPhone).limit(1).maybeSingle())
+  // Fallback legacy (números guardados en formato local de 10 dígitos): solo se
+  // usa si coincide EXACTAMENTE un perfil, para nunca resetear la cuenta ajena.
+  if (!profile) {
+    const { data: legacy } = await supabaseAdmin.from('profiles').select('id').eq('phone', localPhone).limit(2)
+    if (legacy && legacy.length === 1) profile = legacy[0]
+  }
   if (!profile) return res.status(404).json({ error: 'No encontramos una cuenta con ese teléfono' })
 
   const { error } = await supabaseAdmin.auth.admin.updateUserById(profile.id, {
