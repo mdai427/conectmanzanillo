@@ -11,6 +11,7 @@ import {
 import { useSections } from '../hooks/useSections.js'
 import ReportModal from '../components/ui/ReportModal.jsx'
 import PortLiveMap from '../components/ui/PortLiveMap.jsx'
+import Reveal from '../components/ui/Reveal.jsx'
 
 const STATUS = {
   free: { label: 'Fluido', hint: 'Circulación reportada sin demora relevante', color: '#22c55e', soft: 'bg-emerald-50 text-emerald-800 border-emerald-200', glow: 'shadow-[0_0_24px_rgba(34,197,94,.22)]' },
@@ -73,11 +74,11 @@ export default function PortStatus() {
       <div className="port-grid absolute inset-0 -z-10 opacity-25" />
       <div className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-3xl">
+          <Reveal className="max-w-3xl">
             <div className="inline-flex items-center gap-2 rounded-full border border-teal-300/25 bg-teal-300/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.18em] text-teal-200"><span className="relative flex h-2 w-2"><span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-teal-300 opacity-60"/><span className="relative inline-flex h-2 w-2 rounded-full bg-teal-300"/></span> Pulso comunitario</div>
             <h1 className="mt-5 text-4xl font-black tracking-[-.05em] sm:text-6xl">Entiende el puerto antes de moverte.</h1>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300 sm:text-base">Consulta zonas, identifica puntos con demora y comparte lo que ves. Cada estado muestra cuándo se actualizó y cuánta evidencia comunitaria tiene.</p>
-          </div>
+          </Reveal>
           <div className="grid min-w-full grid-cols-2 gap-2 sm:min-w-[440px] sm:grid-cols-4">
             {[['free','Fluidas'],['moderate','Con carga'],['congested','Saturadas'],['unknown','Sin confirmar']].map(([status,label]) => <div key={status} className="rounded-2xl border border-white/10 bg-black/20 p-3 backdrop-blur-md"><div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full" style={{ background: STATUS[status].color, boxShadow: `0 0 14px ${STATUS[status].color}` }}/><span className="text-[10px] font-bold text-slate-300">{label}</span></div><p className="mt-2 text-2xl font-black">{totals[status]}</p></div>)}
           </div>

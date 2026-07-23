@@ -5,6 +5,10 @@ import {
   GraduationCap, MapPin, MessageSquareText, PackageSearch, Search, Sparkles,
   Star, Store, Truck, Users,
 } from 'lucide-react'
+import { motion } from 'framer-motion'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
+import { staggerItem } from '../lib/motion.js'
 
 const CONFIG = {
   '/marketplace': {
@@ -95,7 +99,7 @@ export default function EcosystemModule() {
   return (
     <div className="min-h-screen bg-white text-slate-950">
       <header className="border-b border-slate-100">
-        <div className="mx-auto max-w-7xl px-4 py-14 sm:py-20">
+        <Reveal className="mx-auto max-w-7xl px-4 py-14 sm:py-20">
           <nav aria-label="Ruta de navegación" className="mb-8 flex items-center gap-2 text-[11px] font-semibold text-slate-400"><Link to="/" className="hover:text-teal-700">Inicio</Link><span>/</span><span className="text-slate-600">{config.eyebrow}</span></nav>
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-slate-200 text-[#0d4f4b] shadow-sm"><Icon size={22} /></div>
           <p className="mt-7 text-[11px] font-black uppercase tracking-[.2em] text-teal-700">{config.eyebrow}</p>
@@ -105,7 +109,7 @@ export default function EcosystemModule() {
             <Link to="/register" className="rounded-xl bg-[#0d4f4b] px-5 py-3 text-center text-sm font-extrabold text-white">{config.cta}</Link>
             <Link to="/" className="rounded-xl border border-slate-200 px-5 py-3 text-center text-sm font-extrabold text-slate-700">Volver al ecosistema</Link>
           </div>
-        </div>
+        </Reveal>
       </header>
 
       <main className="mx-auto max-w-7xl px-4 py-10 sm:py-14">
@@ -114,16 +118,16 @@ export default function EcosystemModule() {
           <label className="relative block lg:w-80"><Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Buscar…" className="h-11 w-full rounded-xl border border-slate-200 pl-9 pr-3 text-sm outline-none focus:border-teal-700" /></label>
         </div>
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <Stagger className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filtered.map((item, index) => (
-            <button type="button" onClick={() => setQuery(item)} key={item} className="group min-h-48 rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-[0_6px_24px_rgba(8,31,44,.04)] transition hover:-translate-y-0.5 hover:border-teal-600 hover:shadow-[0_12px_34px_rgba(8,31,44,.08)]">
+            <motion.button variants={staggerItem} type="button" onClick={() => setQuery(item)} key={item} className="group min-h-48 rounded-2xl border border-slate-200 bg-white p-5 text-left shadow-[0_6px_24px_rgba(8,31,44,.04)] transition hover:-translate-y-0.5 hover:border-teal-600 hover:shadow-[0_12px_34px_rgba(8,31,44,.08)]">
               <div className="flex items-start justify-between"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-800"><Icon size={18} /></div><span className="text-[10px] font-bold text-slate-300">{String(index + 1).padStart(2, '0')}</span></div>
               <h2 className="mt-7 text-base font-black tracking-tight">{item}</h2>
               <p className="mt-2 text-xs leading-5 text-slate-500">Sección preparada para datos verificados y publicaciones de la comunidad.</p>
               <span className="mt-4 inline-flex items-center gap-1 text-[11px] font-extrabold text-teal-800">Explorar <ArrowRight size={12} /></span>
-            </button>
+            </motion.button>
           ))}
-        </div>
+        </Stagger>
 
         {filtered.length === 0 && <div className="py-20 text-center"><Search className="mx-auto text-slate-300" /><h2 className="mt-4 font-black">No encontramos coincidencias</h2><p className="mt-2 text-sm text-slate-500">Prueba con otra palabra o limpia la búsqueda.</p></div>}
 

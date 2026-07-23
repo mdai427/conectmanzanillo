@@ -8,6 +8,8 @@ import {
   UserPlus, Users, X, Zap,
 } from 'lucide-react'
 import { supabase, isDemoMode } from '../lib/supabase.js'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
 
 const LICENCIAS = [
   { value: 'federal-a', label: 'Federal A' },
@@ -377,7 +379,7 @@ export default function Posturas() {
       <section className="border-b border-teal-950/20 bg-[#082f35] text-white">
         <div className="mx-auto max-w-7xl px-4 py-10 lg:py-14">
           <div className="grid items-center gap-8 lg:grid-cols-[1fr_470px]">
-            <div>
+            <Reveal>
               <div className="inline-flex items-center gap-2 rounded-full border border-teal-300/20 bg-white/5 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-teal-200"><Zap size={12} /> Talento portuario verificado</div>
               <h1 className="mt-5 max-w-3xl text-4xl font-black leading-[1.05] tracking-[-0.04em] sm:text-5xl">Encuentra talento logístico especializado en menos de 60 segundos.</h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-slate-300">Operadores, ejecutivos de tráfico, personal aduanal, coordinadores y perfiles administrativos de Manzanillo.</p>
@@ -385,7 +387,7 @@ export default function Posturas() {
                 <button onClick={() => document.getElementById('marketplace')?.scrollIntoView({ behavior: 'smooth' })} className="rounded-xl bg-teal-400 px-5 py-3 text-sm font-black text-teal-950 hover:bg-teal-300">Buscar talento</button>
                 <button onClick={() => setView('register')} className="rounded-xl border border-white/20 bg-white/10 px-5 py-3 text-sm font-black text-white hover:bg-white/15">Publicar mi perfil</button>
               </div>
-            </div>
+            </Reveal>
             <div className="rounded-3xl border border-white/10 bg-white/[0.07] p-4 backdrop-blur">
               <div className="flex items-center gap-2 text-sm font-black"><Sparkles size={16} className="text-amber-300" /> Búsqueda inteligente</div>
               <p className="mt-1 text-xs text-slate-300">Describe el perfil que necesitas con tus propias palabras.</p>
@@ -460,7 +462,7 @@ export default function Posturas() {
           ) : filtered.length === 0 ? (
             <div className="mt-4"><EmptyState filtered={operators.length > 0} onRegister={() => setView('register')} onClear={clearFilters} /></div>
           ) : (
-            <div className="mt-4 grid gap-4 lg:grid-cols-2">{filtered.map((op, index) => <OperatorCard key={op.id} operator={op} featured={index < 2 && !query && activeFilterCount === 0} favorite={favorites.includes(op.id)} selected={comparison.includes(op.id)} onFavorite={id => toggleList(setFavorites, favorites, id, 100)} onCompare={id => toggleList(setComparison, comparison, id, 3)} onView={setProfile} />)}</div>
+            <Stagger className="mt-4 grid gap-4 lg:grid-cols-2">{filtered.map((op, index) => <Stagger.Item key={op.id}><OperatorCard operator={op} featured={index < 2 && !query && activeFilterCount === 0} favorite={favorites.includes(op.id)} selected={comparison.includes(op.id)} onFavorite={id => toggleList(setFavorites, favorites, id, 100)} onCompare={id => toggleList(setComparison, comparison, id, 3)} onView={setProfile} /></Stagger.Item>)}</Stagger>
           )}
         </section>
 

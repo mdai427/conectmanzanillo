@@ -7,6 +7,8 @@ import { supabase, isDemoMode } from '../lib/supabase.js'
 import { useAuthStore } from '../stores/authStore.js'
 import BannerRotativo from '../components/ui/BannerRotativo.jsx'
 import { marketplaceApi } from '../lib/marketplaceApi.js'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 const LICENCIAS = [
@@ -529,7 +531,7 @@ export default function Vacantes() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 shadow-sm">
+      <Reveal className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-4xl mx-auto px-4 py-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
@@ -559,7 +561,7 @@ export default function Vacantes() {
             </button>
           </div>
         </div>
-      </div>
+      </Reveal>
 
       <div className="max-w-4xl mx-auto px-4 py-6">
 
@@ -645,9 +647,9 @@ export default function Vacantes() {
                 <p className="text-xs text-slate-400 font-semibold mb-3">
                   {filtradas.length} vacante{filtradas.length !== 1 ? 's' : ''} encontrada{filtradas.length !== 1 ? 's' : ''}
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {filtradas.map(v => <VacanteCard key={v.id} v={v} perfil={miPerfil} destacada={false} />)}
-                </div>
+                <Stagger className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {filtradas.map(v => <Stagger.Item key={v.id}><VacanteCard v={v} perfil={miPerfil} destacada={false} /></Stagger.Item>)}
+                </Stagger>
               </>
             )}
           </div>

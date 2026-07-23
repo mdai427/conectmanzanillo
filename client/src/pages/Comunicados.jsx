@@ -4,6 +4,8 @@ import toast from 'react-hot-toast'
 import { Megaphone, Plus, Clock, CheckCircle2, X, FileText, Send } from 'lucide-react'
 import { useAuthStore } from '../stores/authStore.js'
 import { supabase } from '../lib/supabase.js'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
 
 const API = import.meta.env.VITE_API_URL || ''
 
@@ -56,7 +58,7 @@ export default function Comunicados() {
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <Reveal className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
             <Megaphone size={20} className="text-blue-600" />
@@ -74,7 +76,7 @@ export default function Comunicados() {
             <Plus size={15} /> Nuevo
           </button>
         )}
-      </div>
+      </Reveal>
 
       {/* Formulario */}
       {showForm && (
@@ -126,9 +128,9 @@ export default function Comunicados() {
           <p className="text-gray-500 text-sm">No hay comunicados publicados aún</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <Stagger className="space-y-3">
           {comunicados.map(c => (
-            <div key={c.id} className="bg-white border border-gray-200 rounded-2xl p-5 space-y-2">
+            <Stagger.Item key={c.id} className="bg-white border border-gray-200 rounded-2xl p-5 space-y-2">
               <div className="flex items-start justify-between gap-3">
                 <h2 className="font-bold text-gray-900 text-base leading-snug">{c.titulo}</h2>
                 <span className="flex items-center gap-1 text-[10px] text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full shrink-0 font-semibold">
@@ -141,9 +143,9 @@ export default function Comunicados() {
                 <span>·</span>
                 <span>{timeAgo(c.created_at)}</span>
               </div>
-            </div>
+            </Stagger.Item>
           ))}
-        </div>
+        </Stagger>
       )}
     </div>
   )

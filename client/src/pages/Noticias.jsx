@@ -6,6 +6,8 @@ import { formatDistanceToNow } from 'date-fns'
 import { es } from 'date-fns/locale'
 import Logo from '../components/ui/Logo.jsx'
 import BannerRotativo from '../components/ui/BannerRotativo.jsx'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
 import { API_BASE } from '../lib/apiBase.js'
 
 const CATEGORIES = [
@@ -125,11 +127,11 @@ export default function Noticias() {
         <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_80%_20%,#2DD4BF_0,transparent_27%),radial-gradient(circle_at_10%_90%,#F6B73C_0,transparent_18%)]" />
         <div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
           <div className="flex items-center justify-between gap-4"><Logo dark showDescriptor /><span className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-2 text-[10px] font-black uppercase tracking-[.16em] text-teal-200 sm:inline-flex"><span className="h-2 w-2 animate-pulse rounded-full bg-teal-300" /> Actualización editorial</span></div>
-          <div className="mt-14 max-w-3xl">
+          <Reveal className="mt-14 max-w-3xl">
             <p className="flex items-center gap-2 text-xs font-black uppercase tracking-[.2em] text-teal-300"><Newspaper size={16} /> Actualidad logística-portuaria</p>
             <h1 className="mt-5 text-4xl font-black tracking-[-.055em] sm:text-6xl">Noticias que mueven a Manzanillo.</h1>
             <p className="mt-6 max-w-2xl text-base leading-7 text-slate-300 sm:text-lg">Información relevante sobre el puerto, sus accesos, la aduana y el transporte. Cada publicación muestra procedencia, fecha y enlace directo al medio original.</p>
-          </div>
+          </Reveal>
           <div className="mt-9 grid max-w-3xl gap-3 text-xs sm:grid-cols-3">
             {[['Fuentes identificadas', ShieldCheck], ['Resumen editorial propio', CheckCircle2], ['Sin copiar artículos', ArrowUpRight]].map(([label, Icon]) => <div key={label} className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-3 font-bold text-slate-200"><Icon size={16} className="text-teal-300" />{label}</div>)}
           </div>
@@ -157,7 +159,7 @@ export default function Noticias() {
         ) : (
           <>
             <section className="mt-8" aria-labelledby="destacada-title"><div className="mb-5 flex items-end justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.18em] text-teal-700">Mayor relevancia</p><h2 id="destacada-title" className="mt-1 text-2xl font-black tracking-tight text-[#082F35]">Información destacada</h2></div><button type="button" onClick={() => refetch()} className="hidden min-h-10 items-center gap-2 text-xs font-black text-slate-500 sm:inline-flex"><RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} /> Actualizar</button></div><NewsCard item={featured} featured /></section>
-            {remaining.length > 0 && <section className="mt-12" aria-labelledby="feed-title"><div className="mb-5"><p className="text-[10px] font-black uppercase tracking-[.18em] text-teal-700">Últimas referencias</p><h2 id="feed-title" className="mt-1 text-2xl font-black tracking-tight text-[#082F35]">Más actualidad del sector</h2></div><div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{remaining.map((item) => <NewsCard key={item.id} item={item} />)}</div></section>}
+            {remaining.length > 0 && <section className="mt-12" aria-labelledby="feed-title"><div className="mb-5"><p className="text-[10px] font-black uppercase tracking-[.18em] text-teal-700">Últimas referencias</p><h2 id="feed-title" className="mt-1 text-2xl font-black tracking-tight text-[#082F35]">Más actualidad del sector</h2></div><Stagger className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{remaining.map((item) => <Stagger.Item key={item.id}><NewsCard item={item} /></Stagger.Item>)}</Stagger></section>}
           </>
         )}
 

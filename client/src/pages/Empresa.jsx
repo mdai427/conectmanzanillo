@@ -4,6 +4,8 @@ import {
   ArrowRight, BadgeCheck, BriefcaseBusiness, Building2, Check,
   Eye, MapPin, Megaphone, Search, Sparkles, Star, Users,
 } from 'lucide-react'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
 
 const VACANTES = [
   { puesto: 'Ejecutivo/a de tráfico', empresa: 'Transportes del Pacífico', ubicacion: 'Manzanillo, Col.', postulaciones: 18, estado: 'Activa' },
@@ -38,7 +40,7 @@ export default function Empresa() {
       <section className="overflow-hidden bg-[#082f31] text-white">
         <div className="mx-auto max-w-6xl px-4 py-12 md:px-6 md:py-16">
           <div className="grid gap-10 lg:grid-cols-[1.15fr_.85fr] lg:items-center">
-            <div>
+            <Reveal>
               <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-teal-200/20 bg-white/10 px-3 py-1.5 text-xs font-bold text-teal-100">
                 <Building2 size={14} /> Espacio para empresas
               </div>
@@ -56,7 +58,7 @@ export default function Empresa() {
                   <Search size={18} /> Buscar talento
                 </Link>
               </div>
-            </div>
+            </Reveal>
 
             <div className="rounded-3xl border border-white/15 bg-white/10 p-6 shadow-2xl backdrop-blur">
               <div className="flex items-center justify-between border-b border-white/10 pb-4">
@@ -147,9 +149,9 @@ export default function Empresa() {
               <h2 className="mt-3 text-3xl font-black tracking-tight md:text-4xl">Elige cómo quieres aparecer</h2>
               <p className="mt-3 text-slate-600">Planes sencillos para publicar, buscar y posicionar tu empresa.</p>
             </div>
-            <div className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
+            <Stagger className="mx-auto grid max-w-4xl gap-5 md:grid-cols-2">
               {PLANES.map((plan) => (
-                <article key={plan.nombre} className={`relative rounded-3xl border bg-white p-6 ${plan.destacado ? 'border-teal-600 shadow-xl shadow-teal-900/10' : 'border-slate-200'}`}>
+                <Stagger.Item as="article" key={plan.nombre} className={`relative rounded-3xl border bg-white p-6 ${plan.destacado ? 'border-teal-600 shadow-xl shadow-teal-900/10' : 'border-slate-200'}`}>
                   {plan.destacado && <span className="absolute -top-3 left-6 rounded-full bg-teal-700 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-white">Recomendado</span>}
                   <h3 className="text-xl font-black">{plan.nombre}</h3>
                   <p className="mt-2 min-h-12 text-sm text-slate-600">{plan.descripcion}</p>
@@ -157,9 +159,9 @@ export default function Empresa() {
                   <p className="text-xs text-slate-500">{plan.periodo}</p>
                   <ul className="mt-6 space-y-3">{plan.beneficios.map((item) => <li key={item} className="flex gap-2 text-sm text-slate-700"><Check size={17} className="mt-0.5 shrink-0 text-teal-600" />{item}</li>)}</ul>
                   <Link to="/anunciate" className={`mt-7 flex min-h-11 items-center justify-center rounded-xl text-sm font-extrabold ${plan.destacado ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-800'}`}>Ver detalles</Link>
-                </article>
+                </Stagger.Item>
               ))}
-            </div>
+            </Stagger>
           </div>
         )}
       </section>

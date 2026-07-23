@@ -7,6 +7,7 @@ import {
 import toast from 'react-hot-toast'
 import { communityApi } from '../lib/communityApi.js'
 import { useAuthStore } from '../stores/authStore.js'
+import Reveal from '../components/ui/Reveal.jsx'
 
 const REPORT_REASONS = [
   ['sensitive', 'Contenido sensible'], ['sexual', 'Contenido sexual'],
@@ -171,7 +172,7 @@ export default function Community() {
   return <div className="min-h-screen bg-[#f5f8f8] text-slate-950">
     <header className="overflow-hidden border-b border-slate-200 bg-[#082f35] text-white">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:py-16 lg:grid-cols-[1fr_360px] lg:items-center">
-        <div><p className="text-[11px] font-black uppercase tracking-[.22em] text-teal-300">Comunidad Faro Portuario</p><h1 className="mt-3 max-w-3xl text-4xl font-black tracking-[-.045em] sm:text-5xl">El sector logístico conversa aquí.</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-teal-50/75 sm:text-base">Comparte experiencias, preguntas y oportunidades con empresas y profesionales del ecosistema portuario.</p></div>
+        <Reveal><p className="text-[11px] font-black uppercase tracking-[.22em] text-teal-300">Comunidad Faro Portuario</p><h1 className="mt-3 max-w-3xl text-4xl font-black tracking-[-.045em] sm:text-5xl">El sector logístico conversa aquí.</h1><p className="mt-4 max-w-2xl text-sm leading-6 text-teal-50/75 sm:text-base">Comparte experiencias, preguntas y oportunidades con empresas y profesionales del ecosistema portuario.</p></Reveal>
         <div className="rounded-3xl border border-white/10 bg-white/5 p-5 backdrop-blur"><div className="flex items-center gap-3"><ShieldCheck className="text-teal-300"/><h2 className="font-black">Una comunidad profesional</h2></div><ul className="mt-4 space-y-2 text-xs leading-5 text-teal-50/70"><li className="flex gap-2"><Check size={15} className="mt-0.5 text-teal-300"/> Publican únicamente cuentas registradas.</li><li className="flex gap-2"><Check size={15} className="mt-0.5 text-teal-300"/> Fotos privadas mientras se revisan.</li><li className="flex gap-2"><Check size={15} className="mt-0.5 text-teal-300"/> Sin contenido sexual, gore, explotación o datos sensibles.</li></ul></div>
       </div>
     </header>

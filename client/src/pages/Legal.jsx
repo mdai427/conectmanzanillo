@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Shield, FileText, AlertTriangle, Mail } from 'lucide-react'
+import Reveal from '../components/ui/Reveal.jsx'
 
 const TABS = [
   { id: 'privacidad', label: 'Aviso de Privacidad', icon: Shield },
@@ -14,10 +15,10 @@ export default function Legal() {
   return (
     <div className="min-h-screen bg-slate-50">
       <div className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-3xl mx-auto px-4 py-6">
+        <Reveal className="max-w-3xl mx-auto px-4 py-6">
           <h1 className="text-2xl font-black text-slate-800 mb-1">Información Legal</h1>
           <p className="text-sm text-slate-500">Faro Portuario · Puerto de Manzanillo, Colima, México</p>
-        </div>
+        </Reveal>
         <div className="max-w-3xl mx-auto px-4 flex overflow-x-auto scrollbar-none gap-1 pb-0">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setTab(id)}

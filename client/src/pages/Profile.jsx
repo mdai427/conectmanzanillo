@@ -9,6 +9,8 @@ import { api } from '../lib/api.js'
 import { supabase } from '../lib/supabase.js'
 import StatusBadge from '../components/ui/StatusBadge.jsx'
 import ReputacionBadge, { NIVELES, getNivel, getNextNivel, getProgreso } from '../components/ui/ReputacionBadge.jsx'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
 
 export default function Profile() {
   const { user, profile, fetchProfile } = useAuthStore()
@@ -76,7 +78,7 @@ export default function Profile() {
     <div className="min-h-screen bg-slate-50">
       {/* Header con nivel de reputación */}
       <div className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-6">
+        <Reveal className="max-w-2xl mx-auto px-4 py-6">
           <div className="flex items-center gap-4">
             {/* Avatar con nivel */}
             <div className="relative shrink-0">
@@ -106,29 +108,29 @@ export default function Profile() {
               )}
             </div>
           </div>
-        </div>
+        </Reveal>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
 
         {/* Stats de reputación */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <Stagger className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
             { icon: Star,        color: '#f59e0b', val: puntos,                              label: 'Puntos totales'  },
             { icon: Radio,       color: '#3b82f6', val: repStats?.total_reportes || 0,       label: 'Reportes'        },
             { icon: CheckCircle2,color: '#10b981', val: repStats?.reportes_confirmados || 0, label: 'Confirmados'     },
             { icon: TrendingUp,  color: '#8b5cf6', val: `${progreso}%`,                      label: 'Al siguiente nivel' },
           ].map(({ icon: Icon, color, val, label }) => (
-            <div key={label} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
+            <Stagger.Item key={label} className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center mx-auto mb-2"
                    style={{ background: `${color}18` }}>
                 <Icon size={16} style={{ color }} />
               </div>
               <p className="text-xl font-black text-slate-800">{val}</p>
               <p className="text-[10px] text-slate-400 font-medium mt-0.5">{label}</p>
-            </div>
+            </Stagger.Item>
           ))}
-        </div>
+        </Stagger>
 
         {/* Cómo ganar puntos */}
         <div className="bg-blue-50 border border-blue-100 rounded-2xl p-4">

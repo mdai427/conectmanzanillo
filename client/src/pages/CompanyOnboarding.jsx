@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { AlertCircle, ArrowLeft, ArrowRight, Building2, Check, FileCheck2, Loader2, ShieldCheck, Sparkles, Upload } from 'lucide-react'
 import { foundationsApi } from '../lib/foundationsApi.js'
 import { supabase } from '../lib/supabase.js'
+import Reveal from '../components/ui/Reveal.jsx'
 
 const COMPANY_TYPES = [
   ['carrier', 'Transportista'], ['owner_operator', 'Hombre-camión'], ['customs_broker', 'Agente aduanal'], ['freight_forwarder', 'Freight forwarder'],
@@ -173,8 +174,10 @@ export default function CompanyOnboarding() {
         <div className="flex items-center justify-between"><Link to="/empresa" className="inline-flex items-center gap-1 text-xs font-bold text-slate-500"><ArrowLeft size={14} /> Salir y continuar después</Link><span className="text-[10px] font-black uppercase tracking-[.18em] text-teal-700">Registro empresarial</span></div>
         <div className="mt-8 grid gap-10 lg:grid-cols-[220px_1fr]">
           <aside>
-            <h1 className="text-2xl font-black tracking-[-.035em] text-[#081f2c]">Configura tu empresa</h1>
-            <p className="mt-2 text-xs leading-5 text-slate-500">La información fiscal y los documentos permanecen privados.</p>
+            <Reveal>
+              <h1 className="text-2xl font-black tracking-[-.035em] text-[#081f2c]">Configura tu empresa</h1>
+              <p className="mt-2 text-xs leading-5 text-slate-500">La información fiscal y los documentos permanecen privados.</p>
+            </Reveal>
             <ol className="mt-7 space-y-2">{STEPS.map((label, index) => <li key={label} className={`flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold ${index === step ? 'bg-teal-50 text-teal-900' : index < step ? 'text-teal-700' : 'text-slate-400'}`}><span className={`grid h-6 w-6 place-items-center rounded-full border text-[10px] ${index <= step ? 'border-teal-700' : 'border-slate-200'}`}>{index < step ? <Check size={12} /> : index + 1}</span>{label}</li>)}</ol>
           </aside>
 

@@ -9,6 +9,8 @@ import StatusBadge from '../components/ui/StatusBadge.jsx'
 import ReportButton from '../components/ui/ReportButton.jsx'
 import ConfirmReaction from '../components/ui/ConfirmReaction.jsx'
 import SectionChat from '../components/ui/SectionChat.jsx'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
 
 const STATUS_COLOR = {
   free:      { bg: '#dcfce7', border: '#86efac', text: '#16a34a', dark: '#16a34a', label: '🟢 Libre',     est: '5-15 min' },
@@ -113,7 +115,7 @@ export default function SectionDetail() {
 
       {/* Header */}
       <div className="bg-white border-b border-slate-200 shadow-sm">
-        <div className="max-w-2xl mx-auto px-4 py-5">
+        <Reveal className="max-w-2xl mx-auto px-4 py-5">
           <button onClick={() => navigate(-1)}
             className="flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-800 mb-4 transition-colors font-medium">
             <ArrowLeft size={15} />
@@ -174,7 +176,7 @@ export default function SectionDetail() {
           )}
 
           <ReportButton section={section} />
-        </div>
+        </Reveal>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 py-5 space-y-4">
@@ -263,11 +265,11 @@ export default function SectionDetail() {
               <ReportButton section={section} />
             </div>
           ) : (
-            <div className="space-y-3">
+            <Stagger className="space-y-3">
               {reports.map(report => {
                 const rc = STATUS_COLOR[report.status] || STATUS_COLOR.unknown
                 return (
-                  <div key={report.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                  <Stagger.Item key={report.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
                     <div className="px-4 py-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -300,10 +302,10 @@ export default function SectionDetail() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Stagger.Item>
                 )
               })}
-            </div>
+            </Stagger>
           )}
         </div>
 

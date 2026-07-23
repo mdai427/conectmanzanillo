@@ -1,12 +1,18 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
+import { motion } from 'framer-motion'
 import {
   Building2, Search, Star, BadgeCheck, Crown,
   Phone, Globe, MessageCircle, MapPin, ChevronRight,
   Filter, X,
 } from 'lucide-react'
 import BannerRotativo from '../components/ui/BannerRotativo.jsx'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
+import { staggerItem } from '../lib/motion.js'
+
+const MotionLink = motion(Link)
 
 const API = import.meta.env.VITE_API_URL || ''
 
@@ -38,7 +44,8 @@ function EmpresaCard({ empresa }) {
   const slug = empresa.slug || empresa.id
 
   return (
-    <Link
+    <MotionLink
+      variants={staggerItem}
       to={`/directorio-empresarial/${slug}`}
       className={`group flex flex-col bg-white rounded-2xl border overflow-hidden hover:shadow-md transition-all ${
         empresa.es_premium   ? 'border-amber-300 shadow-sm' :
@@ -112,7 +119,7 @@ function EmpresaCard({ empresa }) {
           <ChevronRight size={14} className="text-gray-300 ml-auto group-hover:text-teal-500 transition-colors" />
         </div>
       </div>
-    </Link>
+    </MotionLink>
   )
 }
 
@@ -164,7 +171,7 @@ export default function DirectorioEmpresarial() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4 flex-wrap">
+      <Reveal className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
             <Building2 size={20} className="text-teal-600" />
@@ -177,7 +184,7 @@ export default function DirectorioEmpresarial() {
         {resultado.total > 0 && (
           <span className="text-sm text-gray-400">{resultado.total} empresas</span>
         )}
-      </div>
+      </Reveal>
 
       {/* Banner publicidad */}
       <BannerRotativo zona="directorio" className="h-24" />
@@ -296,11 +303,11 @@ export default function DirectorioEmpresarial() {
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          <Stagger className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {resultado.data.map(empresa => (
               <EmpresaCard key={empresa.id} empresa={empresa} />
             ))}
-          </div>
+          </Stagger>
 
           {/* Paginación */}
           {totalPages > 1 && (

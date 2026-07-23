@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { ArrowLeft, ArrowRight, Building2, Check, Eye, EyeOff, KeyRound, Phone, UserRound } from 'lucide-react'
 import { sendOtp, verifyOtp } from '../hooks/useAuth.js'
+import Reveal from '../components/ui/Reveal.jsx'
 
 const PERSON_TYPES = [
   ['candidate', 'Candidato'], ['operator', 'Operador'], ['traffic_executive', 'Ejecutivo de tráfico'],
@@ -95,7 +96,7 @@ export default function Register() {
           </div>
         </header>
 
-        <section className="mt-9 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_16px_50px_rgba(8,31,44,.07)] sm:p-8">
+        <Reveal as="section" className="mt-9 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_16px_50px_rgba(8,31,44,.07)] sm:p-8">
           {step === 1 && (
             <div>
               <h2 className="text-lg font-black">¿Qué tipo de cuenta necesitas?</h2>
@@ -136,7 +137,7 @@ export default function Register() {
               <button onClick={() => setStep(2)} className="mt-4 text-xs font-bold text-slate-500">Cambiar número</button>
             </div>
           )}
-        </section>
+        </Reveal>
 
         <p className="mt-6 text-center text-xs text-slate-500">¿Ya tienes cuenta? <Link to="/login" className="font-extrabold text-teal-800">Iniciar sesión</Link></p>
       </div>

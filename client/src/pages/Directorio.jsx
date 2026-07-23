@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '../lib/supabase'
 import { Phone, MessageCircle, MapPin, Star, BookOpen } from 'lucide-react'
+import Reveal from '../components/ui/Reveal.jsx'
+import Stagger from '../components/ui/Stagger.jsx'
 
 const CATEGORIES = {
   taller:          { label: 'Talleres',            emoji: '🔧' },
@@ -32,7 +34,7 @@ export default function Directorio() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 shadow-sm">
+      <Reveal className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-6">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center shrink-0">
@@ -44,7 +46,7 @@ export default function Directorio() {
             </div>
           </div>
         </div>
-      </div>
+      </Reveal>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
         {/* Filtros */}
@@ -81,9 +83,9 @@ export default function Directorio() {
             <p className="text-slate-500 font-medium">No hay listados en esta categoría</p>
           </div>
         ) : (
-          <div className="space-y-3">
+          <Stagger className="space-y-3">
             {listings.map(item => (
-              <div key={item.id}
+              <Stagger.Item key={item.id}
                 className={`bg-white rounded-2xl border shadow-sm hover:shadow-md transition-shadow p-4 flex items-start gap-4 ${
                   item.is_featured ? 'border-teal-200 ring-1 ring-teal-100' : 'border-slate-200'
                 }`}>
@@ -128,9 +130,9 @@ export default function Directorio() {
                     )}
                   </div>
                 </div>
-              </div>
+              </Stagger.Item>
             ))}
-          </div>
+          </Stagger>
         )}
       </div>
     </div>

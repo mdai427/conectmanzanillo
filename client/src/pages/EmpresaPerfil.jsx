@@ -5,6 +5,7 @@ import {
   BadgeCheck, Crown, Star, Clock, ArrowLeft, Facebook,
   Instagram, Linkedin, ExternalLink, Briefcase, ChevronRight,
 } from 'lucide-react'
+import Reveal from '../components/ui/Reveal.jsx'
 
 const API = import.meta.env.VITE_API_URL || ''
 
@@ -66,7 +67,7 @@ export default function EmpresaPerfil() {
       </Link>
 
       {/* Header con portada */}
-      <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      <Reveal className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
         {/* Portada */}
         <div className="relative h-40 sm:h-52 bg-gradient-to-br from-slate-100 to-slate-200">
           {empresa.portada_url && (
@@ -131,7 +132,7 @@ export default function EmpresaPerfil() {
             )}
           </div>
         </div>
-      </div>
+      </Reveal>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Columna principal */}
