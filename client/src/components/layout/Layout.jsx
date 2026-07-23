@@ -17,11 +17,11 @@ function RouteTransition() {
     <AnimatePresence mode="wait" initial={false}>
       <motion.div
         key={location.pathname}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        initial={{ opacity: 0, y: reduced ? 0 : 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: reduced ? 0 : -8 }}
         transition={{
-          duration: reduced ? 0 : 0.18,
+          duration: reduced ? 0 : 0.32,
           ease: EASE_ARRIVAL,
         }}
       >

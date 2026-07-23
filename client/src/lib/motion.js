@@ -10,13 +10,16 @@ export const EASE_ARRIVAL = [0.16, 1, 0.3, 1] // llegadas autoradas (hero, rutas
 export const SPRING = { type: 'spring', stiffness: 100, damping: 20 }
 
 // Duraciones (segundos, para framer)
-export const DUR_FAST = 0.15
-export const DUR_BASE = 0.24
-export const DUR_SLOW = 0.32
+export const DUR_FAST = 0.2
+export const DUR_BASE = 0.5
+export const DUR_SLOW = 0.6
 
-// Entrada base: aparece y sube 8px. Nunca desde scale(0).
+// Distancia de entrada (px). Suficiente para percibirse sin sentirse brusco.
+export const RISE = 26
+
+// Entrada base: aparece y sube. Nunca desde scale(0).
 export const fadeRise = {
-  hidden: { opacity: 0, y: 8 },
+  hidden: { opacity: 0, y: RISE },
   show: {
     opacity: 1,
     y: 0,
@@ -29,15 +32,15 @@ export const staggerContainer = {
   hidden: {},
   show: {
     transition: {
-      staggerChildren: 0.05,
-      delayChildren: 0.02,
+      staggerChildren: 0.09,
+      delayChildren: 0.06,
     },
   },
 }
 
 // Hija de un stagger.
 export const staggerItem = {
-  hidden: { opacity: 0, y: 8 },
+  hidden: { opacity: 0, y: RISE },
   show: {
     opacity: 1,
     y: 0,

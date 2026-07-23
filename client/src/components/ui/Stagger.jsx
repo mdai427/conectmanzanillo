@@ -1,9 +1,11 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { useRef } from 'react'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { staggerContainer, staggerItem, reduceVariants } from '../../lib/motion'
 
 // Contenedor que escalona a sus hijas. Usar SOLO donde hay una lista/grid real.
 // Modo:
-//  - "view" (default): dispara al entrar en viewport, una vez.
+//  - "view" (default): dispara al entrar en viewport, una vez. Usa useInView con
+//    un ref explícito para un disparo fiable al hacer scroll.
 //  - "mount": dispara al montar (para el hero / momento focal).
 export default function Stagger({
   as = 'div',
@@ -12,21 +14,24 @@ export default function Stagger({
   trigger = 'view',
   ...rest
 }) {
+  const ref = useRef(null)
+  const inView = useInView(ref, { once: true, amount: 0.2 })
   const reduced = useReducedMotion()
   const MotionTag = motion[as] || motion.div
   const variants = reduceVariants(staggerContainer, reduced)
 
-  const triggerProps =
-    trigger === 'mount'
-      ? { initial: 'hidden', animate: 'show' }
-      : {
-          initial: 'hidden',
-          whileInView: 'show',
-          viewport: { once: true, margin: '-80px' },
-        }
+  const animate =
+    trigger === 'mount' ? 'show' : inView ? 'show' : 'hidden'
 
   return (
-    <MotionTag className={className} variants={variants} {...triggerProps} {...rest}>
+    <MotionTag
+      ref={ref}
+      className={className}
+      variants={variants}
+      initial="hidden"
+      animate={animate}
+      {...rest}
+    >
       {children}
     </MotionTag>
   )
