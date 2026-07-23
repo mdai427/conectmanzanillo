@@ -48,7 +48,7 @@ export default function EmpresaPerfil() {
     <div className="max-w-4xl mx-auto px-4 py-16 text-center">
       <Building2 size={40} className="text-gray-300 mx-auto mb-3" />
       <p className="text-gray-500">Empresa no encontrada</p>
-      <Link to="/directorio-empresarial" className="mt-4 inline-block text-blue-600 text-sm hover:underline">
+      <Link to="/directorio-empresarial" className="mt-4 inline-block text-teal-600 text-sm hover:underline">
         ← Volver al directorio
       </Link>
     </div>
@@ -61,7 +61,7 @@ export default function EmpresaPerfil() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6 space-y-6">
       {/* Back */}
-      <Link to="/directorio-empresarial" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-blue-600 transition-colors">
+      <Link to="/directorio-empresarial" className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-teal-600 transition-colors">
         <ArrowLeft size={14} /> Directorio
       </Link>
 
@@ -90,7 +90,7 @@ export default function EmpresaPerfil() {
             <div className="pb-1">
               <h1 className="text-xl font-bold text-gray-900">{empresa.nombre_comercial}</h1>
               {empresa.categoria_slug && (
-                <span className="text-sm text-blue-600 font-semibold capitalize">
+                <span className="text-sm text-teal-600 font-semibold capitalize">
                   {empresa.categoria_slug.replace(/-/g, ' ')}
                 </span>
               )}
@@ -112,20 +112,20 @@ export default function EmpresaPerfil() {
             )}
             {empresa.telefono && (
               <a href={`tel:${empresa.telefono}`}
-                className="flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold rounded-xl transition-colors">
+                className="flex items-center gap-2 px-4 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-sm font-bold rounded-xl transition-colors">
                 <Phone size={15} /> Llamar
               </a>
             )}
             {empresa.sitio_web && (
               <a href={empresa.sitio_web} target="_blank" rel="noopener noreferrer"
                 onClick={() => registrarEvento(empresa.id, 'clic_web')}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:border-blue-300 text-gray-700 text-sm font-semibold rounded-xl transition-colors">
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:border-teal-300 text-gray-700 text-sm font-semibold rounded-xl transition-colors">
                 <Globe size={15} /> Sitio web
               </a>
             )}
             {empresa.email && (
               <a href={`mailto:${empresa.email}`}
-                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:border-blue-300 text-gray-700 text-sm font-semibold rounded-xl transition-colors">
+                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-gray-200 hover:border-teal-300 text-gray-700 text-sm font-semibold rounded-xl transition-colors">
                 <Mail size={15} /> Email
               </a>
             )}
@@ -142,7 +142,7 @@ export default function EmpresaPerfil() {
               <h2 className="font-bold text-gray-900 mb-3 text-sm">Servicios</h2>
               <div className="flex flex-wrap gap-2">
                 {empresa.servicios.map((s, i) => (
-                  <span key={i} className="px-3 py-1 bg-blue-50 text-blue-700 text-xs font-semibold rounded-full">
+                  <span key={i} className="px-3 py-1 bg-teal-50 text-teal-700 text-xs font-semibold rounded-full">
                     {s}
                   </span>
                 ))}
@@ -184,12 +184,12 @@ export default function EmpresaPerfil() {
           {empresa.vacantes?.length > 0 && (
             <div className="bg-white rounded-2xl border border-gray-200 p-5">
               <h2 className="font-bold text-gray-900 mb-3 text-sm flex items-center gap-2">
-                <Briefcase size={15} className="text-blue-600" /> Vacantes activas
+                <Briefcase size={15} className="text-teal-600" /> Vacantes activas
               </h2>
               <div className="space-y-2">
                 {empresa.vacantes.map(v => (
                   <Link key={v.id} to="/vacantes"
-                    className="flex items-center justify-between p-3 bg-gray-50 hover:bg-blue-50 rounded-xl transition-colors">
+                    className="flex items-center justify-between p-3 bg-gray-50 hover:bg-teal-50 rounded-xl transition-colors">
                     <div>
                       <p className="text-sm font-semibold text-gray-900">{v.titulo}</p>
                       <p className="text-xs text-gray-500 mt-0.5 capitalize">{v.tipo_contrato}</p>

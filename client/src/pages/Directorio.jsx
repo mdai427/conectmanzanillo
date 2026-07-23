@@ -35,7 +35,7 @@ export default function Directorio() {
       <div className="bg-white border-b border-slate-200 shadow-sm">
         <div className="max-w-3xl mx-auto px-4 py-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-teal-600 flex items-center justify-center shrink-0">
               <BookOpen size={18} className="text-white" />
             </div>
             <div>
@@ -52,8 +52,8 @@ export default function Directorio() {
           <button onClick={() => setActiveCategory(null)}
             className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
               !activeCategory
-                ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-blue-600'
+                ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                : 'bg-white text-slate-500 border-slate-200 hover:border-teal-300 hover:text-teal-600'
             }`}>
             Todos
           </button>
@@ -61,8 +61,8 @@ export default function Directorio() {
             <button key={key} onClick={() => setActiveCategory(key)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${
                 activeCategory === key
-                  ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
-                  : 'bg-white text-slate-500 border-slate-200 hover:border-blue-300 hover:text-blue-600'
+                  ? 'bg-teal-600 text-white border-teal-600 shadow-sm'
+                  : 'bg-white text-slate-500 border-slate-200 hover:border-teal-300 hover:text-teal-600'
               }`}>
               {emoji} {label}
             </button>
@@ -85,7 +85,7 @@ export default function Directorio() {
             {listings.map(item => (
               <div key={item.id}
                 className={`bg-white rounded-2xl border shadow-sm hover:shadow-md transition-shadow p-4 flex items-start gap-4 ${
-                  item.is_featured ? 'border-blue-200 ring-1 ring-blue-100' : 'border-slate-200'
+                  item.is_featured ? 'border-teal-200 ring-1 ring-teal-100' : 'border-slate-200'
                 }`}>
                 <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shrink-0 bg-slate-50 border border-slate-200">
                   {CATEGORIES[item.category]?.emoji || '📍'}
@@ -122,7 +122,7 @@ export default function Directorio() {
                     )}
                     {item.maps_url && (
                       <a href={item.maps_url} target="_blank" rel="noopener noreferrer"
-                        className="flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-600 text-xs px-3 py-1.5 rounded-lg hover:bg-blue-100 transition-colors font-medium">
+                        className="flex items-center gap-1.5 bg-teal-50 border border-teal-200 text-teal-600 text-xs px-3 py-1.5 rounded-lg hover:bg-teal-100 transition-colors font-medium">
                         <MapPin size={11} /> Cómo llegar
                       </a>
                     )}

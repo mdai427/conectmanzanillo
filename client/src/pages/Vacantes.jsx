@@ -48,7 +48,7 @@ const CONTRATO_COLOR = {
   honorarios: { bg: '#fdf4ff', text: '#7e22ce', border: '#e9d5ff' },
 }
 
-const inputCls = 'w-full rounded-xl px-4 py-3 text-slate-800 text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all placeholder-slate-400'
+const inputCls = 'w-full rounded-xl px-4 py-3 text-slate-800 text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition-all placeholder-slate-400'
 const selectCls = inputCls + ' appearance-none cursor-pointer'
 const labelCls = 'block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5'
 
@@ -87,11 +87,11 @@ function VacanteCard({ v, perfil, destacada }) {
   const match = perfil ? calcularMatch(v, perfil) : null
 
   return (
-    <div className={`bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all p-4 ${destacada ? 'ring-2 ring-blue-400 ring-offset-1' : ''}`}
-         style={{ borderColor: destacada ? '#93c5fd' : '#e2e8f0' }}>
+    <div className={`bg-white rounded-2xl border shadow-sm hover:shadow-md transition-all p-4 ${destacada ? 'ring-2 ring-teal-400 ring-offset-1' : ''}`}
+         style={{ borderColor: destacada ? '#5eead4' : '#e2e8f0' }}>
       {destacada && (
         <div className="flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full w-fit text-[10px] font-bold"
-             style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe' }}>
+             style={{ background: '#f0fdfa', color: '#0f766e', border: '1px solid #99f6e4' }}>
           <Sparkles size={10} />
           Recomendada para tu perfil · {match}% compatible
         </div>
@@ -99,7 +99,7 @@ function VacanteCard({ v, perfil, destacada }) {
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="flex items-center gap-3">
           <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 font-black text-lg text-white"
-               style={{ background: 'linear-gradient(135deg, #1e40af, #3b82f6)' }}>
+               style={{ background: 'linear-gradient(135deg, #0f766e, #14b8a6)' }}>
             {v.empresa.charAt(0).toUpperCase()}
           </div>
           <div>
@@ -114,7 +114,7 @@ function VacanteCard({ v, perfil, destacada }) {
       </div>
       <div className="flex flex-wrap gap-1.5 mb-3">
         {v.tipo_licencia && v.tipo_licencia !== 'cualquiera' && (
-          <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+          <span className="px-2 py-0.5 rounded-lg text-[11px] font-semibold bg-teal-50 text-teal-700 border border-teal-100">
             🪪 {licLabel}
           </span>
         )}
@@ -163,7 +163,7 @@ function VacanteCard({ v, perfil, destacada }) {
           </a>
         ) : v.contacto_tel ? (
           <a href={`tel:${v.contacto_tel}`}
-             className="px-3 py-2 rounded-xl text-xs font-bold text-blue-700 bg-blue-50 border border-blue-100 hover:bg-blue-100 transition-all">
+             className="px-3 py-2 rounded-xl text-xs font-bold text-teal-700 bg-teal-50 border border-teal-100 hover:bg-teal-100 transition-all">
             📞 Llamar
           </a>
         ) : null}
@@ -223,7 +223,7 @@ function PagoSuscripcion({ companyId }) {
           <p className="text-sm text-slate-500 mb-4">El registro es gratuito. Solo pagas cuando quieras publicar vacantes.</p>
           <div className="flex gap-3">
             <Link to="/register" className="flex-1 py-3 rounded-xl font-black text-sm text-white text-center"
-                  style={{ background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)' }}>
+                  style={{ background: 'linear-gradient(135deg, #0f766e, #14b8a6)' }}>
               Registrarse gratis
             </Link>
             <Link to="/login" className="flex-1 py-3 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 text-center hover:bg-slate-200 transition-all">
@@ -432,7 +432,7 @@ function FormEmpresa({ onSuccess }) {
 
       <button onClick={() => mutate()} disabled={isPending}
         className="w-full py-4 rounded-2xl font-black text-base text-white disabled:opacity-40 active:scale-[0.98] transition-all shadow-lg"
-        style={{ background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)' }}>
+        style={{ background: 'linear-gradient(135deg, #0f766e, #14b8a6)' }}>
         {isPending ? 'Publicando…' : '📋 Publicar vacante'}
       </button>
       <p className="text-xs text-slate-400 text-center">
@@ -524,7 +524,7 @@ export default function Vacantes() {
       tab === id ? 'text-white shadow-md' : 'text-slate-500 hover:text-slate-700'
     }`
 
-  const selectFiltro = 'rounded-xl px-3 py-2.5 text-sm bg-white border border-slate-200 text-slate-700 focus:outline-none focus:border-blue-400 appearance-none cursor-pointer font-medium w-full'
+  const selectFiltro = 'rounded-xl px-3 py-2.5 text-sm bg-white border border-slate-200 text-slate-700 focus:outline-none focus:border-teal-400 appearance-none cursor-pointer font-medium w-full'
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -533,7 +533,7 @@ export default function Vacantes() {
         <div className="max-w-4xl mx-auto px-4 py-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                 style={{ background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)' }}>
+                 style={{ background: 'linear-gradient(135deg, #0f766e, #14b8a6)' }}>
               <Building2 size={18} className="text-white" />
             </div>
             <div>
@@ -541,7 +541,7 @@ export default function Vacantes() {
               <p className="text-slate-500 text-sm">
                 {vacantes.length} vacante{vacantes.length !== 1 ? 's' : ''} activa{vacantes.length !== 1 ? 's' : ''}
                 {miPerfil && recomendadas.length > 0 && (
-                  <span className="text-blue-600 font-bold"> · {recomendadas.length} recomendadas para ti</span>
+                  <span className="text-teal-600 font-bold"> · {recomendadas.length} recomendadas para ti</span>
                 )}
               </p>
             </div>
@@ -550,7 +550,7 @@ export default function Vacantes() {
           {/* Tabs */}
           <div className="flex p-1 rounded-2xl gap-1 bg-slate-100">
             <button onClick={() => setTab('buscar')} className={tabCls('buscar')}
-              style={tab === 'buscar' ? { background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)' } : {}}>
+              style={tab === 'buscar' ? { background: 'linear-gradient(135deg, #0f766e, #14b8a6)' } : {}}>
               🔍 Ver vacantes
             </button>
             <button onClick={() => setTab('publicar')} className={tabCls('publicar')}
@@ -571,7 +571,7 @@ export default function Vacantes() {
             {miPerfil && recomendadas.length > 0 && (
               <div className="mb-6">
                 <div className="flex items-center gap-2 mb-3">
-                  <Sparkles size={14} className="text-blue-500" />
+                  <Sparkles size={14} className="text-teal-500" />
                   <p className="text-sm font-black text-slate-700">Recomendadas para tu perfil</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -584,13 +584,13 @@ export default function Vacantes() {
             )}
 
             {!miPerfil && user && (
-              <div className="mb-5 p-4 rounded-2xl border border-blue-100 bg-blue-50 flex items-center justify-between gap-3">
+              <div className="mb-5 p-4 rounded-2xl border border-teal-100 bg-teal-50 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-bold text-blue-800">¿Buscas trabajo?</p>
-                  <p className="text-xs text-blue-600">Crea tu perfil profesional y te mostraremos vacantes compatibles.</p>
+                  <p className="text-sm font-bold text-teal-800">¿Buscas trabajo?</p>
+                  <p className="text-xs text-teal-600">Crea tu perfil profesional y te mostraremos vacantes compatibles.</p>
                 </div>
                 <a href="/posturas" className="shrink-0 px-4 py-2 rounded-xl text-xs font-black text-white"
-                   style={{ background: 'linear-gradient(135deg, #1d4ed8, #3b82f6)' }}>
+                   style={{ background: 'linear-gradient(135deg, #0f766e, #14b8a6)' }}>
                   Crear perfil
                 </a>
               </div>
@@ -602,7 +602,7 @@ export default function Vacantes() {
                 <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                 <input value={busqueda} onChange={e => setBusqueda(e.target.value)}
                   placeholder="Buscar empresa, puesto, descripción…"
-                  className="w-full pl-9 pr-4 py-3 rounded-xl text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all" />
+                  className="w-full pl-9 pr-4 py-3 rounded-xl text-sm bg-slate-50 border border-slate-200 focus:outline-none focus:border-teal-400 focus:ring-2 focus:ring-teal-100 transition-all" />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 <select value={filtroLabora} onChange={e => setFiltroLabora(e.target.value)} className={selectFiltro}>

@@ -74,7 +74,7 @@ function EmpresaCard({ empresa }) {
         <div className="flex items-center gap-2"><h3 className="min-w-0 flex-1 truncate text-sm font-bold leading-snug text-gray-900 transition-colors group-hover:text-teal-700">{empresa.nombre_comercial}</h3><VerificationBadge verified={empresa.es_verificado}/></div>
 
         {empresa.categoria_slug && (
-          <span className="text-[10px] text-blue-600 font-semibold mt-0.5 uppercase tracking-wide">
+          <span className="text-[10px] text-teal-600 font-semibold mt-0.5 uppercase tracking-wide">
             {empresa.categoria_slug.replace(/-/g, ' ')}
           </span>
         )}
@@ -100,8 +100,8 @@ function EmpresaCard({ empresa }) {
             </div>
           )}
           {empresa.telefono && (
-            <div className="w-6 h-6 rounded-lg bg-blue-50 flex items-center justify-center">
-              <Phone size={12} className="text-blue-600" />
+            <div className="w-6 h-6 rounded-lg bg-teal-50 flex items-center justify-center">
+              <Phone size={12} className="text-teal-600" />
             </div>
           )}
           {empresa.sitio_web && (
@@ -109,7 +109,7 @@ function EmpresaCard({ empresa }) {
               <Globe size={12} className="text-purple-600" />
             </div>
           )}
-          <ChevronRight size={14} className="text-gray-300 ml-auto group-hover:text-blue-500 transition-colors" />
+          <ChevronRight size={14} className="text-gray-300 ml-auto group-hover:text-teal-500 transition-colors" />
         </div>
       </div>
     </Link>
@@ -166,8 +166,8 @@ export default function DirectorioEmpresarial() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-            <Building2 size={20} className="text-blue-600" />
+          <div className="w-10 h-10 rounded-xl bg-teal-50 flex items-center justify-center">
+            <Building2 size={20} className="text-teal-600" />
           </div>
           <div>
             <h1 className="text-xl font-bold text-gray-900">Directorio Empresarial</h1>
@@ -190,16 +190,16 @@ export default function DirectorioEmpresarial() {
             value={q}
             onChange={e => setQ(e.target.value)}
             placeholder="Buscar empresa..."
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-blue-400 transition-colors"
+            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-teal-400 transition-colors"
           />
         </div>
         <button type="submit"
-          className="px-4 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-colors">
+          className="px-4 py-2.5 bg-teal-600 text-white text-sm font-semibold rounded-xl hover:bg-teal-700 transition-colors">
           Buscar
         </button>
         <button type="button" onClick={() => setShowFiltros(v => !v)}
           className={`px-3 py-2.5 rounded-xl border text-sm font-semibold transition-colors flex items-center gap-1.5 ${
-            showFiltros ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'
+            showFiltros ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-600 border-gray-200'
           }`}>
           <Filter size={14} />
           Filtros
@@ -213,7 +213,7 @@ export default function DirectorioEmpresarial() {
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-gray-700">Filtrar por</p>
             {hayFiltros && (
-              <button onClick={resetFiltros} className="text-xs text-blue-600 hover:underline flex items-center gap-1">
+              <button onClick={resetFiltros} className="text-xs text-teal-600 hover:underline flex items-center gap-1">
                 <X size={12} /> Limpiar
               </button>
             )}
@@ -226,7 +226,7 @@ export default function DirectorioEmpresarial() {
               {TIERS.map(t => (
                 <button key={t.value} onClick={() => { setTier(t.value); setPage(1) }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                    tier === t.value ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
+                    tier === t.value ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-600 border-gray-200 hover:border-teal-300'
                   }`}>
                   {t.label}
                 </button>
@@ -240,14 +240,14 @@ export default function DirectorioEmpresarial() {
             <div className="flex flex-wrap gap-2">
               <button onClick={() => { setCategoria('todas'); setPage(1) }}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                  categoria === 'todas' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
+                  categoria === 'todas' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-600 border-gray-200 hover:border-teal-300'
                 }`}>
                 Todas
               </button>
               {categorias.map(c => (
                 <button key={c.slug} onClick={() => { setCategoria(c.slug); setPage(1) }}
                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
-                    categoria === c.slug ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300'
+                    categoria === c.slug ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-600 border-gray-200 hover:border-teal-300'
                   }`}>
                   {c.icono} {c.nombre}
                 </button>
@@ -262,14 +262,14 @@ export default function DirectorioEmpresarial() {
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
           <button onClick={() => { setCategoria('todas'); setPage(1) }}
             className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-              categoria === 'todas' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'
+              categoria === 'todas' ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-600 border-gray-200'
             }`}>
             Todas
           </button>
           {categorias.map(c => (
             <button key={c.slug} onClick={() => { setCategoria(c.slug); setPage(1) }}
               className={`shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${
-                categoria === c.slug ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-600 border-gray-200'
+                categoria === c.slug ? 'bg-teal-600 text-white border-teal-600' : 'bg-white text-gray-600 border-gray-200'
               }`}>
               {c.icono} {c.nombre}
             </button>
@@ -289,7 +289,7 @@ export default function DirectorioEmpresarial() {
           <Building2 size={32} className="text-gray-300 mx-auto mb-3" />
           <p className="text-gray-500 text-sm">No hay empresas registradas en esta categoría</p>
           {hayFiltros && (
-            <button onClick={resetFiltros} className="mt-3 text-blue-600 text-sm hover:underline">
+            <button onClick={resetFiltros} className="mt-3 text-teal-600 text-sm hover:underline">
               Limpiar filtros
             </button>
           )}
@@ -306,12 +306,12 @@ export default function DirectorioEmpresarial() {
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2">
               <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 disabled:opacity-40 hover:border-blue-300 transition-colors">
+                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 disabled:opacity-40 hover:border-teal-300 transition-colors">
                 Anterior
               </button>
               <span className="text-sm text-gray-500">Pág {page} de {totalPages}</span>
               <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 disabled:opacity-40 hover:border-blue-300 transition-colors">
+                className="px-4 py-2 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 disabled:opacity-40 hover:border-teal-300 transition-colors">
                 Siguiente
               </button>
             </div>
@@ -320,11 +320,11 @@ export default function DirectorioEmpresarial() {
       )}
 
       {/* CTA para empresas */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 rounded-2xl p-6 text-center">
+      <div className="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-6 text-center">
         <h3 className="text-white font-bold text-lg mb-1">¿Tu empresa no aparece?</h3>
-        <p className="text-blue-100 text-sm mb-4">Registra tu empresa y llega a miles de profesionales del Puerto de Manzanillo</p>
+        <p className="text-teal-100 text-sm mb-4">Registra tu empresa y llega a miles de profesionales del Puerto de Manzanillo</p>
         <Link to="/anunciate"
-          className="inline-block px-6 py-2.5 bg-white text-blue-700 font-bold text-sm rounded-xl hover:bg-blue-50 transition-colors">
+          className="inline-block px-6 py-2.5 bg-white text-teal-700 font-bold text-sm rounded-xl hover:bg-teal-50 transition-colors">
           Ver paquetes de publicidad
         </Link>
       </div>
