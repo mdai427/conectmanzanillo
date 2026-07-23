@@ -53,7 +53,7 @@ declare
   report_owner uuid;
 begin
   -- Solo procesar reacciones tipo 'confirm'
-  if new.type = 'confirm' then
+  if new.reaction = 'confirm' then
     -- Obtener el dueño del reporte
     select user_id into report_owner from public.reports where id = new.report_id;
     if report_owner is not null and report_owner != new.user_id then
@@ -69,7 +69,7 @@ begin
 end;
 $$;
 
-drop trigger if exists on_reaction_confirm on public.reactions;
+drop trigger if exists on_reaction_confirm on public.vote_reactions;
 create trigger on_reaction_confirm
-  after insert on public.reactions
+  after insert on public.vote_reactions
   for each row execute function public.otorgar_puntos_confirmacion();

@@ -130,7 +130,7 @@ create policy "Admin read all company profiles"
 -- updated_at trigger
 create trigger company_profiles_updated_at
   before update on public.company_profiles
-  for each row execute function update_updated_at_column();
+  for each row execute function public.set_updated_at();
 
 -- ── 7. Trigger: registrar evento de timeline al crear reporte ────
 create or replace function public.crear_evento_timeline()
