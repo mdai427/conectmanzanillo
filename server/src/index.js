@@ -67,14 +67,43 @@ app.set('io', io)
 // Stripe webhook necesita body crudo — montarlo ANTES de express.json
 app.use('/api/pagos/webhook', express.raw({ type: 'application/json' }))
 
-// Middlewares
-app.use(helmet({ contentSecurityPolicy: false }))
+// Orígenes de Supabase (REST/Auth + Realtime WebSocket) para connect-src.
+const supabaseHttp = String(process.env.SUPABASE_URL || '').replace(/\/+$/, '')
+const supabaseWs = supabaseHttp.replace(/^https:/, 'wss:').replace(/^http:/, 'ws:')
+const connectExtras = [supabaseHttp, supabaseWs, ...ALLOWED_ORIGINS].filter(Boolean)
+
+// Middlewares — CSP en modo REPORT-ONLY: no bloquea nada, solo registra
+// violaciones. Una vez verificado que no hay reportes legítimos rotos,
+// cambiar `reportOnly` a false para hacerla efectiva.
+app.use(helmet({
+  contentSecurityPolicy: {
+    reportOnly: true,
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      imgSrc: ["'self'", 'data:', 'blob:', 'https:'],
+      fontSrc: ["'self'", 'data:', 'https:'],
+      connectSrc: ["'self'", ...connectExtras],
+      frameSrc: ["'self'", 'https://checkout.stripe.com', 'https://js.stripe.com'],
+      objectSrc: ["'none'"],
+      baseUri: ["'self'"],
+      frameAncestors: ["'self'"],
+    },
+  },
+}))
 app.use(cors({ origin: corsOrigin }))
 app.use(express.json({ limit: '10kb' }))
 app.use(morgan('combined'))
 
-// Rate limiting
-app.use('/api/phone-auth', rateLimit({ windowMs: 10 * 60 * 1000, max: 8, message: { error: 'Demasiados intentos. Espera unos minutos antes de solicitar otro código.' } }))
+// Rate limiting — límites separados por endpoint para que gastar intentos de
+// verificación no bloquee el reenvío de códigos (y viceversa).
+const otpSendLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 5, message: { error: 'Demasiados envíos de código. Espera unos minutos antes de solicitar otro.' } })
+const otpVerifyLimiter = rateLimit({ windowMs: 10 * 60 * 1000, max: 12, message: { error: 'Demasiados intentos. Espera unos minutos antes de reintentar.' } })
+app.use('/api/phone-auth/send', otpSendLimiter)
+app.use('/api/phone-auth/reset-password', otpSendLimiter)
+app.use('/api/phone-auth/verify', otpVerifyLimiter)
+app.use('/api/phone-auth', rateLimit({ windowMs: 10 * 60 * 1000, max: 30 }))
 app.use('/api/reports', rateLimit({ windowMs: 15 * 60 * 1000, max: 20, message: 'Demasiadas solicitudes' }))
 app.use('/api/resources', rateLimit({ windowMs: 15 * 60 * 1000, max: 80, message: { error: 'Demasiadas descargas. Espera unos minutos.' } }))
 app.use('/api', rateLimit({ windowMs: 15 * 60 * 1000, max: 200 }))

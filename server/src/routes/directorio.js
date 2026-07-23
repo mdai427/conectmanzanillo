@@ -11,7 +11,7 @@ router.get('/categorias', async (_req, res) => {
     .from('directorio_categorias')
     .select('*')
     .order('orden')
-  if (error) return res.status(500).json({ error: error.message })
+  if (error) { console.error('[directorio/categorias]', error.message); return res.status(500).json({ error: 'No fue posible cargar las categorías.' }) }
   res.json(data)
 })
 
@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
     .range(offset, offset + limit - 1)
 
   const { data, error, count } = await query
-  if (error) return res.status(500).json({ error: error.message })
+  if (error) { console.error('[directorio/list]', error.message); return res.status(500).json({ error: 'No fue posible cargar el directorio.' }) }
   res.json({ data, total: count, page, limit })
 })
 
@@ -151,7 +151,7 @@ router.post('/', requireAuth, requireRole('admin'), async (req, res) => {
     .select()
     .single()
 
-  if (error) return res.status(400).json({ error: error.message })
+  if (error) { console.error('[directorio/admin-create]', error.message); return res.status(400).json({ error: 'No fue posible crear la empresa.' }) }
   res.json(data)
 })
 
@@ -165,7 +165,7 @@ router.patch('/:id', requireAuth, requireRole('admin'), async (req, res) => {
     .select()
     .single()
 
-  if (error) return res.status(400).json({ error: error.message })
+  if (error) { console.error('[directorio/admin-update]', error.message); return res.status(400).json({ error: 'No fue posible actualizar la empresa.' }) }
   res.json(data)
 })
 
@@ -176,7 +176,7 @@ router.delete('/:id', requireAuth, requireRole('admin'), async (req, res) => {
     .update({ is_active: false })
     .eq('id', req.params.id)
 
-  if (error) return res.status(400).json({ error: error.message })
+  if (error) { console.error('[directorio/admin-delete]', error.message); return res.status(400).json({ error: 'No fue posible eliminar la empresa.' }) }
   res.json({ ok: true })
 })
 

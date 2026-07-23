@@ -12,7 +12,7 @@ const FALLBACK_PLANS = [
 router.get('/planes', async (_req, res) => {
   const { data, error } = await supabaseAdmin.from('advertising_plans').select('id, code, name, description, features, monthly_price, currency, requires_quote, sort_order').eq('is_active', true).order('sort_order')
   if (error && /advertising_plans|schema cache|PGRST205/i.test(error.message)) return res.json(FALLBACK_PLANS)
-  if (error) return res.status(500).json({ error: error.message })
+  if (error) { console.error('[publicidad/planes]', error.message); return res.status(500).json({ error: 'No fue posible cargar los planes.' }) }
   res.json(data || [])
 })
 
@@ -27,7 +27,7 @@ router.post('/solicitudes', requireAuth, async (req, res) => {
   if (safeContactName.length < 2) return res.status(400).json({ error: 'Nombre del responsable requerido' })
   if (!safeEmail.includes('@')) return res.status(400).json({ error: 'Correo inválido' })
   const { data, error } = await supabaseAdmin.from('advertising_leads').insert({ company_id: membership.company_id, plan_id: plan.id, requested_by: req.user.id, contact_name: safeContactName, email: safeEmail, phone: String(phone || '').trim().slice(0, 30) || null, message: String(message || '').trim().slice(0, 1500) || null }).select('id, status, created_at').single()
-  if (error) return res.status(400).json({ error: error.message })
+  if (error) { console.error('[publicidad/solicitudes]', error.message); return res.status(400).json({ error: 'No fue posible registrar la solicitud.' }) }
   res.status(201).json(data)
 })
 
@@ -103,7 +103,7 @@ router.get('/admin/all', requireAuth, requirePermission('ad.approve'), async (re
   if (activas === 'true') query = query.eq('is_active', true)
 
   const { data, error } = await query
-  if (error) return res.status(500).json({ error: error.message })
+  if (error) { console.error('[publicidad/admin-all]', error.message); return res.status(500).json({ error: 'No fue posible cargar las campañas.' }) }
   res.json(data)
 })
 
@@ -129,7 +129,7 @@ router.post('/admin', requireAuth, requirePermission('ad.approve'), async (req, 
     .select()
     .single()
 
-  if (error) return res.status(400).json({ error: error.message })
+  if (error) { console.error('[publicidad/admin-create]', error.message); return res.status(400).json({ error: 'No fue posible crear la campaña.' }) }
   res.json(data)
 })
 
@@ -142,7 +142,7 @@ router.patch('/admin/:id', requireAuth, requirePermission('ad.approve'), async (
     .select()
     .single()
 
-  if (error) return res.status(400).json({ error: error.message })
+  if (error) { console.error('[publicidad/admin-update]', error.message); return res.status(400).json({ error: 'No fue posible actualizar la campaña.' }) }
   res.json(data)
 })
 
@@ -153,7 +153,7 @@ router.delete('/admin/:id', requireAuth, requirePermission('ad.approve'), async 
     .delete()
     .eq('id', req.params.id)
 
-  if (error) return res.status(400).json({ error: error.message })
+  if (error) { console.error('[publicidad/admin-delete]', error.message); return res.status(400).json({ error: 'No fue posible eliminar la campaña.' }) }
   res.json({ ok: true })
 })
 
