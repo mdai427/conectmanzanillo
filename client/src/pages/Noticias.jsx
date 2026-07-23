@@ -15,6 +15,8 @@ const CATEGORIES = [
 ]
 
 const CATEGORY_LABEL = Object.fromEntries(CATEGORIES)
+
+// Respaldo local temático por categoría (solo si falla la imagen remota).
 const CATEGORY_IMAGES = {
   accesos: ['/news/accesos-transporte.jpg'],
   transporte: ['/news/accesos-transporte.jpg'],
@@ -26,15 +28,40 @@ const CATEGORY_IMAGES = {
   clima: ['/news/clima-operacion.jpg'],
 }
 
+// Hash estable: la misma noticia siempre recibe la misma imagen y se reparten.
+function hashString(value) {
+  let hash = 0
+  const str = String(value)
+  for (let i = 0; i < str.length; i++) hash = (hash * 31 + str.charCodeAt(i)) | 0
+  return Math.abs(hash)
+}
+
+// Semilla única y estable por noticia para no repetir imágenes.
+function imageSeed(item) {
+  return encodeURIComponent(String(item.id || item.canonical_url || item.title || 'faro')).slice(0, 48)
+}
+
+// Imagen principal: la del medio si el feed la ofrece; si no, una imagen
+// libre (Picsum) única y determinista por noticia — nunca se repite.
+function newsImage(item) {
+  if (item.image_url) return item.image_url
+  return `https://picsum.photos/seed/faro-${imageSeed(item)}/900/540`
+}
+
+// Respaldo local si la imagen remota no carga.
+function localFallbackImage(item) {
+  const pool = CATEGORY_IMAGES[item.category] || CATEGORY_IMAGES.puerto
+  return pool[hashString(item.id || item.title || '') % pool.length]
+}
+
 async function fetchNews() {
   const response = await fetch(`${API_BASE}/api/news?limit=48`, { headers: { Accept: 'application/json' } })
   if (!response.ok) throw new Error('No fue posible consultar la actualidad portuaria.')
   return response.json()
 }
 
-function NewsCard({ item, featured = false, imageIndex = 0 }) {
-  const categoryImages = CATEGORY_IMAGES[item.category] || CATEGORY_IMAGES.puerto
-  const editorialImage = item.image_url || categoryImages[imageIndex % categoryImages.length]
+function NewsCard({ item, featured = false }) {
+  const editorialImage = newsImage(item)
   const publishedDate = item.published_at_source || item.published_at_portal
   const when = publishedDate
     ? formatDistanceToNow(new Date(publishedDate), { addSuffix: true, locale: es })
@@ -43,7 +70,7 @@ function NewsCard({ item, featured = false, imageIndex = 0 }) {
   return (
     <article className={`group overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-[0_12px_40px_rgba(8,47,53,.06)] transition duration-300 hover:-translate-y-1 hover:border-teal-300 hover:shadow-[0_20px_55px_rgba(8,47,53,.12)] ${featured ? 'lg:grid lg:grid-cols-[1.15fr_.85fr]' : ''}`}>
       <div className={`relative overflow-hidden bg-[#082F35] ${featured ? 'min-h-64 lg:min-h-full' : 'h-40'}`}>
-        <img src={editorialImage} alt={`Imagen editorial individual sobre ${CATEGORY_LABEL[item.category] || 'actividad portuaria'}: ${item.title}`} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105" onError={(event) => { event.currentTarget.src = categoryImages[imageIndex % categoryImages.length] }} />
+        <img src={editorialImage} alt={`Imagen editorial individual sobre ${CATEGORY_LABEL[item.category] || 'actividad portuaria'}: ${item.title}`} loading="lazy" referrerPolicy="no-referrer" className="h-full w-full object-cover opacity-90 transition duration-500 group-hover:scale-105" onError={(event) => { if (!event.currentTarget.dataset.fallback) { event.currentTarget.dataset.fallback = '1'; event.currentTarget.src = localFallbackImage(item) } }} />
         <span className="absolute left-5 top-5 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-[10px] font-black uppercase tracking-[.14em] text-white backdrop-blur">
           {CATEGORY_LABEL[item.category] || 'Sector'}
         </span>
@@ -129,8 +156,8 @@ export default function Noticias() {
           <div className="mt-8 rounded-3xl border border-slate-200 bg-white px-6 py-16 text-center"><Newspaper className="mx-auto text-teal-700" size={36} /><h2 className="mt-5 text-xl font-black text-[#082F35]">Estamos preparando la siguiente actualización</h2><p className="mx-auto mt-2 max-w-lg text-sm leading-6 text-slate-500">Prueba con otra categoría o vuelve más tarde. Faro Portuario solo publica referencias que cumplen sus criterios editoriales.</p>{(category !== 'todos' || query) && <button type="button" onClick={() => { setCategory('todos'); setQuery('') }} className="mt-5 text-sm font-black text-teal-700">Limpiar filtros</button>}</div>
         ) : (
           <>
-            <section className="mt-8" aria-labelledby="destacada-title"><div className="mb-5 flex items-end justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.18em] text-teal-700">Mayor relevancia</p><h2 id="destacada-title" className="mt-1 text-2xl font-black tracking-tight text-[#082F35]">Información destacada</h2></div><button type="button" onClick={() => refetch()} className="hidden min-h-10 items-center gap-2 text-xs font-black text-slate-500 sm:inline-flex"><RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} /> Actualizar</button></div><NewsCard item={featured} featured imageIndex={0} /></section>
-            {remaining.length > 0 && <section className="mt-12" aria-labelledby="feed-title"><div className="mb-5"><p className="text-[10px] font-black uppercase tracking-[.18em] text-teal-700">Últimas referencias</p><h2 id="feed-title" className="mt-1 text-2xl font-black tracking-tight text-[#082F35]">Más actualidad del sector</h2></div><div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{remaining.map((item, index) => <NewsCard key={item.id} item={item} imageIndex={index + 1} />)}</div></section>}
+            <section className="mt-8" aria-labelledby="destacada-title"><div className="mb-5 flex items-end justify-between"><div><p className="text-[10px] font-black uppercase tracking-[.18em] text-teal-700">Mayor relevancia</p><h2 id="destacada-title" className="mt-1 text-2xl font-black tracking-tight text-[#082F35]">Información destacada</h2></div><button type="button" onClick={() => refetch()} className="hidden min-h-10 items-center gap-2 text-xs font-black text-slate-500 sm:inline-flex"><RefreshCw size={14} className={isFetching ? 'animate-spin' : ''} /> Actualizar</button></div><NewsCard item={featured} featured /></section>
+            {remaining.length > 0 && <section className="mt-12" aria-labelledby="feed-title"><div className="mb-5"><p className="text-[10px] font-black uppercase tracking-[.18em] text-teal-700">Últimas referencias</p><h2 id="feed-title" className="mt-1 text-2xl font-black tracking-tight text-[#082F35]">Más actualidad del sector</h2></div><div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">{remaining.map((item) => <NewsCard key={item.id} item={item} />)}</div></section>}
           </>
         )}
 

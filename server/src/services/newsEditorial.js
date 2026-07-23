@@ -143,6 +143,27 @@ function attributeValue(xml, tag, attribute) {
   return normalizeText(match?.[1] || '')
 }
 
+/**
+ * Extrae la imagen que el propio feed publica junto al artículo
+ * (media:content, media:thumbnail, enclosure de imagen o <img> en el resumen).
+ * Devuelve solo URLs https válidas; en cualquier otro caso, null.
+ */
+export function extractFeedImage(block) {
+  const candidates = [
+    block.match(/<media:(?:content|thumbnail)\b[^>]*\burl=["']([^"']+)["']/i)?.[1],
+    block.match(/<enclosure\b[^>]*\burl=["']([^"']+)["'][^>]*type=["']image\//i)?.[1],
+    block.match(/<enclosure\b[^>]*type=["']image\/[^"']*["'][^>]*\burl=["']([^"']+)["']/i)?.[1],
+    block.match(/<img[^>]*\bsrc=["']([^"']+)["']/i)?.[1],
+    block.match(/<image\b[^>]*>[\s\S]*?<url>([\s\S]*?)<\/url>/i)?.[1],
+  ]
+  for (const raw of candidates) {
+    if (!raw) continue
+    const canon = canonicalizeUrl(normalizeText(raw))
+    if (canon && /^https:\/\//i.test(canon)) return canon
+  }
+  return null
+}
+
 export function parseRssFeed(xml, source) {
   const blocks = xml.match(/<item(?:\s[^>]*)?>[\s\S]*?<\/item>|<entry(?:\s[^>]*)?>[\s\S]*?<\/entry>/gi) || []
   return blocks.slice(0, MAX_ITEMS_PER_SOURCE).map(block => {
@@ -159,6 +180,7 @@ export function parseRssFeed(xml, source) {
       publishedAt: Number.isNaN(Date.parse(published)) ? null : new Date(published).toISOString(),
       publisherName: publisherName || null,
       publisherUrl: canonicalizeUrl(publisherUrl),
+      imageUrl: extractFeedImage(block),
       source,
     }
   }).filter(item => item.title.length >= 8 && item.url)
@@ -297,7 +319,11 @@ export function prepareNewsRecord(item) {
   const publishThreshold = Number(process.env.NEWS_AUTO_PUBLISH_SCORE || 70)
   const rejectThreshold = Number(process.env.NEWS_REJECT_SCORE || 18)
   const isOfficial = isOfficialAutoPublishSource(item.source)
-  const canAutoPublish = isOfficial && item.source?.trusted && item.source?.autoPublish && relevance.score >= publishThreshold
+  const discoveryAutoPublish = envBool(process.env.NEWS_DISCOVERY_AUTO_PUBLISH, false)
+  const discoveryThreshold = Number(process.env.NEWS_DISCOVERY_PUBLISH_SCORE || 45)
+  const canAutoPublish =
+    (isOfficial && item.source?.trusted && item.source?.autoPublish && relevance.score >= publishThreshold)
+    || (discoveryAutoPublish && relevance.score >= discoveryThreshold)
   const ageHours = item.publishedAt ? (Date.now() - Date.parse(item.publishedAt)) / 3_600_000 : 0
   const maxAgeHours = ['accesos', 'clima'].includes(relevance.category) ? 48 : 24 * 14
   const isStale = ageHours > maxAgeHours
@@ -321,8 +347,8 @@ export function prepareNewsRecord(item) {
     relevance_reasons: relevance.reasons,
     status,
     is_active: true,
-    image_url: item.source.allowsImage ? item.imageUrl || null : null,
-    image_rights_note: item.source.allowsImage && item.imageUrl ? 'Uso permitido por el proveedor configurado.' : null,
+    image_url: item.imageUrl || null,
+    image_rights_note: item.imageUrl ? 'Imagen difundida por el feed de la fuente, enlazada desde el origen.' : null,
     published_at_source: item.publishedAt,
     published_at_portal: status === 'published' ? new Date().toISOString() : null,
     expires_at: ['accesos', 'clima'].includes(relevance.category)
