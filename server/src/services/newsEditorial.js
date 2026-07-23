@@ -405,6 +405,8 @@ export async function ingestNews() {
 
   for (const source of sources) {
     try {
+      // Registrar la fuente primero: port_news.source_id la referencia por FK.
+      await saveSource(source)
       const items = await fetchSource(source)
       stats.discovered += items.length
       const records = items.map(prepareNewsRecord)
