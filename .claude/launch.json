@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "faro-client",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5188", "--strictPort"],
+      "cwd": "client",
+      "port": 5188
+    }
+  ]
+}
