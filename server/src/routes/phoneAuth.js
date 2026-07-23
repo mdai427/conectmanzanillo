@@ -6,6 +6,15 @@ import { formatMexicoPhone, phoneToAuthEmail, validatePassword } from '../servic
 
 const router = Router()
 const PURPOSES = new Set(['register', 'reset_password'])
+const VALID_CHANNELS = new Set(['sms', 'whatsapp'])
+
+// Canal primario configurable (VERIFY_CHANNEL=whatsapp|sms). WhatsApp evita el
+// filtrado de SMS A2P de los carriers mexicanos; si falla, respalda con SMS.
+function verifyChannels() {
+  const primary = String(process.env.VERIFY_CHANNEL || 'sms').toLowerCase()
+  const channel = VALID_CHANNELS.has(primary) ? primary : 'sms'
+  return channel === 'whatsapp' ? ['whatsapp', 'sms'] : ['sms']
+}
 
 router.get('/status', (_req, res) => {
   res.json({
@@ -43,15 +52,19 @@ router.post('/send', async (req, res) => {
   const purpose = PURPOSES.has(req.body.purpose) ? req.body.purpose : 'register'
   if (!phone) return res.status(400).json({ error: 'Ingresa un número mexicano válido de 10 dígitos' })
   const verification = verificationClient()
-  if (!verification) return res.status(503).json({ error: 'El servicio de verificación SMS aún no está configurado' })
-  try {
-    await verification.client.verify.v2.services(verification.verifySid)
-      .verifications.create({ to: phone, channel: 'sms', locale: 'es' })
-    res.json({ ok: true, phone, purpose, expires_in: 600 })
-  } catch (error) {
-    console.error('[phoneAuth] send error:', error.message)
-    res.status(502).json({ error: 'No se pudo enviar el SMS. Verifica el número e inténtalo más tarde.' })
+  if (!verification) return res.status(503).json({ error: 'El servicio de verificación aún no está configurado' })
+
+  const channels = verifyChannels()
+  for (const channel of channels) {
+    try {
+      await verification.client.verify.v2.services(verification.verifySid)
+        .verifications.create({ to: phone, channel, locale: 'es' })
+      return res.json({ ok: true, phone, purpose, channel, expires_in: 600 })
+    } catch (error) {
+      console.error(`[phoneAuth] send error (${channel}):`, error.message)
+    }
   }
+  res.status(502).json({ error: 'No se pudo enviar el código. Verifica el número e inténtalo más tarde.' })
 })
 
 router.post('/verify', async (req, res) => {
