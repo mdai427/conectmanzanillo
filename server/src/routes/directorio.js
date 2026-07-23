@@ -18,8 +18,10 @@ router.get('/categorias', async (_req, res) => {
 // ── GET /api/directorio ──────────────────────────────────────────
 // ?categoria=transportistas&q=nombre&page=1&limit=20&tier=premium
 router.get('/', async (req, res) => {
-  const { categoria, q, page = 1, limit = 24, tier } = req.query
-  const offset = (parseInt(page) - 1) * parseInt(limit)
+  const { categoria, q, tier } = req.query
+  const page = Math.max(1, parseInt(req.query.page) || 1)
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 24))
+  const offset = (page - 1) * limit
 
   let query = supabaseAdmin
     .from('empresa_perfiles')
@@ -45,11 +47,11 @@ router.get('/', async (req, res) => {
     .order('es_destacado', { ascending: false })
     .order('es_verificado',{ ascending: false })
     .order('created_at',   { ascending: false })
-    .range(offset, offset + parseInt(limit) - 1)
+    .range(offset, offset + limit - 1)
 
   const { data, error, count } = await query
   if (error) return res.status(500).json({ error: error.message })
-  res.json({ data, total: count, page: parseInt(page), limit: parseInt(limit) })
+  res.json({ data, total: count, page, limit })
 })
 
 // ── GET /api/directorio/:slug ────────────────────────────────────
@@ -98,30 +100,45 @@ router.post('/:id/evento', async (req, res) => {
     return res.status(400).json({ error: 'Tipo inválido' })
   }
 
-  await supabaseAdmin.from('empresa_analytics').insert({ empresa_id: id, evento: tipo })
-
-  // Update counter
+  // Update counter (solo si la empresa existe y está activa)
   const campo = tipo === 'clic_whatsapp' ? 'clics_whatsapp'
               : tipo === 'clic_web'      ? 'clics_web'
               : 'consultas_total'
 
   const { data: emp } = await supabaseAdmin
-    .from('empresa_perfiles').select(campo).eq('id', id).single()
-  if (emp) {
-    await supabaseAdmin.from('empresa_perfiles')
-      .update({ [campo]: (emp[campo] || 0) + 1 }).eq('id', id)
-  }
+    .from('empresa_perfiles').select(`id, ${campo}`).eq('id', id).eq('is_active', true).maybeSingle()
+  if (!emp) return res.status(404).json({ error: 'Empresa no encontrada' })
+
+  await supabaseAdmin.from('empresa_analytics').insert({ empresa_id: id, evento: tipo })
+  await supabaseAdmin.from('empresa_perfiles')
+    .update({ [campo]: (emp[campo] || 0) + 1 }).eq('id', id)
 
   res.json({ ok: true })
 })
 
+// Campos permitidos para crear/editar empresas (evita mass assignment)
+const EMPRESA_FIELDS = [
+  'slug', 'nombre_comercial', 'descripcion', 'logo_url', 'portada_url',
+  'categoria_slug', 'categorias', 'especialidades', 'servicios',
+  'whatsapp', 'telefono', 'email', 'sitio_web', 'direccion',
+  'es_premium', 'es_destacado', 'es_verificado', 'is_active',
+]
+
+function pickEmpresaFields(body) {
+  const payload = {}
+  for (const key of EMPRESA_FIELDS) {
+    if (body[key] !== undefined) payload[key] = body[key]
+  }
+  return payload
+}
+
 // ── Admin: crear empresa ─────────────────────────────────────────
 router.post('/', requireAuth, requireRole('admin'), async (req, res) => {
-  const body = req.body
+  const payload = pickEmpresaFields(req.body)
 
   // Auto-generar slug
-  if (!body.slug && body.nombre_comercial) {
-    body.slug = body.nombre_comercial
+  if (!payload.slug && payload.nombre_comercial) {
+    payload.slug = payload.nombre_comercial
       .toLowerCase()
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]+/g, '-')
@@ -130,7 +147,7 @@ router.post('/', requireAuth, requireRole('admin'), async (req, res) => {
 
   const { data, error } = await supabaseAdmin
     .from('empresa_perfiles')
-    .insert(body)
+    .insert(payload)
     .select()
     .single()
 
@@ -143,7 +160,7 @@ router.patch('/:id', requireAuth, requireRole('admin'), async (req, res) => {
   const { id } = req.params
   const { data, error } = await supabaseAdmin
     .from('empresa_perfiles')
-    .update(req.body)
+    .update(pickEmpresaFields(req.body))
     .eq('id', id)
     .select()
     .single()

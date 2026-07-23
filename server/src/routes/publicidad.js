@@ -33,8 +33,11 @@ router.post('/solicitudes', requireAuth, async (req, res) => {
 
 // ── GET /api/publicidad?zona=principal ──────────────────────────
 // Banners activos y vigentes para una zona (uso público)
+const AD_ZONES = new Set(['global', 'principal', 'directorio', 'noticias', 'vacantes', 'empresa'])
+
 router.get('/', async (req, res) => {
-  const { zona = 'global' } = req.query
+  const zona = AD_ZONES.has(req.query.zona) ? req.query.zona : 'global'
+  const today = new Date().toISOString().slice(0, 10)
 
   const { data, error } = await supabaseAdmin
     .from('publicidad_campanas')
@@ -46,13 +49,16 @@ router.get('/', async (req, res) => {
     .eq('is_active', true)
     .eq('review_status', 'approved')
     .eq('is_demo', false)
-    .or(`zona.eq.${zona},zona.eq.global`)
-    .or(`fecha_inicio.is.null,fecha_inicio.lte.${new Date().toISOString().slice(0,10)}`)
-    .or(`fecha_fin.is.null,fecha_fin.gte.${new Date().toISOString().slice(0,10)}`)
+    .in('zona', [zona, 'global'])
+    .or(`fecha_inicio.is.null,fecha_inicio.lte.${today}`)
+    .or(`fecha_fin.is.null,fecha_fin.gte.${today}`)
     .order('prioridad', { ascending: false })
     .limit(10)
 
-  if (error) return res.status(500).json({ error: error.message })
+  if (error) {
+    console.error('[publicidad/public]', error.message)
+    return res.status(500).json({ error: 'No fue posible cargar la publicidad.' })
+  }
 
   res.json(data || [])
 })
@@ -101,11 +107,25 @@ router.get('/admin/all', requireAuth, requirePermission('ad.approve'), async (re
   res.json(data)
 })
 
+// Campos permitidos para crear/editar campañas (evita mass assignment)
+const AD_CAMPAIGN_FIELDS = [
+  'titulo', 'imagen_url', 'link_url', 'whatsapp', 'zona', 'prioridad',
+  'empresa_id', 'fecha_inicio', 'fecha_fin', 'is_active', 'review_status', 'is_demo',
+]
+
+function pickAdFields(body) {
+  const payload = {}
+  for (const key of AD_CAMPAIGN_FIELDS) {
+    if (body[key] !== undefined) payload[key] = body[key]
+  }
+  return payload
+}
+
 // ── Admin: crear campaña ─────────────────────────────────────────
 router.post('/admin', requireAuth, requirePermission('ad.approve'), async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('publicidad_campanas')
-    .insert(req.body)
+    .insert(pickAdFields(req.body))
     .select()
     .single()
 
@@ -117,7 +137,7 @@ router.post('/admin', requireAuth, requirePermission('ad.approve'), async (req, 
 router.patch('/admin/:id', requireAuth, requirePermission('ad.approve'), async (req, res) => {
   const { data, error } = await supabaseAdmin
     .from('publicidad_campanas')
-    .update(req.body)
+    .update(pickAdFields(req.body))
     .eq('id', req.params.id)
     .select()
     .single()
@@ -139,7 +159,7 @@ router.delete('/admin/:id', requireAuth, requirePermission('ad.approve'), async 
 
 // ── Admin: estadísticas generales de publicidad ──────────────────
 router.get('/admin/stats', requireAuth, requirePermission('ad.approve'), async (req, res) => {
-  const [activasRes, totalRes, topRes] = await Promise.all([
+  const [activasRes, topRes, allRes] = await Promise.all([
     supabaseAdmin.from('publicidad_campanas')
       .select('id', { count: 'exact', head: true })
       .eq('is_active', true),
@@ -151,14 +171,14 @@ router.get('/admin/stats', requireAuth, requirePermission('ad.approve'), async (
       .select('impresiones, clics'),
   ])
 
-  const totales = (topRes.data || []).reduce((acc, c) => ({
+  const totales = (allRes.data || []).reduce((acc, c) => ({
     impresiones: acc.impresiones + (c.impresiones || 0),
     clics: acc.clics + (c.clics || 0),
   }), { impresiones: 0, clics: 0 })
 
   res.json({
     campanas_activas: activasRes.count || 0,
-    top_campanas: totalRes.data || [],
+    top_campanas: topRes.data || [],
     totales,
   })
 })
