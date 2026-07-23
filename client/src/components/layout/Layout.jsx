@@ -1,10 +1,35 @@
-import { Outlet, Link } from 'react-router-dom'
+import { Outlet, Link, useLocation } from 'react-router-dom'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 import Navbar from './Navbar.jsx'
 import BottomNav from './BottomNav.jsx'
 import EmergencyBanner from '../ui/EmergencyBanner.jsx'
 import NewsTicker from '../ui/NewsTicker.jsx'
 import ChatIA from '../ui/ChatIA.jsx'
 import { isDemoMode } from '../../lib/supabase.js'
+import { EASE_ARRIVAL } from '../../lib/motion.js'
+
+// Fundido sutil entre rutas: solo el contenido del Outlet cambia, la barra y
+// el pie permanecen. Salida más rápida que la entrada.
+function RouteTransition() {
+  const location = useLocation()
+  const reduced = useReducedMotion()
+  return (
+    <AnimatePresence mode="wait" initial={false}>
+      <motion.div
+        key={location.pathname}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{
+          duration: reduced ? 0 : 0.18,
+          ease: EASE_ARRIVAL,
+        }}
+      >
+        <Outlet />
+      </motion.div>
+    </AnimatePresence>
+  )
+}
 
 function Footer() {
   return (
@@ -45,7 +70,7 @@ export default function Layout() {
       <Navbar />
       <NewsTicker />
       <main className="flex-1 pb-20 sm:pb-6">
-        <Outlet />
+        <RouteTransition />
       </main>
       <Footer />
       <BottomNav />
