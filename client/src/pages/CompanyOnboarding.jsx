@@ -14,6 +14,38 @@ const COMPANY_TYPES = [
   ['training_center', 'Centro de capacitación'], ['trading_company', 'Comercializadora'], ['other_logistics_provider', 'Otro proveedor logístico'],
 ]
 
+// Catálogo oficial del SAT (c_RegimenFiscal). El tercer valor indica a qué
+// tipo de persona aplica: 'F' física, 'M' moral, 'FM' ambas.
+const SAT_REGIMES = [
+  ['601', 'General de Ley Personas Morales', 'M'],
+  ['603', 'Personas Morales con Fines no Lucrativos', 'M'],
+  ['605', 'Sueldos y Salarios e Ingresos Asimilados a Salarios', 'F'],
+  ['606', 'Arrendamiento', 'F'],
+  ['607', 'Régimen de Enajenación o Adquisición de Bienes', 'F'],
+  ['608', 'Demás ingresos', 'F'],
+  ['610', 'Residentes en el Extranjero sin Establecimiento Permanente en México', 'FM'],
+  ['611', 'Ingresos por Dividendos (socios y accionistas)', 'F'],
+  ['612', 'Personas Físicas con Actividades Empresariales y Profesionales', 'F'],
+  ['614', 'Ingresos por intereses', 'F'],
+  ['615', 'Régimen de los ingresos por obtención de premios', 'F'],
+  ['616', 'Sin obligaciones fiscales', 'F'],
+  ['620', 'Sociedades Cooperativas de Producción que optan por diferir sus ingresos', 'M'],
+  ['621', 'Incorporación Fiscal', 'F'],
+  ['622', 'Actividades Agrícolas, Ganaderas, Silvícolas y Pesqueras', 'M'],
+  ['623', 'Opcional para Grupos de Sociedades', 'M'],
+  ['624', 'Coordinados', 'M'],
+  ['625', 'Actividades Empresariales con ingresos a través de Plataformas Tecnológicas', 'F'],
+  ['626', 'Régimen Simplificado de Confianza (RESICO)', 'FM'],
+]
+
+// Devuelve [código, "código — nombre"] filtrado por personalidad jurídica.
+function satRegimeOptions(legalEntityType) {
+  const persona = legalEntityType === 'legal_entity' ? 'M' : legalEntityType === 'individual_business' ? 'F' : null
+  return SAT_REGIMES
+    .filter(([, , applies]) => !persona || applies === persona || applies === 'FM')
+    .map(([code, name]) => [code, `${code} — ${name}`])
+}
+
 const STEPS = ['Empresa', 'Fiscal', 'Contacto', 'Comercial', 'Documentos', 'Plan', 'Revisión']
 const INITIAL = { company_type: '', legal_entity_type: '', legal_name: '', trade_name: '', tax_id: '', tax_regime: '', fiscal_address: '', founded_year: '', responsible_name: '', responsible_title: '', business_email: '', phone: '', whatsapp: '', website: '', description: '', services: '', coverage: '', ports_served: 'Manzanillo', states_served: '', business_hours: '' }
 const FIELD_LABELS = { legal_name: 'Nombre legal o razón social', trade_name: 'Nombre comercial', tax_id: 'RFC', tax_regime: 'Régimen fiscal', fiscal_address: 'Dirección fiscal', responsible_name: 'Nombre del responsable' }
@@ -148,7 +180,7 @@ export default function CompanyOnboarding() {
 
           <section className="rounded-3xl border border-slate-200 p-5 shadow-[0_16px_50px_rgba(8,31,44,.06)] sm:p-8">
             {step === 0 && <Step title="Identidad del negocio" text="Registra una persona física con actividad empresarial o una empresa."><Select label="Actividad principal" value={form.company_type} onChange={(value) => setField('company_type', value)} options={COMPANY_TYPES} /><Field label="Nombre legal o razón social" value={form.legal_name} onChange={(value) => setField('legal_name', value)} /><Field label="Nombre comercial" value={form.trade_name} onChange={(value) => setField('trade_name', value)} /></Step>}
-            {step === 1 && <Step title="Información fiscal" text="Estos datos se utilizan para validación y nunca aparecen completos en el directorio."><Select label="Personalidad jurídica" value={form.legal_entity_type} onChange={(value) => setField('legal_entity_type', value)} options={[["individual_business","Persona física con actividad empresarial"],["legal_entity","Persona moral / empresa"]]} /><div className="grid gap-4 sm:grid-cols-2"><Field label="RFC" value={form.tax_id} onChange={(value) => setField('tax_id', value.toUpperCase())} maxLength={13} /><Field label="Régimen fiscal" value={form.tax_regime} onChange={(value) => setField('tax_regime', value)} /><Field label={form.legal_entity_type==='individual_business'?'Año de inicio de actividades':'Año de constitución'} type="number" value={form.founded_year} onChange={(value) => setField('founded_year', value)} /><Field label="Dirección fiscal" value={form.fiscal_address} onChange={(value) => setField('fiscal_address', value)} /></div></Step>}
+            {step === 1 && <Step title="Información fiscal" text="Estos datos se utilizan para validación y nunca aparecen completos en el directorio."><Select label="Personalidad jurídica" value={form.legal_entity_type} onChange={(value) => setField('legal_entity_type', value)} options={[["individual_business","Persona física con actividad empresarial"],["legal_entity","Persona moral / empresa"]]} /><div className="grid gap-4 sm:grid-cols-2"><Field label="RFC" value={form.tax_id} onChange={(value) => setField('tax_id', value.toUpperCase())} maxLength={13} /><Select label="Régimen fiscal" value={form.tax_regime} onChange={(value) => setField('tax_regime', value)} options={satRegimeOptions(form.legal_entity_type)} /><Field label={form.legal_entity_type==='individual_business'?'Año de inicio de actividades':'Año de constitución'} type="number" value={form.founded_year} onChange={(value) => setField('founded_year', value)} /><Field label="Dirección fiscal" value={form.fiscal_address} onChange={(value) => setField('fiscal_address', value)} /></div></Step>}
             {step === 2 && <Step title="Contacto responsable" text="Usaremos estos datos para comunicaciones de cuenta y validación."><div className="grid gap-4 sm:grid-cols-2"><Field label="Nombre del responsable" value={form.responsible_name} onChange={(value) => setField('responsible_name', value)} /><Field label="Puesto" value={form.responsible_title} onChange={(value) => setField('responsible_title', value)} /><Field label="Correo empresarial" type="email" value={form.business_email} onChange={(value) => setField('business_email', value)} /><Field label="Teléfono" value={form.phone} onChange={(value) => setField('phone', value)} /><Field label="WhatsApp" value={form.whatsapp} onChange={(value) => setField('whatsapp', value)} /><Field label="Sitio web" type="url" value={form.website} onChange={(value) => setField('website', value)} /></div></Step>}
             {step === 3 && <Step title="Información comercial" text="Ayuda a clientes y aliados a entender qué hace tu empresa."><Field label="Descripción" textarea value={form.description} onChange={(value) => setField('description', value)} /><div className="mt-4 grid gap-4 sm:grid-cols-2"><Field label="Servicios (separados por coma)" value={form.services} onChange={(value) => setField('services', value)} /><Field label="Cobertura" value={form.coverage} onChange={(value) => setField('coverage', value)} /><Field label="Puertos atendidos" value={form.ports_served} onChange={(value) => setField('ports_served', value)} /><Field label="Estados atendidos" value={form.states_served} onChange={(value) => setField('states_served', value)} /><Field label="Horario general" value={form.business_hours} onChange={(value) => setField('business_hours', value)} /></div></Step>}
             {step === 4 && <Step title="Documentación legal privada" text="PDF, JPG o PNG. Máximo 10 MB por archivo. Solo el equipo autorizado de validación puede consultarlos."><label className="mb-5 flex items-start gap-3 rounded-2xl border border-teal-100 bg-teal-50 p-4"><input type="checkbox" checked={aiConsent} onChange={(event) => setAiConsent(event.target.checked)} className="mt-1 accent-teal-700"/><span><b className="flex items-center gap-2 text-xs text-teal-950"><Sparkles size={14}/>Usar ayuda de IA para sugerir datos</b><small className="mt-1 block text-[10px] leading-4 text-teal-800">Autorizo el envío temporal del documento al proveedor configurado. Faro solicita que no conserve la respuesta. La IA solo propone campos: yo debo elegirlos y confirmarlos; nunca verifica ni aprueba la empresa.</small></span></label><div className="space-y-3">{requiredDocuments.map(([type, label]) => <DocumentUpload key={type} label={label} uploaded={documents.find((item) => item.document_type === type)} disabled={loading} selection={suggestionSelection} setSelection={setSuggestionSelection} onConfirm={confirmSuggestions} onFile={(file) => uploadDocument(type, file)} />)}</div><p className="mt-4 flex items-start gap-2 text-[11px] leading-5 text-slate-500"><AlertCircle size={14} className="mt-0.5 shrink-0"/>La extracción automática es opcional. Los documentos deben aprobarse mediante revisión humana antes de mostrar la insignia de empresa verificada. Faro no sustituye a una autoridad.</p></Step>}
