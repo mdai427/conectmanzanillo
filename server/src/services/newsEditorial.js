@@ -133,6 +133,22 @@ export function canonicalizeUrl(value) {
   }
 }
 
+/**
+ * Firma estable de una nota para deduplicar. Ignora el sufijo "- Medio" del
+ * titular y normaliza acentos/puntuación, de modo que el mismo hecho publicado
+ * por distintos medios (o reindexado por Google con otra URL) colapse en una
+ * sola huella. Se usa en lugar de la URL, que Google rota con el tiempo.
+ */
+export function newsTitleSignature(title = '') {
+  return normalizeText(title)
+    .replace(/\s+[-–—|]\s+[^-–—|]+$/, '') // quita el " - Nombre del medio" final
+    .toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // sin acentos
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 function tagValue(xml, tag) {
   const match = xml.match(new RegExp(`<${tag}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${tag}>`, 'i'))
   return normalizeText(match?.[1] || '')
@@ -321,16 +337,20 @@ export function prepareNewsRecord(item) {
   const isOfficial = isOfficialAutoPublishSource(item.source)
   const discoveryAutoPublish = envBool(process.env.NEWS_DISCOVERY_AUTO_PUBLISH, false)
   const discoveryThreshold = Number(process.env.NEWS_DISCOVERY_PUBLISH_SCORE || 45)
-  const canAutoPublish =
-    (isOfficial && item.source?.trusted && item.source?.autoPublish && relevance.score >= publishThreshold)
-    || (discoveryAutoPublish && relevance.score >= discoveryThreshold)
   const ageHours = item.publishedAt ? (Date.now() - Date.parse(item.publishedAt)) / 3_600_000 : 0
   const maxAgeHours = ['accesos', 'clima'].includes(relevance.category) ? 48 : 24 * 14
   const isStale = ageHours > maxAgeHours
+  // "Al día": solo se autopublica lo reciente. Sin fecha de publicación, no se autopublica.
+  const publishMaxAgeHours = Number(process.env.NEWS_PUBLISH_MAX_AGE_HOURS || 36)
+  const isFresh = item.publishedAt != null && ageHours <= publishMaxAgeHours
+  const canAutoPublish = isFresh && (
+    (isOfficial && item.source?.trusted && item.source?.autoPublish && relevance.score >= publishThreshold)
+    || (discoveryAutoPublish && relevance.score >= discoveryThreshold)
+  )
   const status = isStale || relevance.score < rejectThreshold ? 'rejected' : canAutoPublish ? 'published' : 'draft'
   const canonicalUrl = canonicalizeUrl(item.url)
   const fingerprint = createHash('sha256')
-    .update(`${item.source.id}|${canonicalUrl}|${normalizeText(item.title).toLowerCase()}`)
+    .update(`${item.source.id}|${newsTitleSignature(item.title)}`)
     .digest('hex')
 
   return {
@@ -399,6 +419,18 @@ async function saveSource(source, patch = {}) {
   }, { onConflict: 'id' })
 }
 
+/** Colapsa registros con la misma huella en una corrida, conservando el de mayor relevancia. */
+function dedupeByFingerprint(records) {
+  const byFingerprint = new Map()
+  for (const record of records) {
+    const existing = byFingerprint.get(record.fingerprint)
+    if (!existing || record.relevance_score > existing.relevance_score) {
+      byFingerprint.set(record.fingerprint, record)
+    }
+  }
+  return [...byFingerprint.values()]
+}
+
 export async function ingestNews() {
   const sources = configuredNewsSources()
   const stats = { sources: sources.length, discovered: 0, inserted: 0, drafts: 0, published: 0, rejected: 0, errors: [] }
@@ -409,7 +441,7 @@ export async function ingestNews() {
       await saveSource(source)
       const items = await fetchSource(source)
       stats.discovered += items.length
-      const records = items.map(prepareNewsRecord)
+      const records = dedupeByFingerprint(items.map(prepareNewsRecord))
       if (records.length) {
         const { data, error } = await supabaseAdmin.from('port_news')
           .upsert(records, { onConflict: 'fingerprint', ignoreDuplicates: true }).select('status')
