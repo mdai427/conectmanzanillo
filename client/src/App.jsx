@@ -36,6 +36,7 @@ const PortStatus = lazy(() => import('./pages/PortStatus.jsx'))
 const SectionDetail = lazy(() => import('./pages/SectionDetail.jsx'))
 const LongHaulRoutes = lazy(() => import('./pages/LongHaulRoutes.jsx'))
 const Marketplace = lazy(() => import('./pages/Marketplace.jsx'))
+const Analitica = lazy(() => import('./pages/Analitica.jsx'))
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } }
@@ -78,7 +79,7 @@ export default function App() {
             <Route path="directorio" element={<Directorio />} />
             <Route path="posturas" element={<Posturas />} />
             <Route path="vacantes" element={<Vacantes />} />
-            <Route path="analitica" element={<Navigate to="/" replace />} />
+            <Route path="analitica" element={<Analitica />} />
             <Route path="empresa" element={<Empresa />} />
             <Route path="empresa/onboarding" element={<PrivateRoute><CompanyOnboarding /></PrivateRoute>} />
             <Route path="rutas-inteligentes" element={<PrivateRoute><SmartRoutes /></PrivateRoute>} />

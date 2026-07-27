@@ -20,6 +20,9 @@ const MORE = [
   ['/comunidad', 'Comunidad', MessageSquareText], ['/capacitacion', 'Capacitación', GraduationCap],
   ['/documentos', 'Biblioteca', BookOpen], ['/calculadoras', 'Herramientas', Calculator],
   ['/anunciate', 'Anúnciate', Megaphone],
+]
+// Requieren sesión iniciada: solo se muestran a usuarios autenticados.
+const MORE_PRIVATE = [
   ['/torre-control', 'Torre de control', RadioTower], ['/rutas-inteligentes', 'Rutas inteligentes', MapPinned],
   ['/control-aduanal', 'Control aduanal', Anchor],
 ]
@@ -31,6 +34,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false)
   useEffect(() => setMobileOpen(false), [location.pathname])
 
+  const moreItems = user ? [...MORE, ...MORE_PRIVATE] : MORE
   const active = (path) => path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
   const signOutNow = async () => { await signOut(); toast.success('Sesión cerrada'); navigate('/') }
   const canManagePlatform = profile?.role === 'admin' || hasPermission('admin.analytics') || hasPermission('moderation.manage')
@@ -45,9 +49,9 @@ export default function Navbar() {
         <nav aria-label="Navegación principal" className="hidden items-center gap-0.5 lg:flex">
           {PRIMARY.map(([path, label, Icon]) => <NavItem key={path} path={path} label={label} icon={Icon} active={active(path)} />)}
           <div className="group relative">
-            <button className={`flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold transition ${MORE.some(([path]) => active(path)) ? 'bg-teal-50 text-teal-800' : 'text-slate-600 hover:bg-slate-50'}`}>Más <ChevronDown size={12} /></button>
+            <button className={`flex items-center gap-1 rounded-lg px-3 py-2 text-xs font-bold transition ${moreItems.some(([path]) => active(path)) ? 'bg-teal-50 text-teal-800' : 'text-slate-600 hover:bg-slate-50'}`}>Más <ChevronDown size={12} /></button>
             <div className="invisible absolute right-0 top-full w-52 translate-y-1 rounded-xl border border-slate-200 bg-white p-2 opacity-0 shadow-xl transition group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-              {MORE.map(([path, label, Icon]) => <Link key={path} to={path} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-teal-800"><Icon size={15} />{label}</Link>)}
+              {moreItems.map(([path, label, Icon]) => <Link key={path} to={path} className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-50 hover:text-teal-800"><Icon size={15} />{label}</Link>)}
             </div>
           </div>
         </nav>
@@ -59,7 +63,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {mobileOpen && <nav aria-label="Menú móvil" className="border-t border-slate-100 bg-white px-4 py-4 shadow-xl lg:hidden"><div className="mx-auto grid max-w-7xl gap-1 sm:grid-cols-2">{[...PRIMARY, ...MORE].map(([path, label, Icon]) => <Link key={path} to={path} className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold ${active(path) ? 'bg-teal-50 text-teal-800' : 'text-slate-600'}`}><Icon size={17} />{label}</Link>)}</div><div className="mx-auto mt-4 flex max-w-7xl flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row">{user ? <><Link to="/perfil" className="rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold">Mi cuenta</Link>{(canManagePlatform || canVerifyCompanies) && <Link to={adminHref} className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-bold text-amber-800">Administración</Link>}<button onClick={signOutNow} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-red-600">Cerrar sesión</button></> : <><Link to="/login" className="rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold">Entrar</Link><Link to="/register" className="rounded-xl bg-[#0d4f4b] px-4 py-3 text-center text-sm font-extrabold text-white">Registrar empresa</Link></>}<Link to="/empresa" className="rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold">Para empresas</Link></div></nav>}
+      {mobileOpen && <nav aria-label="Menú móvil" className="border-t border-slate-100 bg-white px-4 py-4 shadow-xl lg:hidden"><div className="mx-auto grid max-w-7xl gap-1 sm:grid-cols-2">{[...PRIMARY, ...moreItems].map(([path, label, Icon]) => <Link key={path} to={path} className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-bold ${active(path) ? 'bg-teal-50 text-teal-800' : 'text-slate-600'}`}><Icon size={17} />{label}</Link>)}</div><div className="mx-auto mt-4 flex max-w-7xl flex-col gap-2 border-t border-slate-100 pt-4 sm:flex-row">{user ? <><Link to="/perfil" className="rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold">Mi cuenta</Link>{(canManagePlatform || canVerifyCompanies) && <Link to={adminHref} className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm font-bold text-amber-800">Administración</Link>}<button onClick={signOutNow} className="rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-red-600">Cerrar sesión</button></> : <><Link to="/login" className="rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold">Entrar</Link><Link to="/register" className="rounded-xl bg-[#0d4f4b] px-4 py-3 text-center text-sm font-extrabold text-white">Registrar empresa</Link></>}<Link to="/empresa" className="rounded-xl border border-slate-200 px-4 py-3 text-center text-sm font-bold">Para empresas</Link></div></nav>}
     </header>
   )
 }
