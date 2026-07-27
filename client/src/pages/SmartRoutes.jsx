@@ -11,7 +11,7 @@ const initialRule = { road_class:'ET', allowed_configuration:'sencillo', max_gro
 export default function SmartRoutes() {
   const context = useOperationalContext(), [routes,setRoutes] = useState([]), [catalogs,setCatalogs] = useState({rules:[],stops:[],risks:[]}), [form,setForm] = useState(initial), [rule,setRule] = useState(initialRule), [busy,setBusy] = useState(false)
   const load = () => context.companyId && Promise.all([operationsApi.routes(context.companyId),operationsApi.routeCatalogs(context.companyId)]).then(([result,catalog])=>{setRoutes(result.data);setCatalogs(catalog)}).catch((error)=>toast.error(error.message))
-  useEffect(load,[context.companyId])
+  useEffect(() => { load() },[context.companyId])
   const change = (key,value) => setForm((current)=>({...current,[key]:value}))
   const submit = async (event) => { event.preventDefault(); setBusy(true); try { const plan = await operationsApi.createRoute(context.companyId,{...form,segments:[{road_name:form.road_name,road_class:form.road_class,start_km:form.start_km,end_km:form.end_km}]}); const result = await operationsApi.evaluateRoute(context.companyId,plan.id); toast[result.evaluation.status==='blocked'?'error':'success'](result.evaluation.status==='blocked'?'La asignación fue bloqueada':'Ruta evaluada con la información disponible'); setForm(initial); load() } catch(error){toast.error(error.message)} finally{setBusy(false)} }
   const submitRule = async (event) => { event.preventDefault(); setBusy(true); try { await operationsApi.createLegalRule(context.companyId,{...rule,allowed_configurations:[rule.allowed_configuration]}); setRule(initialRule); toast.success('Regla legal registrada'); load() } catch(error){toast.error(error.message)} finally{setBusy(false)} }
